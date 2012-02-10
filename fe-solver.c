@@ -34,9 +34,9 @@ matrix* CreateElementMatrix(basis *b, double Pe, double h)
             value = -1/h*quad300(b->dphi[i], b->dphi[j]);
             value += Pe*quad300(b->phi[j], b->dphi[i]);
             setval(elem, value, i, j);
-	    if((b->n == 4) && (i%2 == 1)) {
-		setval(elem, val(elem, i, j)*h, i, j);
-	    }
+            if((b->n == 4) && (i%2 == 1)) {
+                setval(elem, val(elem, i, j)*h, i, j);
+            }
         }
     }
 
@@ -70,9 +70,9 @@ matrix* testelem(basis* b, double Pe, double h)
     for(i=0; i<b->n; i++) {
         for(j=0; j<b->n; j++) {
             setval(elem, -1/h*quad300(b->dphi[i], b->dphi[j]) + h*quad300(b->phi[i], b->phi[j]), i, j);
-	    if((b->n == 4) && (i%2 == 1)) {
-		setval(elem, val(elem, i, j)*h, i, j);
-	    }
+            if((b->n == 4) && (i%2 == 1)) {
+                setval(elem, val(elem, i, j)*h, i, j);
+            }
         }
     }
     return elem;
@@ -86,9 +86,9 @@ matrix* testload(basis* b, double Pe, double h) {
 
     for(i=0; i<b->n; i++) {
         setval(f, h*quad3(b->phi[i]), i, 0);
-	if((b->n == 4) && (i%2 == 1)) {
-	    setval(f, val(f, i, 0)*h, i, 0);
-	}
+        if((b->n == 4) && (i%2 == 1)) {
+            setval(f, val(f, i, 0)*h, i, 0);
+        }
     }
 
     return f;
@@ -123,8 +123,8 @@ matrix* AssembleJ(matrix* (*makej)(basis*, double, double), basis *b, matrix* me
             }
         }
 
-	/* Clean up */
-	DestroyMatrix(j);
+        /* Clean up */
+        DestroyMatrix(j);
     }
 
     return J;
@@ -143,13 +143,13 @@ matrix* AssembleF(matrix* (*makef)(basis*, double, double), basis *b, matrix* me
     F = CreateMatrix(rows, 1);
 
     for(i=0; i<rows-r; i=i+r) {
-	f = makef(b, Pe, val(mesh, i/r, 0));
+        f = makef(b, Pe, val(mesh, i/r, 0));
 
         for(j=0; j<b->n; j++) {
-	    addval(F, val(f, j, 0), i+j, 0);
+            addval(F, val(f, j, 0), i+j, 0);
         }
 
-	DestroyMatrix(f);
+        DestroyMatrix(f);
     }
 
     return F;
@@ -167,8 +167,8 @@ void ApplyBoundaryConditions(matrix* J, matrix* F, basis *b, double leftbc, doub
     int o = b->overlap;
 
     for(i=0;i<rows; i++) {
-	setval(J, 0, 0, i);
-	setval(J, 0, rows-o, i);
+        setval(J, 0, 0, i);
+        setval(J, 0, rows-o, i);
     }
 
     setval(J, 1, 0, 0);
@@ -213,7 +213,7 @@ matrix* MeshXCoords(matrix *mesh, basis* b, double left, double right)
             for(i=1; i<=n; i++) {
                 setval(x, val(x, i-1, 0) + val(mesh, i-1, 0), i, 0);
             }
-       break;
+        break;
         case 3:
             x = CreateMatrix(2*n+1, 1);
             setval(x, left, 0, 0);
@@ -248,16 +248,16 @@ double EvalSolution(matrix *m, basis *b, double x, double left, double right, ma
 	    for(i=0; x>val(xcoord, i, 0)+val(m, i/2, 0) && i+3<mtxlen2(xcoord); i+=2);
 	    c = (x-val(xcoord, i, 0))/val(m, i/2, 0);
 	    return val(soln, i, 0) * b->phi[0](c) 
-		    + val(soln, i+1, 0) * b->phi[1](c)
-		    + val(soln, i+2, 0) * b->phi[2](c);
+                + val(soln, i+1, 0) * b->phi[1](c)
+                + val(soln, i+2, 0) * b->phi[2](c);
 	    break;
 	case 4:
 	    for(i=0; x>val(xcoord, i, 0)+val(m,i,0)&&i+2<mtxlen2(xcoord); i++);
 	    c = (x-val(xcoord, i, 0))/val(m, i, 0);
 	    return val(soln, 2*i, 0) * b->phi[0](c)
 	            + val(soln, 2*i+1, 0) * b->phi[1](c)// * val(m, i, 0)
-		    + val(soln, 2*i+2, 0) * b->phi[2](c)
-		    + val(soln, 2*i+3, 0) * b->phi[3](c);// * val(m, i, 0);
+                + val(soln, 2*i+2, 0) * b->phi[2](c)
+                + val(soln, 2*i+3, 0) * b->phi[3](c);// * val(m, i, 0);
 	    break;
     }
     return 0;
@@ -297,8 +297,8 @@ int main(int argc, char *argv[])
 {
     double Pe, h;
     double left = 0;
-    double right = 1;
-    //double right = PI/2;
+    //double right = 1;
+    double right = PI/2;
     int n, i;
     matrix *J, *F, *A, *mesh, *x, *E, *x1, *y, *xy;
     basis *b;
@@ -307,8 +307,8 @@ int main(int argc, char *argv[])
 
     /* Parse arguments */
     if(argc < 2) {
-	fprintf(stderr, "Too few arguments: exiting.\n");
-	return 1;
+        fprintf(stderr, "Too few arguments: exiting.\n");
+        return 1;
     }
     Pe = atof(argv[1]);
 
@@ -325,33 +325,34 @@ int main(int argc, char *argv[])
     /* All the nodes are equally spaced. */
     h = val(mesh, 0, 0);
 
-    J = AssembleJ(&CreateElementMatrix, b, mesh, Pe);
-    //J = AssembleJ(&testelem, b, mesh, Pe);
+    //J = AssembleJ(&CreateElementMatrix, b, mesh, Pe);
+    J = AssembleJ(&testelem, b, mesh, Pe);
 
-    F = AssembleF(&CreateElementLoad, b, mesh, Pe);
-    //F = AssembleF(&testload, b, mesh, Pe);
+    //F = AssembleF(&CreateElementLoad, b, mesh, Pe);
+    F = AssembleF(&testload, b, mesh, Pe);
 
-    ApplyBoundaryConditions(J, F, b, 0, 1);
-    //ApplyBoundaryConditions(J, F, b, 2, 1);
+    //ApplyBoundaryConditions(J, F, b, 0, 1);
+    ApplyBoundaryConditions(J, F, b, 2, 1);
     
     E = SolveMatrixEquation(J, F);
     printf("E = %1.10f\n", EValue(mesh, b, left, right, E, Pe));
+    printf("f(pi/4) = %f\n", EvalSolution(mesh, b, PI/4, left, right, E));
 
     x1 = linspace(0, PI/2, 100);
     x1 = mtxtrn(x1);
     y = CreateMatrix(100, 1);
     for(i=0; i<100; i++) {
-	setval(y, EvalSolution(mesh, b, val(x1, i, 0), left, right, E), i, 0);
+        setval(y, EvalSolution(mesh, b, val(x1, i, 0), left, right, E), i, 0);
     }
     xy = AugmentMatrix(x1, y);
     
     /* Print out the result */
     if(argc == 4) {
-	mtxprntfile(xy, argv[3]);
+        mtxprntfile(xy, argv[3]);
     } else {
         mtxprnt(x);
         puts("");
-	mtxprnt(E);
+        mtxprnt(E);
     }
     
     /* Clean up the allocated memory */
