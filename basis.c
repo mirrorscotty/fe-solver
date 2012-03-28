@@ -1,77 +1,200 @@
 #include <math.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include "basis.h"
 #include "integrate.h"
 
-basis* MakeLinBasis()
+int main(int argc, char *argv[])
 {
     basis *b;
-    b = (basis*) malloc(sizeof(basis*));
+    b = MakeLinBasis(2);
+    printf("%g\n", EvalBasis(b, 1, 2, .5, .25));
+    DestroyBasis(b);
+    return 42;
+}
 
-    b->n = 2;
-    b->overlap = 1;
+/* Make a set of linear basis functions. Includes information on how to
+   properly assemble the global matricies. */
+basis* MakeLinBasis(int dimension)
+{
+    basis *b;
+    b = NULL;
+    b = (basis*) malloc(sizeof(basis));
+    if(!b) {
+        return NULL;
+    }
+    b->phi = b->dphi = NULL;
+
+    b->n = 2 * dimension;
+    b->overlap = 1 * dimension;
 
     b->phi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
     b->dphi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
-    b->phi[0] = &lin1d1;
-    b->phi[1] = &lin1d2;
+    if(b->phi) {
+        b->phi[0] = &lin1d1;
+        b->phi[1] = &lin1d2;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
 
-    b->dphi[0] = &dlin1d1;
-    b->dphi[1] = &dlin1d2;
+    if(b->dphi) {
+        b->dphi[0] = &dlin1d1;
+        b->dphi[1] = &dlin1d2;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
+
+    b->dim = dimension;
 
     return b;
 }
 
-basis* MakeQuadBasis()
+basis* MakeQuadBasis(int dimension)
 {
     basis *b;
-    b = (basis*) malloc(sizeof(basis*));
+    b = NULL;
+    b = (basis*) malloc(sizeof(basis));
+    if(!b) {
+        return NULL;
+    }
+    b->phi = b->dphi = NULL;
 
-    b->n = 3;
-    b->overlap = 1;
+    b->n = 3 * dimension;
+    b->overlap = 1 * dimension;
 
-    b->phi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
-    b->dphi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
-    b->phi[0] = &quad1d1;
-    b->phi[1] = &quad1d2;
-    b->phi[2] = &quad1d3;
+    b->phi = (double(**)(double)) calloc(b->n, sizeof(double(**)(double)));
+    b->dphi = (double(**)(double)) calloc(b->n, sizeof(double(**)(double)));
+    if(b->phi) {
+        b->phi[0] = &quad1d1;
+        b->phi[1] = &quad1d2;
+        b->phi[2] = &quad1d3;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
 
-    b->dphi[0] = &dquad1d1;
-    b->dphi[1] = &dquad1d2;
-    b->dphi[2] = &dquad1d3;
+    if(b->dphi) {
+        b->dphi[0] = &dquad1d1;
+        b->dphi[1] = &dquad1d2;
+        b->dphi[2] = &dquad1d3;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
+
+    b->dim = dimension;
 
     return b;
 }
 
-basis* MakeCubicBasis()
+basis* MakeCubicBasis(int dimension)
 {
     basis *b;
-    b = (basis*) malloc(sizeof(basis*));
+    b = NULL;
+    b = (basis*) malloc(sizeof(basis));
+    if(!b) {
+        return NULL;
+    }
+    b->phi = b->dphi = NULL;
 
-    b->n = 4;
-    b->overlap = 2;
+    b->n = 4 * dimension;
+    b->overlap = 2 * dimension;
 
     b->phi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
     b->dphi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
-    b->phi[0] = &cubic1d1;
-    b->phi[1] = &cubic1d2;
-    b->phi[2] = &cubic1d3;
-    b->phi[3] = &cubic1d4;
+    if(b->phi) {
+        b->phi[0] = &cubic1d1;
+        b->phi[1] = &cubic1d2;
+        b->phi[2] = &cubic1d3;
+        b->phi[3] = &cubic1d4;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
 
-    b->dphi[0] = &dcubic1d1;
-    b->dphi[1] = &dcubic1d2;
-    b->dphi[2] = &dcubic1d3;
-    b->dphi[3] = &dcubic1d4;
+    if(b->dphi) {
+        b->dphi[0] = &dcubic1d1;
+        b->dphi[1] = &dcubic1d2;
+        b->dphi[2] = &dcubic1d3;
+        b->dphi[3] = &dcubic1d4;
+    } else {
+        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+    }
+
+    b->dim = dimension;
 
     return b;
 }
     
+/* Delete stuff */
 void DestroyBasis(basis *b)
 {
-    free(b->phi);
-    free(b->dphi);
-    free(b);
+    if(b->phi)
+        free(b->phi);
+    if(b->dphi)
+        free(b->dphi);
+    if(b)
+        free(b);
     return;
+}
+
+/* Evaluate a linear 2 dimensional basis function. The second argument
+   determines which of the bilinear basis functions to evaluate. The last two
+   arguments are the x and y coordinates in isoparametric space to evaluate the
+   function at. */
+double EvalLin2D(basis *b, int func, double x, double y)
+{
+    return EvalBasis(b, (func>1)?1:0, x, func % 2, y);
+}
+
+/* Not even slightly finished yet. */
+//double EvalBasisV(basis *b, int function, vector *v)
+//{
+//    int i;
+
+//    if(len(v) != b->dim) {
+//        fprintf(stderr, "Cataclysmic failure! Exiting immediately!\n");
+//        exit(0);
+//    }
+
+//    for(i=0; i<1;i++)
+//}
+
+/* General function for evaluating a basis at a specified point. The first
+   argument is the basis to evaluate, and the next two arguments are the
+   1d function number and the isoparametric coordinate in that dimension. For
+   example, EvalBasis(b, 0, .5, 0, .2) would evaluate the first 2d bilinear
+   basis function at (.5, .2). The dimension of the basis must be equal to the
+   number of coordinates supplied. */
+double EvalBasis(basis *b, ... )
+{
+    va_list arglist;
+    int *phi;
+    double *arg;
+    int i;
+    double result = 1;
+
+    va_start(arglist, 2*b->dim);
+    phi = (int*) calloc(b->dim, sizeof(int));
+    arg = (double*) calloc(b->dim, sizeof(double));
+
+    for(i=0; i<b->dim; i++) {
+        phi[i] = va_arg(arglist, int);
+        printf("%d\n", phi[i]);
+    }
+
+    for(i=0; i<b->dim; i++) {
+        arg[i] = va_arg(arglist, double);
+        printf("%g\n", arg[i]);
+    }
+
+    for(i=0; i<b->dim; i++) {
+        result *= b->phi[i](arg[i]);
+        printf("%g\n", result);
+    }
+
+    va_end(arglist);
+    free(arg);
+    free(phi);
+    return result;
 }
 
 /* 1d Linear Basis Functions */

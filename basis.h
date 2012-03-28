@@ -6,13 +6,16 @@ typedef struct {
     int overlap; /* Amount of overlap when assembling the global matricies */
     double (**phi)(double); /* Array of basis functions */
     double (**dphi)(double); /* First derivatives of the basis functions */
+    int dim; /* Dimension of the problem */
 } basis;
 
-basis* MakeLinBasis();
-basis* MakeQuadBasis();
-basis* MakeCubicBasis();
+basis* MakeLinBasis(int);
+basis* MakeQuadBasis(int);
+basis* MakeCubicBasis(int);
 
 void DestroyBasis(basis*);
+
+double EvalBasis(basis*, ... );
 
 double lin1d1(double);
 double lin1d2(double);

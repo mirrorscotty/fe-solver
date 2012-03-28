@@ -33,4 +33,23 @@ void Map(matrix*, double (*func)(double));
 void mtxprnt(matrix*);
 void mtxprntfile(matrix*, char*);
 
+typedef struct {
+    double *v;
+    int length;
+} vector;
+
+vector* CreateVector(int);
+void DestroyVector(vector*);
+double valV(vector*, int);
+void setvalV(vector*, int, double);
+int len(vector*);
+void PrintVector(vector*);
+
+vector* addV(vector*, vector*);
+vector* subtractV(vector*, vector*);
+double dotV(vector*, vector*);
+vector* scalarmultV(double, vector*);
+
+
+
 #endif
