@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "matrix.h"
+#include "finite-element.h"
 
 void SwapRows(matrix*, int, int);
 int FindPivot(matrix*, int);
@@ -52,5 +53,8 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
 	u = ExtractColumn(C, mtxlen1(A));
 	DestroyMatrix(C);
 	return u;
+}
+
+matrix* NLinSolve(struct fe *problem, matrix *initguess) {
 }
 

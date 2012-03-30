@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "integrate.h"
+#include "basis.h"
 
 double square(double x) {
 	return x*x*x;
@@ -104,7 +105,23 @@ double diff(double (*f)(double), double x)
     return (f(x+h)-f(x-h))/(2*h);
 }
 
-double quad2d3(double (*f)(basis*,double,double))
+//double quad2d3(double (*f)(basis*,double,double))
+//{
+//    int i, j;
+//    double result = 0;
+//    double *x, *w;
+//    x = x5;
+//    w = w5;
+
+//  for(i=0; i<NPTS; i++) {
+//        for(j=0; j<NPTS; j++) {
+//            result += w[i]/2 * w[j]/2 * (*f)( (x[i]+1)/2 , (x[j]+1)/2 );
+// }
+//    }
+//    return result;
+//}
+
+double quad2d3(basis *b, int func, int dx, int dy)
 {
     int i, j;
     double result = 0;
@@ -114,23 +131,27 @@ double quad2d3(double (*f)(basis*,double,double))
 
     for(i=0; i<NPTS; i++) {
         for(j=0; j<NPTS; j++) {
-            result += w[i]/2 * w[j]/2 * (*f)( (x[i]+1)/2 , (x[j]+1)/2 );
+            if(dx == 1) {
+                result += w[i]/2 * w[j]/2 * EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2);
+            } else if(dy == 1) {
+                result += w[i]/2 * w[j]/2 * EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2);
+            } else {
+                result += w[i]/2 * w[j]/2 * EvalLin2D(b, func, (x[i]+1)/2, (x[j]+1)/2);
+            }
         }
     }
+
     return result;
 }
             
-    
-
-
-double diff2dx(basis *b, double x, double y)
+double diff2dx(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
-    return (EvalLin2D(b, x+h, y) - EvalLin2D(b, x-h, y))/(2*h);
+    return (EvalLin2D(b, func, x+h, y) - EvalLin2D(b, func, x-h, y))/(2*h);
 }
 
-double diff2dy(basis *b, double x, double y)
+double diff2dy(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
-    return (EvalLin2D(b, x, y+h) - EvalLin2D(b, x, y-h))/(2*h);
+    return (EvalLin2D(b, func, x, y+h) - EvalLin2D(b, func, x, y-h))/(2*h);
 }

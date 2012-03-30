@@ -5,14 +5,26 @@
 #include "basis.h"
 #include "integrate.h"
 
+/* //Test function
 int main(int argc, char *argv[])
 {
     basis *b;
     b = MakeLinBasis(2);
-    printf("%g\n", EvalBasis(b, 1, 2, .5, .25));
+
+    printf("p1 = %g\np2 = %g\np3 = %g\np4 = %g\n",
+           quad2d3(b, 0, 0, 1),
+           quad2d3(b, 1, 0, 1),
+           quad2d3(b, 2, 0, 1),
+           quad2d3(b, 3, 0, 1));
+          // EvalLin2D(b, 0, 0, 0),
+          // EvalLin2D(b, 1, 0, 0),
+          // EvalLin2D(b, 2, 0, 0),
+          // EvalLin2D(b, 3, 0, 0));
+
     DestroyBasis(b);
     return 42;
 }
+*/
 
 /* Make a set of linear basis functions. Includes information on how to
    properly assemble the global matricies. */
@@ -35,14 +47,14 @@ basis* MakeLinBasis(int dimension)
         b->phi[0] = &lin1d1;
         b->phi[1] = &lin1d2;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
         b->dphi[0] = &dlin1d1;
         b->dphi[1] = &dlin1d2;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;
@@ -70,7 +82,7 @@ basis* MakeQuadBasis(int dimension)
         b->phi[1] = &quad1d2;
         b->phi[2] = &quad1d3;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
@@ -78,7 +90,7 @@ basis* MakeQuadBasis(int dimension)
         b->dphi[1] = &dquad1d2;
         b->dphi[2] = &dquad1d3;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate $lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;
@@ -107,7 +119,7 @@ basis* MakeCubicBasis(int dimension)
         b->phi[2] = &cubic1d3;
         b->phi[3] = &cubic1d4;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
@@ -116,7 +128,7 @@ basis* MakeCubicBasis(int dimension)
         b->dphi[2] = &dcubic1d3;
         b->dphi[3] = &dcubic1d4;
     } else {
-        fprintf(stderr, "Failed to allocate %d bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;
@@ -142,7 +154,29 @@ void DestroyBasis(basis *b)
    function at. */
 double EvalLin2D(basis *b, int func, double x, double y)
 {
-    return EvalBasis(b, (func>1)?1:0, x, func % 2, y);
+    //printf("Evaluating function (%d, %d)\n", (func>1)?1:0, func%2);
+    int i, j;
+    /* Determine which of the linear basis functions to use */
+    i = (func>1)?1:0;
+    j = func%2;
+    return b->phi[i](x) * b->phi[j](y);
+    //return EvalBasis(b, (func>1)?1:0, x, func % 2, y);
+}
+
+double EvalLin2Dx(basis *b, int func, double x, double y)
+{
+    int i, j;
+    i = (func>1)?1:0;
+    j = func%2;
+    return b->dphi[i](x) * b->phi[j](y);
+}
+
+double EvalLin2Dy(basis *b, int func, double x, double y)
+{
+    int i, j;
+    i = (func>1)?1:0;
+    j = func%2;
+    return b->phi[i](x) * b->dphi[j](y);
 }
 
 /* Not even slightly finished yet. */
@@ -178,17 +212,17 @@ double EvalBasis(basis *b, ... )
 
     for(i=0; i<b->dim; i++) {
         phi[i] = va_arg(arglist, int);
-        printf("%d\n", phi[i]);
+        //printf("%d\n", phi[i]);
     }
 
     for(i=0; i<b->dim; i++) {
         arg[i] = va_arg(arglist, double);
-        printf("%g\n", arg[i]);
+        //printf("%g\n", arg[i]);
     }
 
     for(i=0; i<b->dim; i++) {
         result *= b->phi[i](arg[i]);
-        printf("%g\n", result);
+        //printf("%g\n", result);
     }
 
     va_end(arglist);

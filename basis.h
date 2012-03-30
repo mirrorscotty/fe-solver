@@ -15,6 +15,9 @@ basis* MakeCubicBasis(int);
 
 void DestroyBasis(basis*);
 
+double EvalLin2D(basis*, int, double, double);
+double EvalLin2Dx(basis*, int, double, double);
+double EvalLin2Dy(basis*, int, double, double);
 double EvalBasis(basis*, ... );
 
 double lin1d1(double);

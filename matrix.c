@@ -51,11 +51,18 @@ void setval(matrix *A, double value, int row, int col)
 void mtxprnt(matrix *A)
 {
     int i, j;
+    double v;
     
     for(i=0; i<mtxlen2(A); i++) {
         printf("[ ");
         for(j=0; j<mtxlen1(A); j++) {
-            printf("%e ", val(A, i, j));
+            v = val(A, i, j);
+            /* If the value is annoyingly close to zero, just print out zero
+             * instead. */
+            if(fabs(v) < 1e-14)
+                printf("%e ", 0.0);
+            else
+                printf("%e ", v);
         }
         printf("]\n");
     }
