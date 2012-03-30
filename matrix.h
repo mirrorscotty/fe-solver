@@ -21,6 +21,8 @@ void setval(matrix*, double, int, int);
 matrix* CreateMatrix(int, int);
 matrix* mtxtrn(matrix*);
 matrix* mtxmul(matrix*, matrix*);
+matrix* mtxadd(matrix*, matrix*);
+matrix* mtxneg(matrix*);
 matrix* CalcAdj(matrix*);
 matrix* CalcInv(matrix*);
 

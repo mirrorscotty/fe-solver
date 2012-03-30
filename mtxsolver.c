@@ -55,6 +55,58 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
 	return u;
 }
 
-matrix* NLinSolve(struct fe *problem, matrix *initguess) {
+/* Return 0 if not converged, and 1 if we're done iterating. */
+int CheckConverg(struct fe *problem, matrix *dx)
+{
+    int rows = mtxlen2(dx);
+    int i;
+    
+    for(i=0; i<rows; i++) {
+        if(val(dx, i, 0) > problem->tol)
+            return 0;
+    }
+    return 1;
 }
+    
 
+matrix* NLinSolve(struct fe *problem, matrix *guess) {
+    matrix *dx; /* How much to update the guess by */
+    matrix *newguess;
+    int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
+    int iter = 0;
+    int maxiter = 5;
+    
+    if(!guess) {
+        guess = CreateMatrix(rows, 1);
+    }
+
+    do {
+        iter++;
+        if(problem->J)
+            DestroyMatrix(problem->J);
+        if(problem->F)
+            DestroyMatrix(problem->F);
+        AssembleJ(problem, guess);
+        problem->F = CreateMatrix(rows, 1);
+        //AssembleF(problem, guess);
+        problem->applybcs(problem);
+        
+        CalcResidual(problem, guess);
+        
+        dx = SolveMatrixEquation(problem->J, problem->R);
+        newguess = mtxadd(guess, dx);
+        DestroyMatrix(guess);
+        guess = newguess;
+        
+        if(iter == maxiter)
+            break;
+        
+    } while(!CheckConverg(problem, dx));
+    
+    if(iter == maxiter)
+        printf("Nonlinear solver failed to convert. Maximum number of iterations reached.\n");
+    else
+        printf("Nonlinear solver converged after %d iterations.\n", iter);
+    
+    return guess;
+}

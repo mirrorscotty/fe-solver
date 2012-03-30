@@ -146,6 +146,40 @@ matrix* mtxmul(matrix *A, matrix *B)
     return C;
 }
 
+/* Add two matricies.
+ * Todo: Add error checking to make sure the dimensions agree.
+ */
+matrix* mtxadd(matrix *A, matrix *B)
+{
+    int rows = mtxlen2(A);
+    int cols = mtxlen1(A);
+    
+    matrix *C;
+    
+    int i, j;
+    
+    C = CreateMatrix(rows, cols);
+    
+    for(i=0; i<rows; i++) {
+        for(j=0; j<cols; j++) {
+            setval(C, val(A, i, j) + val(B, i, j), i, j);
+        }
+    }
+    
+    return C;
+}
+
+matrix* mtxneg(matrix *A)
+{
+    int i, j;
+    for(i=0; i<mtxlen2(A); i++) {
+        for(j=0; j<mtxlen1(A); j++) {
+            setval(A, -1*val(A, i, j), i, j);
+        }
+    }
+    return A;
+}
+
 /* Code here courtesy of http://www.daniweb.com/software-development/c/code/216687 */
 matrix* CalcMinor(matrix* A, int row, int col) {
     int i, j, a, b;

@@ -20,6 +20,8 @@ struct fe* CreateFE(basis* b,
     problem->makef = makef;
     problem->applybcs = applybcs;
     
+    problem->tol = 1e-10;
+    
     return problem;
 }
 
@@ -107,4 +109,14 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
     problem->F = F;
 
     return F;
+}
+
+matrix* CalcResidual(struct fe *problem, matrix* guess)
+{
+    matrix *tmp;
+    tmp = mtxmul(problem->J, guess);
+    problem->R = mtxadd(mtxneg(tmp), problem->F);
+    
+    
+    return problem->R;
 }

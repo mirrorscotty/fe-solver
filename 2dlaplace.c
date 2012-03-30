@@ -117,16 +117,12 @@ int main(int argc, char *argv[])
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh2D(0.0, 1.0,
                                  0.0, 1.0,
-                                 2, 2);
+                                 1, 1);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     
-    AssembleJ(problem, NULL);
-    AssembleF(problem, NULL);
-    
-    problem->applybcs(problem);
-
-    E = SolveMatrixEquation(problem->J, problem->F);
+    //E = SolveMatrixEquation(problem->J, problem->F);
+    E = NLinSolve(problem, NULL);
 
     mtxprnt(E);
 

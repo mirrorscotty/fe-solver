@@ -13,6 +13,9 @@ struct fe {
     
     matrix *J;
     matrix *F;
+    matrix *R;
+    
+    double tol; /* Tolerance for the nonlinear solver */
     
     matrix* (*makej)(struct fe*, matrix*);
     matrix* (*makef)(struct fe*, matrix*);
@@ -30,5 +33,6 @@ void DestroyFE(struct fe*);
 
 matrix* AssembleJ(struct fe*, matrix*);
 matrix* AssembleF(struct fe*, matrix*);
+matrix* CalcResidual(struct fe*, matrix*);
     
 #endif
