@@ -15,12 +15,17 @@ struct fe {
     matrix *F;
     matrix *R;
     
+    int nvars; /* Number of variables being solved for. */
     double tol; /* Tolerance for the nonlinear solver */
     
     matrix* (*makej)(struct fe*, matrix*);
     matrix* (*makef)(struct fe*, matrix*);
     
     void (*applybcs)(struct fe*);
+    
+    /* Problem-specific parameters */
+    double P;
+    double a;
 };
 
 struct fe* CreateFE(basis*,
@@ -34,5 +39,6 @@ void DestroyFE(struct fe*);
 matrix* AssembleJ(struct fe*, matrix*);
 matrix* AssembleF(struct fe*, matrix*);
 matrix* CalcResidual(struct fe*, matrix*);
+matrix* GetLocalGuess(struct fe*, matrix*, int);
     
 #endif

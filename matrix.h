@@ -19,6 +19,7 @@ int mtxlen2(matrix*);
 double val(matrix*, int, int);
 void setval(matrix*, double, int, int);
 matrix* CreateMatrix(int, int);
+matrix* CreateOnesMatrix(int, int);
 matrix* mtxtrn(matrix*);
 matrix* mtxmul(matrix*, matrix*);
 matrix* mtxadd(matrix*, matrix*);

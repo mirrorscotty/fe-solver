@@ -373,6 +373,19 @@ matrix* CreateMatrix(int row, int col)
     return A;
 }
 
+matrix* CreateOnesMatrix(int rows, int cols)
+{
+    int i, j;
+    matrix *A;
+    A = CreateMatrix(rows, cols);
+    for(i=0; i<rows; i++) {
+        for(j=0; j<cols; j++) {
+            setval(A, 1, i, j);
+        }
+    }
+    return A;
+}
+
 #define MAXROWS 100
 #define MAXCOLS 100
 #define LINELENGTH 80
