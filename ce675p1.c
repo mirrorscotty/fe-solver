@@ -203,14 +203,6 @@ void ApplyAllBCs(struct fe *p)
     
     int i;
     
-    // BC at y=0
-    for(i=0; i< (mesh->nelemx+1)*(mesh->nelemy+1)*p->nvars; i+= p->nvars*(mesh->nelemy+1)) {
-        ApplyDBC(J, F, b, i, 0 );
-        ApplyDBC(J, F, b, i+1, 0);
-        //ApplyDBC(J, F, b, 4, 0);
-        //ApplyDBC(J, F, b, 5, 0);
-    }
-    
     // BC at x=0
     for(i=p->nvars; i< (mesh->nelemy+1)*p->nvars; i+=p->nvars) {
         //ApplyNBC(p, 2, P*a);
@@ -219,15 +211,18 @@ void ApplyAllBCs(struct fe *p)
     
     // BC at y=H
     for(i=(mesh->nelemy+1)*p->nvars; i< (mesh->nelemx+1)*(mesh->nelemy+1)*p->nvars; i+=p->nvars*(mesh->nelemy+1)) {
-//        ApplyNBC(p, 3, P);
-//        ApplyNBC(p, 7, P);
-        ApplyNBC(p, i+1, P);
+        ApplyNBC(p, 3, P);
+        ApplyNBC(p, 7, P);
+//        ApplyNBC(p, i+1, P);
     }
-        
-        
-        
-        
- //   }
+    
+     // BC at y=0
+    for(i=0; i< (mesh->nelemx+1)*(mesh->nelemy+1)*p->nvars; i+= p->nvars*(mesh->nelemy+1)) {
+        ApplyDBC(J, F, b, i, 0 );
+        ApplyDBC(J, F, b, i+1, 0);
+        //ApplyDBC(J, F, b, 4, 0);
+        //ApplyDBC(J, F, b, 5, 0);
+    }
     return;
 }
 
@@ -264,8 +259,8 @@ matrix* GetDeformedCoords(struct fe *p, matrix *Soln)
     Def = CreateMatrix(mtxlen2(Soln)/2, 2);
     
     for(i=0; i<mtxlen2(Soln)/2; i++) {
-        setval(Def, val(Soln, 2*i, 0) + valV(GetNodeCoordinates(p->mesh, i), 0), i, 0);
-        setval(Def, val(Soln, 2*i+1, 0) + valV(GetNodeCoordinates(p->mesh, i), 1), i, 1);
+        setval(Def, val(Soln, 2*i, 0),  i, 0);
+        setval(Def, val(Soln, 2*i+1, 0), i, 1);
     }
     
     return Def;
@@ -275,34 +270,23 @@ int main(int argc, char *argv[])
 {
     Mesh2D *mesh;
     basis *b;
-
     matrix *J, *F, *E;
-    
     struct fe* problem;
+    int i;
 
+    /* Make a linear 2D basis */
     b = MakeLinBasis(2);
 
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh2D(0.0, 1.0,
                                  0.0, 1.0,
-                                 2, 2);
+                                 3, 3);
     
     problem = CreateFE(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
     problem->nvars = 2;
     
-    problem->P = 1;
-    problem->a = 0;
-    
-    //AssembleJ(problem, NULL);
-    
-    //mtxprnt(problem->J);
-    
-    //E = SolveMatrixEquation(problem->J, problem->F);
-    //E = NLinSolve(problem, NULL);
-    //AssembleJ(problem, NULL);
-    //problem->F = CreateMatrix(mtxlen2(problem->J), 1);
-    
-    //mtxprnt(problem->J);
+    problem->P = 10;
+    problem->a = 0.1;
     
     E = NLinSolve(problem, NULL);
 
@@ -310,7 +294,5 @@ int main(int argc, char *argv[])
     puts("");
     mtxprnt(GetDeformedCoords(problem, E));
     
-    
-
     return 0;
 }

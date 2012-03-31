@@ -90,9 +90,6 @@ matrix* NLinSolve(struct fe *problem, matrix *guess) {
         problem->F = CreateMatrix(rows*problem->nvars, 1);
         //AssembleF(problem, guess);
         problem->applybcs(problem);
-        if(iter == 1) {
-            mtxprnt(problem->F);
-        }
         
         //if(!CalcDeterminant(problem->J)) {
         //    iter = -1;
