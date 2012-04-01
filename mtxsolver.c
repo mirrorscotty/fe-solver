@@ -74,7 +74,7 @@ matrix* NLinSolve(struct fe *problem, matrix *guess) {
     matrix *newguess;
     int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
     int iter = 0;
-    int maxiter = 100;
+    int maxiter = 500;
     
     if(!guess) {
         guess = CreateMatrix(rows*problem->nvars, 1);
@@ -93,7 +93,7 @@ matrix* NLinSolve(struct fe *problem, matrix *guess) {
         
         //if(!CalcDeterminant(problem->J)) {
         //    iter = -1;
-        //    break;
+        //   break;
         //}
         
         CalcResidual(problem, guess);
@@ -105,14 +105,15 @@ matrix* NLinSolve(struct fe *problem, matrix *guess) {
         if(iter == maxiter)
             break;
         
-        printf("\rIteration %d", iter);
+        printf("\rIteration %d", iter); // Print the current iteration number to the console.
+        fflush(stdout); // Flush the output buffer.
         
     } while(!CheckConverg(problem, dx));
     
     if(iter == -1)
         printf("\rSingular matrix.\n");
     else if(iter == maxiter)
-        printf("\rNonlinear solver failed to convert. Maximum number of iterations reached.\n");
+        printf("\rNonlinear solver failed to converge. Maximum number of iterations reached.\n");
     else
         printf("\rNonlinear solver converged after %d iterations.\n", iter);
     

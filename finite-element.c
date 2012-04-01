@@ -39,8 +39,8 @@ void DestroyFE(struct fe* p)
 }
 
 /* Assemble the global coefficient matrix for a non-uniform mesh. The first
- * argument is a function pointer to the function which creates the element
- * matrix, and the second is the mesh to be used.
+ * argument is a structure that describes the FE problem, and the second
+ * is the initial guess.
  */
 matrix* AssembleJ(struct fe *problem, matrix *guess)
 {
