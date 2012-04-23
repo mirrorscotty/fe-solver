@@ -51,7 +51,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     int ny = mesh->nelemy-1;
     int i, x, y;
     int c, d;
-    int z = 0;
+    //int z = 0;
 
     double rows = (mesh->nelemx+1)*(mesh->nelemy+1)*problem->nvars;
     
@@ -96,7 +96,7 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
     basis *b = problem->b;
     
     matrix *F, *f, *lguess;
-    int n, i, j, rows;
+    int i, j, rows;
     int r = b->n - b->overlap;
 
     /* Determine the number of rows required for the global matrix */

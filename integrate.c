@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "integrate.h"
+#include "isoparam.h"
 #include "basis.h"
 
 double square(double x) {
@@ -121,22 +122,45 @@ double diff(double (*f)(double), double x)
 //    return result;
 //}
 
-double quad2d3(basis *b, int func, int dx, int dy)
+/* Numerically integrate the desired basis function using Gaussian Quadrature.
+ * This function only integrates 2D basis functions, and requires that the
+ * element where the integration is being performed be passed as an argument
+ * so that the result can be isoparametrically mapped correctly.
+ */
+double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
 {
     int i, j;
+    basis *b;
     double result = 0;
     double *x, *w;
     x = x5;
     w = w5;
+    b = p->b;
 
     for(i=0; i<NPTS; i++) {
         for(j=0; j<NPTS; j++) {
             if(dx == 1) {
-                result += w[i]/2 * w[j]/2 * EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2);
+                result += w[i]/2 * w[j]/2
+                    * ( EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+
+
             } else if(dy == 1) {
-                result += w[i]/2 * w[j]/2 * EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2);
+                result += w[i]/2 * w[j]/2 
+                    * ( EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                
             } else {
-                result += w[i]/2 * w[j]/2 * EvalLin2D(b, func, (x[i]+1)/2, (x[j]+1)/2);
+                result += w[i]/2 * w[j]/2 
+                    * EvalLin2D(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                
             }
         }
     }

@@ -2,6 +2,8 @@
 #define INTEGRATE_H
 
 #include "basis.h"
+#include "mesh.h"
+#include "finite-element.h"
 
 double quad3(double (*)(double));
 double quad300(double (*)(double), double (*)(double));
@@ -11,6 +13,6 @@ double diff(double (*)(double), double);
 
 double diff2dx(basis*, int, double, double);
 double diff2dy(basis*, int, double, double);
-double quad2d3(basis*, int, int, int);
+double quad2d3(struct fe*, Elem2D*, int, int, int);
 
 #endif

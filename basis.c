@@ -90,7 +90,7 @@ basis* MakeQuadBasis(int dimension)
         b->dphi[1] = &dquad1d2;
         b->dphi[2] = &dquad1d3;
     } else {
-        fprintf(stderr, "Failed to allocate $lu bytes.\n", sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;

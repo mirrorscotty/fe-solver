@@ -6,6 +6,7 @@
 typedef struct {
     double dx;
     double dy;
+    vector** points;
 } Elem2D;
 
 typedef struct {
@@ -17,12 +18,14 @@ typedef struct {
     double y1;
     double y2;
 
-    Elem2D *elem;
+    Elem2D **elem;
     //double *dx, *dy;
 } Mesh2D;
 
 Mesh2D* GenerateUniformMesh2D(double, double, double, double, int, int);
 void DestroyMesh2D(Mesh2D*);
 vector* GetNodeCoordinates(Mesh2D*, int);
+Elem2D* CreateElem2D();
+void DestroyElem2D(Elem2D*);
 
 #endif

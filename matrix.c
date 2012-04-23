@@ -34,7 +34,7 @@ double val(matrix *A, int row, int col)
 {
     if((row >= mtxlen2(A)) ||  (col >= mtxlen1(A)) || (row < 0) || (col < 0)) {
         fprintf(stderr, "Error: index out of bounds. (%d, %d)\n", row, col);
-        return;
+        return NAN;
     }
     return A->array[row][col];
 }
@@ -115,7 +115,7 @@ matrix* mtxtrn(matrix *x)
 matrix* mtxmul(matrix *A, matrix *B)
 {
     int Ar, Ac, Br, Bc;
-    int i, j, k, l;
+    int i, j, k;
     matrix *C;
 
     C = NULL;
@@ -217,7 +217,7 @@ matrix* CalcMinor(matrix* A, int row, int col) {
 /* Borrowed from the same site as CalcMinor */
 double CalcDeterminant(matrix *p)
 {
-    int i, temp, order;
+    int i, order;
     double result;
     matrix *minor;
 
@@ -426,7 +426,7 @@ matrix* ParseMatrix(char* raw)
     strncpy(rows[i], tmp, LINELENGTH);
 
     /* All subsequent rows */
-    for(i=1; tmp = strtok(NULL, ";"); i++) {
+    for(i=1; (tmp = strtok(NULL, ";")); i++) {
         strncpy(rows[i], tmp, LINELENGTH);
     }
 
@@ -440,7 +440,7 @@ matrix* ParseMatrix(char* raw)
 
         ncols = 1;
         /* Rest of the columns */
-        for(j=1; tmp = strtok(NULL, ","); j++) {
+        for(j=1; (tmp = strtok(NULL, ",")); j++) {
             if(j>ncols-1)
                 ncols = j+1;
             values[i][j] = atof(tmp);
