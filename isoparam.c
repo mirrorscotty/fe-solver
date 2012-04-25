@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "isoparam.h"
 
 /* Macro to simplify the function definitions below. Otherwise, it'd be nearly
@@ -13,10 +14,10 @@
     { \
         basis *b; \
         int i; \
+        b = p->b; \
         int n = b->n; \
         double result = 0; \
 \
-        b = p->b; \
 \
         for(i=0; i<n; i++) { \
             result += EvalLin2D##GVAR(b, i, xi, eta) \

@@ -23,6 +23,10 @@ typedef struct {
 } Mesh2D;
 
 Mesh2D* GenerateUniformMesh2D(double, double, double, double, int, int);
+Mesh2D* GenerateRadialMesh(vector*, vector*, double, int, int);
+vector* MakeR(double, double, double, int);
+Mesh2D* MakeSpheroidMesh(double, double, int, int);
+
 void DestroyMesh2D(Mesh2D*);
 vector* GetNodeCoordinates(Mesh2D*, int);
 Elem2D* CreateElem2D();

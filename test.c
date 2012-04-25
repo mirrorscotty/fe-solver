@@ -5,15 +5,34 @@
 
 #include <stdio.h>
 #include "basis.h"
+#include "mesh.h"
+#include "isoparam.h"
+#include "finite-element.h"
 
 int main(int argc, char *argv[])
 {
-    basis *b;
-    b = MakeLinBasis(2);
+    Mesh2D *mesh;
+    struct fe *p;
+    int i = 5;
 
-    PrintNodeLocations(b);
+    //mesh = GenerateUniformMesh2D(0, 10, 0, 10, 10, 10);
+    mesh = MakeSpheroidMesh(.8, 5, 5, 5);
 
-    DestroyBasis(b);
+    p = CreateFE(MakeLinBasis(2), mesh, NULL, NULL, NULL); 
+
+    PrintVector(mesh->elem[i]->points[0]);
+    PrintVector(mesh->elem[i]->points[1]);
+    PrintVector(mesh->elem[i]->points[2]);
+    PrintVector(mesh->elem[i]->points[3]);
+
+    printf("dx/dxi = %g\n", IMapXXi(p, mesh->elem[i], .5, .5));
+    printf("dx/deta = %g\n", IMapXEta(p, mesh->elem[i], .5, .5));
+    printf("dy/dxi = %g\n", IMapYXi(p, mesh->elem[i], .5, .5));
+    printf("dy/deta = %g\n", IMapYEta(p, mesh->elem[i], .5, .5));
+
+    //MeshPrint(mesh);
+
+    DestroyMesh2D(mesh);
     return 0;
 }
 
