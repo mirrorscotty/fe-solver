@@ -7,8 +7,8 @@
 
 struct fe* CreateFE(basis* b,
                     Mesh2D* mesh,
-                    matrix* (*makej)(struct fe*, matrix*),
-                    matrix* (makef)(struct fe*, matrix*),
+                    matrix* (*makej)(struct fe*, Elem2D*, matrix*),
+                    matrix* (*makef)(struct fe*, Elem2D*, matrix*),
                     void (*applybcs)(struct fe*))
 {
     struct fe* problem;
@@ -44,8 +44,12 @@ void DestroyFE(struct fe* p)
  */
 matrix* AssembleJ(struct fe *problem, matrix *guess)
 {
-    Mesh2D *mesh = problem->mesh;
-    basis *b = problem->b;
+    Mesh2D *mesh;
+    mesh = problem->mesh;
+
+    basis *b;
+    b = problem->b;
+
     matrix *J, *j;
     int nx = mesh->nelemx;
     int ny = mesh->nelemy-1;
@@ -53,31 +57,37 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     int c, d;
     //int z = 0;
 
+    /* Determine the number of rows in the coefficient matrix. This expression
+     * needs to change to be able to accomodate biquad elements. */
     double rows = (mesh->nelemx+1)*(mesh->nelemy+1)*problem->nvars;
-    
+   
+    /* If an initial guess is not supplied, then the initial guess is all
+     * zeroes */
     if(!guess)
         guess = CreateMatrix(rows, 1);
 
+    /* Create the blank coefficient matrix */
     J = CreateMatrix(rows, rows);
 
+    /* Iterate through the list of elements in the mesh. Create the element
+     * matrix for each and then add it to the global matrix as appropriate */
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         /* Generate the element matrix for the specified element width */
-        j = problem->makej(problem, guess);
-        //j = CreateOnesMatrix(8, 8);
+        j = problem->makej(problem, mesh->elem[i], guess);
+
+        //j = CreateOnesMatrix(8, 8); // for testing purposes
 
         /* Add the values of the element matrix to the global matrix */
         for(x=0; x<b->n; x++) {
             for(y=0; y<b->n; y++) {
-                c = i+x+((x>1)?ny:0);
-                d = i+y+((y>1)?ny:0);
+                c = valV(mesh->elem[i]->map, x);
+                d = valV(mesh->elem[i]->map, y);
 
-                c += i/nx;
-                d += i/nx;
-
-                addval(J, val(j, x*2, y*2), c*2, d*2);
-                addval(J, val(j, x*2+1, y*2), c*2+1, d*2);
-                addval(J, val(j, x*2, y*2+1), c*2, d*2+1);
-                addval(J, val(j, x*2+1, y*2+1), c*2+1, d*2+1);
+                addval(J, val(j, x, y), c, d);
+                //addval(J, val(j, x*2, y*2), c*2, d*2);
+                //addval(J, val(j, x*2+1, y*2), c*2+1, d*2);
+                //addval(J, val(j, x*2, y*2+1), c*2, d*2+1);
+                //addval(J, val(j, x*2+1, y*2+1), c*2+1, d*2+1);
             }
         }
 
@@ -86,10 +96,12 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     }
     //J = problem->makej(problem, guess);
     problem->J = J;
+    mtxprnt(J);
 
     return J;
 }
 
+/* Assemble the load vector */
 matrix* AssembleF(struct fe *problem, matrix *guess)
 {
     Mesh2D *mesh = problem->mesh;
@@ -106,7 +118,7 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
 
     for(i=0; i<rows-r; i=i+r) {
         lguess = GetLocalGuess(problem, guess, i);
-        f = problem->makef(problem, lguess);
+        f = problem->makef(problem, mesh->elem[i], lguess);
         DestroyMatrix(lguess);
 
         for(j=0; j<b->n; j++) {
@@ -149,5 +161,7 @@ matrix* GetLocalGuess(struct fe *p, matrix *guess, int elem)
             setval(lguess, val(guess, p->nvars*(x+1+ny+1)+j, 0), 3*p->nvars+j, 0);
         }
     }
+
     return lguess;
 }
+

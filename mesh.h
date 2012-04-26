@@ -4,9 +4,10 @@
 #include "matrix.h"
 
 typedef struct {
-    double dx;
-    double dy;
+    double dx; /* TODO: Remove. Should no longer be used anywhere */
+    double dy; /* TODO: Remove. Should no longer be used anywhere */
     vector** points;
+    vector* map;
 } Elem2D;
 
 typedef struct {

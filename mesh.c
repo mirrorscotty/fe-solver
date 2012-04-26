@@ -70,6 +70,14 @@ Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax,
 
             setvalV(e->points[3], 0, ri1j1*cos(thetai1));
             setvalV(e->points[3], 1, ri1j1*sin(thetai1));
+
+            /* Determine the global node numbers for each node in the
+             * element. Used for matrix assembly. */
+            setvalV(e->map, 0, i*(Nr+1)+j);
+            setvalV(e->map, 2, (i+1)*(Nr+1)+j);
+            setvalV(e->map, 1, i*(Nr+1)+j+1);
+            setvalV(e->map, 3, (i+1)*(Nr+1)+j+1);
+            PrintVector(e->map);
         }
     }
 
@@ -153,19 +161,24 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
 
             setvalV(mesh->elem[z]->points[3], 0, x1+(j+1)*DeltaX);
             setvalV(mesh->elem[z]->points[3], 1, y1+(i+1)*DeltaY);
+
+            /* TODO: Add in node numbers */
+
         }
     }
 
     return mesh;
 }
 
+/* TODO: Remove this function. Or, at the very least, rewrite it so that it
+ * makes sense. */
 vector* GetNodeCoordinates(Mesh2D *mesh, int node)
 {
     vector *v;
     v = CreateVector(2);
 
     int x, y;
-    double dx, dy;
+    double dx = 0, dy = 0;
 
     x = node / (mesh->nelemy+1);
     y = node - x*(mesh->nelemy+1);
@@ -184,6 +197,7 @@ vector* GetNodeCoordinates(Mesh2D *mesh, int node)
     return v;
 }
 
+
 Elem2D* CreateElem2D()
 {
     Elem2D *elem;
@@ -193,6 +207,8 @@ Elem2D* CreateElem2D()
     elem->points = (vector**) calloc(4, sizeof(vector*));
     for(i=0; i<4; i++)
         elem->points[i] = CreateVector(2);
+
+    elem->map = CreateVector(4);
 
     return elem;
 }
@@ -204,6 +220,9 @@ void DestroyElem2D(Elem2D *elem)
     for(i=0; i<4; i++)
         DestroyVector(elem->points[i]);
     free(elem->points);
+    DestroyVector(elem->map);
+
+    free(elem);
 }
         
 void DestroyMesh2D(Mesh2D *mesh)

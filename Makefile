@@ -2,22 +2,29 @@ CC=gcc
 
 CFLAGS=-lm -Wall
 
-all: 2dlaplace
+all: spheroid 
 
 2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o
 	gcc -o 2dlaplace 2dlaplace.c integrate.c basis.c matrix.c mesh.c mtxsolver.c vector.c finite-element.c -lm -ggdb
 
 ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p1.o
 	$(CC) -o ce675p1 ce675p1.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o $(CFLAGS)
-#	gcc -o ce675p1 ce675p1.c integrate.c basis.c matrix.c mesh.c mtxsolver.c vector.c finite-element.c -lm -ggdb
+
+spheroid: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o
+	$(CC) -o spheroid integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o $(CFLAGS)
 
 clean:
-	rm -rf 2dlaplace ce675p1 *.o *~
+	rm -rf spheroid 2dlaplace ce675p1 *.o *~
+
+
 
 ce675p1.o: ce675p1.c
 
 2dlaplace.o: 2dlaplace.c
 	$(CC) -c 2dlaplace.c $(CFLAGS)
+
+spheroid.o: spheroid.c
+	$(CC) -c spheroid.c $(CFLAGS)
 
 integrate.o: integrate.c integrate.h
 	$(CC) -c integrate.c $(CFLAGS)
@@ -39,3 +46,7 @@ vector.o: vector.c matrix.h
 
 finite-element.o: finite-element.c finite-element.h
 	$(CC) -c finite-element.c $(CFLAGS)
+
+isoparam.o: isoparam.c isoparam.h
+	$(CC) -c isoparam.c $(CFLAGS)
+

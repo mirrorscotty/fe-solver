@@ -18,8 +18,8 @@ struct fe {
     int nvars; /* Number of variables being solved for. */
     double tol; /* Tolerance for the nonlinear solver */
     
-    matrix* (*makej)(struct fe*, matrix*);
-    matrix* (*makef)(struct fe*, matrix*);
+    matrix* (*makej)(struct fe*, Elem2D*, matrix*);
+    matrix* (*makef)(struct fe*, Elem2D*, matrix*);
     
     void (*applybcs)(struct fe*);
     
@@ -30,8 +30,8 @@ struct fe {
 
 struct fe* CreateFE(basis*,
                     Mesh2D*,
-                    matrix* (*)(struct fe*, matrix*),
-                    matrix* (*)(struct fe*, matrix*),
+                    matrix* (*)(struct fe*, Elem2D*, matrix*),
+                    matrix* (*)(struct fe*, Elem2D*, matrix*),
                     void (*)(struct fe*));
 
 void DestroyFE(struct fe*);
