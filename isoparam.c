@@ -20,7 +20,7 @@
 \
 \
         for(i=0; i<n; i++) { \
-            result += EvalLin2D##GVAR(b, i, xi, eta) \
+            result += b->Eval2D##GVAR(b, i, xi, eta) \
                 * valV(elem->points[i], LVAR); \
         } \
 \
@@ -55,7 +55,7 @@ double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
     n = b->n;
 
     for(i=0; i<n; i++)
-        x += EvalLin2D(b, i, xi, eta) * valV(elem->points[i], 0);
+        x += b->Eval2D(b, i, xi, eta) * valV(elem->points[i], 0);
 
     return x;
 }

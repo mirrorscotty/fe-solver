@@ -57,7 +57,7 @@ int IsOnInnerRadius(struct fe* p, int node)
     double tol = 1e-5;
     vector *v;
 
-    e = 0; /* Eccentricity */
+    e = .8; /* Eccentricity */
 
     b = 1;
     a = sqrt((1-e*e)*b*b);
@@ -122,6 +122,20 @@ void ApplyAllBCs(struct fe *p)
     ApplyEssentialBC(p, &IsOnOuterRadius, &OuterRadiusBC);
 }
 
+void PrintResults(struct fe *p, matrix *soln)
+{
+    matrix* tmp;
+    int i;
+    tmp = CreateMatrix(mtxlen2(soln), 3);
+    for(i=0; i<mtxlen2(soln); i++) {
+        setval(tmp, valV(p->mesh->nodes[i], 0), i, 0);
+        setval(tmp, valV(p->mesh->nodes[i], 1), i, 1);
+        setval(tmp, val(soln, i, 0), i, 2);
+    }
+    mtxprnt(tmp);
+    DestroyMatrix(tmp);
+    return;
+}
 
 int main(int argc, char *argv[])
 {
@@ -135,7 +149,7 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(2);
 
     /* Create a uniform mesh */
-    mesh = MakeSpheroidMesh(0, 5, 10, 10);
+    mesh = MakeSpheroidMesh(b, .8, 5, 10, 10);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     problem->nvars = 1;
@@ -143,7 +157,8 @@ int main(int argc, char *argv[])
     //E = SolveMatrixEquation(problem->J, problem->F);
     E = NLinSolve(problem, NULL);
 
-    mtxprnt(E);
+//    mtxprnt(E);
+    PrintResults(problem, E);
 
     DestroyFE(problem);
     DestroyMatrix(E);

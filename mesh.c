@@ -13,7 +13,7 @@ void MeshPrint(Mesh2D *mesh)
     printf("---------------------\n");
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         printf("Element #%d\n---------------------\n", i);
-        for(j=0; j<4; j++) {
+        for(j=0; j<len(mesh->elem[i]->map); j++) {
             PrintVector(mesh->elem[i]->points[j]);
         }
         puts("");
@@ -28,12 +28,19 @@ void MeshPrint(Mesh2D *mesh)
  * theta direction). The variable "thetamax" describes the portion of the
  * spheroid which is meshed, and Nr and Ntheta are the number of elements in the
  * r and theta directions, respectively.
+ *
+ * This whole function needs to be de-jankified. The whole multiplying i and j
+ * by two needs to go and the sqrt(b->n) should disappear as well.
  */
-Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax, 
+Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax, 
                            int Nr, int Ntheta)
 {
     int i, j, k, z;
+    int c, d;
     double ri, ri1, ri1j1, rij1, thetai, thetai1;
+    /* Just allocate enough for a BiQuad mesh since it's easy */
+    double r[3][3], theta[3]; 
+    int nnodes = b->n; /* Number of nodes per element */
 
     Elem2D *e;
     Mesh2D *mesh;
@@ -49,39 +56,38 @@ Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax,
     for(i=0; i<Nr; i++) {
         for(j=0; j<Ntheta; j++) {
             z = i*Nr+j; /* Element number */
-            mesh->elem[z] = CreateElem2D();
+            printf("%d\n", z);
+            mesh->elem[z] = CreateElem2D(b);
             e = mesh->elem[z];
 
-            ri = (valV(r1, j) - valV(r0, j))/Nr * i + valV(r0, j);
-            ri1 = (valV(r1, j) - valV(r0, j))/Nr * (i+1) + valV(r0, j);
-            rij1 = (valV(r1, j+1) - valV(r0, j+1))/Nr * (i) + valV(r0, j+1);
-            ri1j1 = (valV(r1, j+1) - valV(r0, j+1))/Nr * (i+1) + valV(r0, j+1);
+            for(c=0; c<sqrt(nnodes); c++) {
+                for(d=0; d<sqrt(nnodes); d++) {
+                    r[c][d] = (valV(r1, 2*j+d) - valV(r0, 2*j+d))/Nr/(sqrt(b->n)-b->overlap) * (2*i+c) + valV(r0, 2*j+d);
+                    theta[d] = thetamax/Ntheta/(sqrt(b->n)-b->overlap) * (2*j+d);
+                }
+            }
 
-            thetai = thetamax/Ntheta * j;
-            thetai1 = thetamax/Ntheta * (j+1);
-
-            setvalV(e->points[0], 0, ri*cos(thetai));
-            setvalV(e->points[0], 1, ri*sin(thetai));
-
-            setvalV(e->points[1], 0, ri1*cos(thetai));
-            setvalV(e->points[1], 1, ri1*sin(thetai));
-
-            setvalV(e->points[2], 0, rij1*cos(thetai1));
-            setvalV(e->points[2], 1, rij1*sin(thetai1));
-
-            setvalV(e->points[3], 0, ri1j1*cos(thetai1));
-            setvalV(e->points[3], 1, ri1j1*sin(thetai1));
+            for(c=0; c<sqrt(nnodes); c++) {
+                for(d=0; d<sqrt(nnodes); d++) {
+                    setvalV(e->points[(int) (sqrt(nnodes)*d+c)], 0, r[c][d]*cos(theta[d]));
+                    setvalV(e->points[(int) (sqrt(nnodes)*d+c)], 1, r[c][d]*sin(theta[d]));
+                }
+            }
 
             /* Determine the global node numbers for each node in the
              * element. Used for matrix assembly. */
+            /*
             setvalV(e->map, 0, (double) i*(Nr+1)+j);
             setvalV(e->map, 1, (double) (i+1)*(Nr+1)+j);
             setvalV(e->map, 2, (double) i*(Nr+1)+j+1);
             setvalV(e->map, 3, (double) (i+1)*(Nr+1)+j+1);
+            */
 
+            /*
             for(k=0;k<4;k++) {
                 mesh->nodes[(int) valV(e->map, k)] = e->points[k];
             }
+            */
         }
     }
 
@@ -90,15 +96,15 @@ Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax,
 }
 
 /* Make the R vectors for so that a radial mesh can be constructed. */
-vector* MakeR(double a, double b, double thetamax, int Ntheta)
+vector* MakeR(basis *bas, double a, double b, double thetamax, int Ntheta)
 {
     int i;
     double theta;
     vector *result;
 
-    result = CreateVector(Ntheta+1);
+    result = CreateVector(Ntheta+bas->n-bas->overlap);
 
-    for(i=0; i<=Ntheta; i++) {
+    for(i=0; i<=Ntheta+bas->n-bas->overlap; i++) {
         theta = thetamax/Ntheta*i;
         setvalV(result, i, 1/sqrt(pow(cos(theta), 2)/(a*a) + pow(sin(theta), 2)/(b*b)));
     }
@@ -107,7 +113,7 @@ vector* MakeR(double a, double b, double thetamax, int Ntheta)
     return result;
 }
 
-Mesh2D* MakeSpheroidMesh(double e, double r, int Nr, int Nt)
+Mesh2D* MakeSpheroidMesh(basis *bas, double e, double r, int Nr, int Nt)
 {
     Mesh2D *mesh;
     vector *r0, *r1;
@@ -115,10 +121,10 @@ Mesh2D* MakeSpheroidMesh(double e, double r, int Nr, int Nt)
     a = 1; /* Set the major axis of the spheroid to 1 */
     b = sqrt((1-e*e)*a*a); /* Calculate the minor axis from a and the 
                             * eccentricity */
-    r0 = MakeR(b, a, M_PI_2, Nt);
-    r1 = MakeR(r, r, M_PI_2, Nt);
+    r0 = MakeR(bas, b, a, M_PI_2, Nt);
+    r1 = MakeR(bas, r, r, M_PI_2, Nt);
 
-    mesh = GenerateRadialMesh(r0, r1, M_PI_2, Nr, Nt);
+    mesh = GenerateRadialMesh(bas, r0, r1, M_PI_2, Nr, Nt);
 
     DestroyVector(r0);
     DestroyVector(r1);
@@ -153,7 +159,7 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
     for(i=0; i<ny; i++) {
         for(j=0; j<nx; j++) {
             z = i*ny+j; // Abreviate the the index.
-            mesh->elem[z] = CreateElem2D();
+            mesh->elem[z] = CreateElem2D(NULL); /* DOESN"T WORK! */
 
             setvalV(mesh->elem[z]->points[0], 0, x1+j*DeltaX);
             setvalV(mesh->elem[z]->points[0], 1, y1+i*DeltaY);
@@ -201,17 +207,18 @@ vector* GetNodeCoordinates(Mesh2D *mesh, int node)
 }
 
 
-Elem2D* CreateElem2D()
+Elem2D* CreateElem2D(basis *b)
 {
     Elem2D *elem;
     int i;
+    int nnodes = b->n;
     elem = (Elem2D*) calloc(1, sizeof(Elem2D));
 
-    elem->points = (vector**) calloc(4, sizeof(vector*));
-    for(i=0; i<4; i++)
+    elem->points = (vector**) calloc(nnodes, sizeof(vector*));
+    for(i=0; i<nnodes; i++)
         elem->points[i] = CreateVector(2);
 
-    elem->map = CreateVector(4);
+    elem->map = CreateVector(nnodes);
 
     return elem;
 }
@@ -219,8 +226,8 @@ Elem2D* CreateElem2D()
 void DestroyElem2D(Elem2D *elem)
 {
     int i;
-    // 4 nodes per element.
-    for(i=0; i<4; i++)
+    // The length of the map is equal to the number of nodes
+    for(i=0; i<len(elem->map); i++)
         DestroyVector(elem->points[i]);
     free(elem->points);
     DestroyVector(elem->map);

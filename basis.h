@@ -1,13 +1,18 @@
 #ifndef BASIS_H
 #define BASIS_H
 
-typedef struct {
+struct _basis {
     int n; /* Number of functions in the basis */
     int overlap; /* Amount of overlap when assembling the global matricies */
     double (**phi)(double); /* Array of basis functions */
     double (**dphi)(double); /* First derivatives of the basis functions */
     int dim; /* Dimension of the problem */
-} basis;
+
+    double (*Eval2D)(struct _basis*, int, double, double);
+    double (*Eval2Dx)(struct _basis*, int, double, double);
+    double (*Eval2Dy)(struct _basis*, int, double, double);
+};
+typedef struct _basis basis;
 
 basis* MakeLinBasis(int);
 basis* MakeQuadBasis(int);
@@ -19,6 +24,10 @@ double EvalLin2D(basis*, int, double, double);
 double EvalLin2Dx(basis*, int, double, double);
 double EvalLin2Dy(basis*, int, double, double);
 double EvalBasis(basis*, ... );
+
+double EvalQuad2D(basis*, int, double, double);
+double EvalQuad2Dx(basis*, int, double, double);
+double EvalQuad2Dy(basis*, int, double, double);
 
 double lin1d1(double);
 double lin1d2(double);

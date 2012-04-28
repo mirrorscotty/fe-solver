@@ -141,9 +141,9 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
         for(j=0; j<NPTS; j++) {
             if(dx == 1) {
                 result += w[i]/2 * w[j]/2
-                    * ( EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * ( b->Eval2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    - EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
@@ -151,16 +151,16 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
 
             } else if(dy == 1) {
                 result += w[i]/2 * w[j]/2 
-                    * ( EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * ( b->Eval2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    - EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
             } else {
                 result += w[i]/2 * w[j]/2 
-                    * EvalLin2D(b, func, (x[i]+1)/2, (x[j]+1)/2)
+                    * b->Eval2D(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
@@ -174,11 +174,11 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
 double diff2dx(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
-    return (EvalLin2D(b, func, x+h, y) - EvalLin2D(b, func, x-h, y))/(2*h);
+    return (b->Eval2D(b, func, x+h, y) - b->Eval2D(b, func, x-h, y))/(2*h);
 }
 
 double diff2dy(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
-    return (EvalLin2D(b, func, x, y+h) - EvalLin2D(b, func, x, y-h))/(2*h);
+    return (b->Eval2D(b, func, x, y+h) - b->Eval2D(b, func, x, y-h))/(2*h);
 }

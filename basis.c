@@ -38,8 +38,8 @@ basis* MakeLinBasis(int dimension)
     }
     b->phi = b->dphi = NULL;
 
-    b->n = 2 * dimension;
-    b->overlap = 1 * dimension;
+    b->n = pow(2,  dimension);
+    b->overlap = pow(1, dimension);
 
     b->phi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
     b->dphi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);
@@ -59,6 +59,17 @@ basis* MakeLinBasis(int dimension)
 
     b->dim = dimension;
 
+    /* Make sure the basis can evaluate itself properly */
+    if(b->dim == 2) {
+        b->Eval2D = &EvalLin2D;
+        b->Eval2Dx = &EvalLin2Dx;
+        b->Eval2Dy = &EvalLin2Dy;
+    } else {
+        b->Eval2D = NULL;
+        b->Eval2Dx = NULL;
+        b->Eval2Dy = NULL;
+    }
+
     return b;
 }
 
@@ -72,8 +83,8 @@ basis* MakeQuadBasis(int dimension)
     }
     b->phi = b->dphi = NULL;
 
-    b->n = 3 * dimension;
-    b->overlap = 1 * dimension;
+    b->n = pow(3, dimension);
+    b->overlap = pow(1, dimension);
 
     b->phi = (double(**)(double)) calloc(b->n, sizeof(double(**)(double)));
     b->dphi = (double(**)(double)) calloc(b->n, sizeof(double(**)(double)));
@@ -94,6 +105,16 @@ basis* MakeQuadBasis(int dimension)
     }
 
     b->dim = dimension;
+
+    if(b->dim == 2) {
+        b->Eval2D = &EvalQuad2D;
+        b->Eval2Dx = &EvalQuad2Dx;
+        b->Eval2Dy = &EvalQuad2Dy;
+    } else {
+        b->Eval2D = NULL;
+        b->Eval2Dx = NULL;
+        b->Eval2Dy = NULL;
+    }
 
     return b;
 }
@@ -176,6 +197,30 @@ double EvalLin2Dy(basis *b, int func, double x, double y)
     int i, j;
     i = (func>1)?1:0;
     j = func%2;
+    return b->phi[i](x) * b->dphi[j](y);
+}
+
+double EvalQuad2D(basis *b, int func, double x, double y)
+{
+    int i, j;
+    i = (func>5)?2:((func>2)?1:0);
+    j = func%3;
+    return b->phi[i](x) * b->phi[j](y);
+}
+
+double EvalQuad2Dx(basis *b, int func, double x, double y)
+{
+    int i, j;
+    i = (func>5)?2:((func>2)?1:0);
+    j = func%3;
+    return b->dphi[i](x) * b->phi[j](y);
+}
+
+double EvalQuad2Dy(basis *b, int func, double x, double y)
+{
+    int i, j;
+    i = (func>5)?2:((func>2)?1:0);
+    j = func%3;
     return b->phi[i](x) * b->dphi[j](y);
 }
 

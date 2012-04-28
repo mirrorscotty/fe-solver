@@ -1,6 +1,6 @@
 CC=gcc
 
-CFLAGS=-lm -Wall -ggdb -fstack-protector-all
+CFLAGS=-lm -Wall -ggdb
 
 all: spheroid 
 
