@@ -52,7 +52,6 @@ vector* addV(vector*, vector*);
 vector* subtractV(vector*, vector*);
 double dotV(vector*, vector*);
 vector* scalarmultV(double, vector*);
-
-
+int equalV(vector*, vector*);
 
 #endif

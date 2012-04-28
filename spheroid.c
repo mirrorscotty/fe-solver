@@ -50,53 +50,76 @@ matrix* CreateElementLoad(struct fe *p, Elem2D *e, matrix *guess) {
     return f;
 }
 
-/* Simple function to alter J and F so that Dirichlet boundary conditions are
- * imposed on both ends of the domain. In this case, "leftbc" is imposed at
- * c = 0, and rightbc is imposed at c = 1.
- */
-void ApplyBC(matrix* J, matrix* F, basis *b, int node, double value)
+int IsOnInnerRadius(struct fe* p, int node)
 {
-    int rows = mtxlen2(J);
-    int i;
-    int o = b->overlap;
+    double r, theta, x, y;
+    double f, a, b, e;
+    double tol = 1e-5;
+    vector *v;
 
-    for(i=0;i<rows; i++) {
-        setval(J, 0, node, i);
-        //setval(J, 0, rows-o, i);
+    e = 0; /* Eccentricity */
+
+    b = 1;
+    a = sqrt((1-e*e)*b*b);
+
+    v = p->mesh->nodes[node];
+    x = valV(v, 0);
+    y = valV(v, 1);
+
+    theta = atan(y/x);
+    r = sqrt(x*x+y*y);
+
+    f = 1/sqrt(pow(cos(theta), 2)/(a*a) + pow(sin(theta), 2)/(b*b));
+
+    if(fabs(f-r) < tol) {
+        return 1;
+        }
+    else
+        return 0;
+}
+
+int IsOnOuterRadius(struct fe* p, int node)
+{
+    double r, x, y;
+    double tol = 1e-5;
+    vector *v;
+
+    double f = 5; /* r* */
+
+    v = p->mesh->nodes[node];
+
+    x = valV(v, 0);
+    y = valV(v, 1);
+
+    r = sqrt(x*x + y*y);
+
+    if(fabs(f-r) < tol) {
+        return 1;
     }
+    else
+        return 0;
+}
 
-    setval(J, 1, node, node);
+double InnerRadiusBC(struct fe *p, int row)
+{
+    return 1;
+}
 
-    setval(F, value, node, 0);
+double OuterRadiusBC(struct fe *p, int row)
+{
+    double x = valV(p->mesh->nodes[row], 0);
+    double y = valV(p->mesh->nodes[row], 1);
+
+    return 1/sqrt(x*x+y*y);
 }
 
 void ApplyAllBCs(struct fe *p)
 {
-    matrix *J, *F;
-    basis *b;
-    Mesh2D *mesh;
-    
-    b = p->b;
-    mesh = p->mesh;
-    F = p->F;
-    J = p->J;
-    
-    int i;
-    vector *v;
+    /* BC at r = the surface */
+    ApplyEssentialBC(p, &IsOnInnerRadius, &InnerRadiusBC);
 
-    // BC at y=0
-    for(i=0; i<mesh->nelemx+1; i++) {
-        v = GetNodeCoordinates(mesh, i);
-        ApplyBC(J, F, b, i, valV(v,1)*(2-valV(v,1)) );
-        DestroyVector(v);
-    }
-
-    // BC at x=0
-    for(i=0; i< (mesh->nelemx+1)*(mesh->nelemy+1); i+= (mesh->nelemy+1)) {
-        v = GetNodeCoordinates(mesh, i);
-        ApplyBC(J, F, b, i, valV(v,0)*(valV(v,0)-2) );
-        DestroyVector(v);
-    }
+    /* BC at r = r* */
+    ApplyEssentialBC(p, &IsOnOuterRadius, &OuterRadiusBC);
 }
 
 
@@ -112,7 +135,7 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(2);
 
     /* Create a uniform mesh */
-    mesh = MakeSpheroidMesh(0, 5, 2, 2);
+    mesh = MakeSpheroidMesh(0, 5, 10, 10);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     problem->nvars = 1;
@@ -122,21 +145,8 @@ int main(int argc, char *argv[])
 
     mtxprnt(E);
 
-    //J = AssembleJ(&CreateElementMatrix, b, mesh, Pe);
-    //J = AssembleJ(&testelem, b, mesh, Pe);
-
-    //F = AssembleF(&CreateElementLoad, b, mesh, Pe);
-    //F = AssembleF(&testload, b, mesh, Pe);
-
-    //ApplyBoundaryConditions(J, F, b, 0, 1);
-    //ApplyBoundaryConditions(J, F, b, 2, 1);
-    
-    //E = SolveMatrixEquation(J, F);
-
-    /* Clean up the allocated memory */
-    //DestroyMatrix(J);
-    //DestroyMatrix(F);
-    //DestroyMatrix(E);
+    DestroyFE(problem);
+    DestroyMatrix(E);
 
     return 0;
 }

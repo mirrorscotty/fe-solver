@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "matrix.h"
 
@@ -28,6 +29,7 @@ void PrintVector(vector *v)
 {
     int i;
 
+    printf("Length = %d ", len(v));
     printf("[");
     for(i=0; i<len(v)-1; i++) {
         printf(" %g,", valV(v, i));
@@ -115,5 +117,25 @@ vector* scalarmultV(double k, vector *v)
     }
 
     return c;
+}
+
+int equalV(vector *a, vector *b)
+{
+    int i;
+    double tol = 1e-10;
+
+    if(a == b)
+        return 1;
+
+    if(len(a) != len(b)) {
+        return 0;
+    }
+
+    for(i=0; i<len(a); i++) {
+        if(fabs(valV(a, i) - valV(b, i)) >= tol)
+            return 0;
+    }
+
+    return 1;
 }
 

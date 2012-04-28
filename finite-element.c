@@ -51,8 +51,6 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     b = problem->b;
 
     matrix *J, *j;
-    int nx = mesh->nelemx;
-    int ny = mesh->nelemy-1;
     int i, x, y;
     int c, d;
     //int z = 0;
@@ -73,6 +71,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
      * matrix for each and then add it to the global matrix as appropriate */
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         /* Generate the element matrix for the specified element width */
+    //MeshPrint(mesh);
         j = problem->makej(problem, mesh->elem[i], guess);
 
         //j = CreateOnesMatrix(8, 8); // for testing purposes
@@ -96,7 +95,6 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     }
     //J = problem->makej(problem, guess);
     problem->J = J;
-    mtxprnt(J);
 
     return J;
 }
@@ -165,3 +163,26 @@ matrix* GetLocalGuess(struct fe *p, matrix *guess, int elem)
     return lguess;
 }
 
+/* Function to apply Dirchlet boundary conditions. The second argument is a
+   function that determines whether or not the boundary condition is applied
+   for the current row (node). If the function evaluates as true, then the BC
+   is applied. The value at that node is then set to whatever the other
+   function returns. */
+void ApplyEssentialBC(struct fe* p,
+                      int (*cond)(struct fe*, int),
+                      double (*BC)(struct fe*, int))
+{
+    int i, j;
+    /* Loop through the rows */
+    for(i=0; i<mtxlen2(p->J); i++) {
+        /* Check to see if the BC should be applied */
+        if(cond(p, i)) {
+            /* Zero out the row */
+            for(j=0; j<mtxlen2(p->J); j++) 
+                setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
+            /* Set the appropriate value in the load vector */
+            setval(p->F, BC(p, i), i, 0);
+        }
+    }
+    return;
+}

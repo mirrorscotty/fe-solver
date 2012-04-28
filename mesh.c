@@ -32,7 +32,7 @@ void MeshPrint(Mesh2D *mesh)
 Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax, 
                            int Nr, int Ntheta)
 {
-    int i, j, z;
+    int i, j, k, z;
     double ri, ri1, ri1j1, rij1, thetai, thetai1;
 
     Elem2D *e;
@@ -44,6 +44,7 @@ Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax,
     mesh->nelemy = Nr;
 
     mesh->elem = (Elem2D**) calloc(Nr*Ntheta, sizeof(Elem2D*));
+    mesh->nodes = (vector**) calloc((Nr+1)*(Ntheta+1), sizeof(vector*));
 
     for(i=0; i<Nr; i++) {
         for(j=0; j<Ntheta; j++) {
@@ -73,14 +74,18 @@ Mesh2D* GenerateRadialMesh(vector *r0, vector *r1, double thetamax,
 
             /* Determine the global node numbers for each node in the
              * element. Used for matrix assembly. */
-            setvalV(e->map, 0, i*(Nr+1)+j);
-            setvalV(e->map, 2, (i+1)*(Nr+1)+j);
-            setvalV(e->map, 1, i*(Nr+1)+j+1);
-            setvalV(e->map, 3, (i+1)*(Nr+1)+j+1);
-            PrintVector(e->map);
+            setvalV(e->map, 0, (double) i*(Nr+1)+j);
+            setvalV(e->map, 1, (double) (i+1)*(Nr+1)+j);
+            setvalV(e->map, 2, (double) i*(Nr+1)+j+1);
+            setvalV(e->map, 3, (double) (i+1)*(Nr+1)+j+1);
+
+            for(k=0;k<4;k++) {
+                mesh->nodes[(int) valV(e->map, k)] = e->points[k];
+            }
         }
     }
 
+    //MeshPrint(mesh);
     return mesh;
 }
 
@@ -187,8 +192,6 @@ vector* GetNodeCoordinates(Mesh2D *mesh, int node)
     //dx = mesh->elem[0].dx;
     //dy = mesh->elem[0].dy;
 
-//    printf("Node: %g, %g\n", dx*x, dy*y);
-
     setvalV(v, 0, x*dx);
     setvalV(v, 1, y*dy);
 
@@ -227,6 +230,10 @@ void DestroyElem2D(Elem2D *elem)
         
 void DestroyMesh2D(Mesh2D *mesh)
 {
+    int i;
+    for(i=0; i<mesh->nelemx*mesh->nelemy; i++)
+        free(mesh->elem[i]);
+    free(mesh->nodes);
     free(mesh->elem);
     free(mesh);
 }

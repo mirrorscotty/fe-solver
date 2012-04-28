@@ -45,3 +45,17 @@ double IMapJ(struct fe *p, Elem2D *elem, double xi, double eta)
         * IMapXEta(p, elem, xi, eta);
 }
 
+double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
+{
+    double x = 0;
+    basis *b;
+    int n, i;
+
+    b = p->b;
+    n = b->n;
+
+    for(i=0; i<n; i++)
+        x += EvalLin2D(b, i, xi, eta) * valV(elem->points[i], 0);
+
+    return x;
+}

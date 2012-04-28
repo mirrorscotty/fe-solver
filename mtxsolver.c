@@ -68,8 +68,19 @@ int CheckConverg(struct fe *problem, matrix *dx)
     return 1;
 }
     
+matrix* LinSolve(struct fe *problem)
+{
+    matrix *guess;
+    int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
+    guess = CreateMatrix(rows*problem->nvars, 1);
+    AssembleJ(problem, guess);
+    problem->F = CreateMatrix(rows*problem->nvars, 1);
+    problem->applybcs(problem);
+    return SolveMatrixEquation(problem->J, problem->F);
+}
 
-matrix* NLinSolve(struct fe *problem, matrix *guess) {
+matrix* NLinSolve(struct fe *problem, matrix *guess)
+{
     matrix *dx; /* How much to update the guess by */
     matrix *newguess;
     int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);

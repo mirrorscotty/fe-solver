@@ -145,7 +145,8 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
                     * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - EvalLin2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
 
 
             } else if(dy == 1) {
@@ -154,12 +155,14 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - EvalLin2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
             } else {
                 result += w[i]/2 * w[j]/2 
                     * EvalLin2D(b, func, (x[i]+1)/2, (x[j]+1)/2)
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
             }
         }

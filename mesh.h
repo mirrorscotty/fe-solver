@@ -4,8 +4,8 @@
 #include "matrix.h"
 
 typedef struct {
-    double dx; /* TODO: Remove. Should no longer be used anywhere */
-    double dy; /* TODO: Remove. Should no longer be used anywhere */
+    //double dx; /* TODO: Remove. Should no longer be used anywhere */
+    //double dy; /* TODO: Remove. Should no longer be used anywhere */
     vector** points;
     vector* map;
 } Elem2D;
@@ -20,6 +20,7 @@ typedef struct {
     double y2;
 
     Elem2D **elem;
+    vector **nodes;
     //double *dx, *dy;
 } Mesh2D;
 
@@ -29,6 +30,7 @@ vector* MakeR(double, double, double, int);
 Mesh2D* MakeSpheroidMesh(double, double, int, int);
 
 void DestroyMesh2D(Mesh2D*);
+void MeshPrint(Mesh2D*);
 vector* GetNodeCoordinates(Mesh2D*, int);
 Elem2D* CreateElem2D();
 void DestroyElem2D(Elem2D*);
