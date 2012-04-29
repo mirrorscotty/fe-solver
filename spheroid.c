@@ -22,8 +22,8 @@ matrix* CreateElementMatrix(struct fe *p, Elem2D* e, matrix *guess)
 
     for(i=0; i<b->n; i++) {
         for(j=0; j<b->n; j++) {
-            value = quad2d3(p, e, i, 1, 0) * quad2d3(p, e, j, 1, 0);
-            value += quad2d3(p, e, i, 0, 1) * quad2d3(p, e, j, 0, 1);
+            value = quad2d32d3(p, e, i, j, 1, 0);
+            value += quad2d32d3(p, e, i, j, 0, 1);
             setval(m, value, i, j);
         }
     }
@@ -57,7 +57,7 @@ int IsOnInnerRadius(struct fe* p, int node)
     double tol = 1e-5;
     vector *v;
 
-    e = .8; /* Eccentricity */
+    e = 0; /* Eccentricity */
 
     b = 1;
     a = sqrt((1-e*e)*b*b);
@@ -146,22 +146,21 @@ int main(int argc, char *argv[])
     
     struct fe* problem;
 
-    b = MakeLinBasis(2);
+    b = MakeQuadBasis(2);
 
     /* Create a uniform mesh */
-    mesh = MakeSpheroidMesh(b, .8, 5, 10, 10);
+    mesh = MakeSpheroidMesh(b, 0, 5, 2, 2);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     problem->nvars = 1;
     
-    //E = SolveMatrixEquation(problem->J, problem->F);
-    E = NLinSolve(problem, NULL);
+    E = LinSolve(problem);
 
 //    mtxprnt(E);
     PrintResults(problem, E);
 
     DestroyFE(problem);
-    DestroyMatrix(E);
+    //DestroyMatrix(E);
 
     return 0;
 }

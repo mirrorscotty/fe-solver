@@ -13,6 +13,7 @@ void MeshPrint(Mesh2D *mesh)
     printf("---------------------\n");
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         printf("Element #%d\n---------------------\n", i);
+    PrintVector(mesh->elem[i]->map);
         for(j=0; j<len(mesh->elem[i]->map); j++) {
             PrintVector(mesh->elem[i]->points[j]);
         }
@@ -37,7 +38,7 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
 {
     int i, j, k, z;
     int c, d;
-    double ri, ri1, ri1j1, rij1, thetai, thetai1;
+    //double ri, ri1, ri1j1, rij1, thetai, thetai1;
     /* Just allocate enough for a BiQuad mesh since it's easy */
     double r[3][3], theta[3]; 
     int nnodes = b->n; /* Number of nodes per element */
@@ -51,12 +52,11 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
     mesh->nelemy = Nr;
 
     mesh->elem = (Elem2D**) calloc(Nr*Ntheta, sizeof(Elem2D*));
-    mesh->nodes = (vector**) calloc((Nr+1)*(Ntheta+1), sizeof(vector*));
+    mesh->nodes = (vector**) calloc((2*Nr+1)*(2*Ntheta+1), sizeof(vector*));
 
     for(i=0; i<Nr; i++) {
         for(j=0; j<Ntheta; j++) {
             z = i*Nr+j; /* Element number */
-            printf("%d\n", z);
             mesh->elem[z] = CreateElem2D(b);
             e = mesh->elem[z];
 
@@ -64,34 +64,34 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
                 for(d=0; d<sqrt(nnodes); d++) {
                     r[c][d] = (valV(r1, 2*j+d) - valV(r0, 2*j+d))/Nr/(sqrt(b->n)-b->overlap) * (2*i+c) + valV(r0, 2*j+d);
                     theta[d] = thetamax/Ntheta/(sqrt(b->n)-b->overlap) * (2*j+d);
+                    printf("c=%d, d=%d, r=%g, theta=%g\n", c, d, r[c][d], theta[d]);
                 }
             }
 
             for(c=0; c<sqrt(nnodes); c++) {
                 for(d=0; d<sqrt(nnodes); d++) {
-                    setvalV(e->points[(int) (sqrt(nnodes)*d+c)], 0, r[c][d]*cos(theta[d]));
-                    setvalV(e->points[(int) (sqrt(nnodes)*d+c)], 1, r[c][d]*sin(theta[d]));
+                    setvalV(e->points[(int) (sqrt(nnodes)*c+d)], 0, r[c][d]*cos(theta[d]));
+                    setvalV(e->points[(int) (sqrt(nnodes)*c+d)], 1, r[c][d]*sin(theta[d]));
                 }
             }
 
             /* Determine the global node numbers for each node in the
              * element. Used for matrix assembly. */
-            /*
-            setvalV(e->map, 0, (double) i*(Nr+1)+j);
-            setvalV(e->map, 1, (double) (i+1)*(Nr+1)+j);
-            setvalV(e->map, 2, (double) i*(Nr+1)+j+1);
-            setvalV(e->map, 3, (double) (i+1)*(Nr+1)+j+1);
-            */
 
-            /*
-            for(k=0;k<4;k++) {
+            for(c=0; c<sqrt(nnodes); c++) {
+                for(d=0; d<sqrt(nnodes); d++) {
+                    setvalV(e->map, sqrt(nnodes)*c+d, (double) (2*i+c)*(2*Nr+1)+2*j+d);
+                    PrintVector(e->map);
+                }
+            }
+
+            for(k=0;k<b->n;k++) {
                 mesh->nodes[(int) valV(e->map, k)] = e->points[k];
             }
-            */
         }
     }
 
-    //MeshPrint(mesh);
+    MeshPrint(mesh);
     return mesh;
 }
 
@@ -102,12 +102,14 @@ vector* MakeR(basis *bas, double a, double b, double thetamax, int Ntheta)
     double theta;
     vector *result;
 
-    result = CreateVector(Ntheta+bas->n-bas->overlap);
+    result = CreateVector(2*Ntheta+1);
 
-    for(i=0; i<=Ntheta+bas->n-bas->overlap; i++) {
-        theta = thetamax/Ntheta*i;
+    for(i=0; i<=2*Ntheta+1; i++) {
+        theta = thetamax/Ntheta/2*i;
         setvalV(result, i, 1/sqrt(pow(cos(theta), 2)/(a*a) + pow(sin(theta), 2)/(b*b)));
     }
+
+    PrintVector(result);
 
 
     return result;
@@ -218,6 +220,7 @@ Elem2D* CreateElem2D(basis *b)
     for(i=0; i<nnodes; i++)
         elem->points[i] = CreateVector(2);
 
+    printf("nnodes = %d\n", nnodes);
     elem->map = CreateVector(nnodes);
 
     return elem;

@@ -11,7 +11,7 @@ double square(double x) {
 //	printf("%1.10f", quad300(&square, &square));
 //}
 //
-#define NPTS 5 // Number of Gauss points to use
+#define NPTS 3 // Number of Gauss points to use
 
 double x3[] = {-0.774596669241483,
                 0.,
@@ -133,8 +133,8 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
     basis *b;
     double result = 0;
     double *x, *w;
-    x = x5;
-    w = w5;
+    x = x3;
+    w = w3;
     b = p->b;
 
     for(i=0; i<NPTS; i++) {
@@ -170,7 +170,72 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
 
     return result;
 }
-            
+
+/* TODO: Make this function call more consise */
+double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int dy)
+{
+    int i, j;
+    basis *b;
+    double result = 0;
+    double tmp1, tmp2;
+    double *x, *w;
+    x = x3;
+    w = w3;
+    b = p->b;
+
+    for(i=0; i<NPTS; i++) {
+        for(j=0; j<NPTS; j++) {
+            if(dx == 1) {
+                tmp1 += w[i]/2 * w[j]/2
+                    * ( b->Eval2Dx(b, func1, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dy(b, func1, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                tmp2 += w[i]/2 * w[j]/2
+                    * ( b->Eval2Dx(b, func2, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dy(b, func2, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+
+            } else if(dy == 1) {
+                tmp1 += w[i]/2 * w[j]/2 
+                    * ( b->Eval2Dy(b, func1, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dx(b, func1, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                
+                tmp2 += w[i]/2 * w[j]/2 
+                    * ( b->Eval2Dy(b, func2, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    - b->Eval2Dx(b, func2, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                
+            } else {
+                tmp1 += w[i]/2 * w[j]/2 
+                    * b->Eval2D(b, func1, (x[i]+1)/2, (x[j]+1)/2)
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                
+                tmp2 += w[i]/2 * w[j]/2 
+                    * b->Eval2D(b, func2, (x[i]+1)/2, (x[j]+1)/2)
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
+                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+            }
+            result += tmp1*tmp2;
+        }
+    }
+
+    return result;
+}
+
 double diff2dx(basis *b, int func, double x, double y)
 {
     double h = 1e-14;

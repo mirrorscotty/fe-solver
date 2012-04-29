@@ -57,7 +57,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
 
     /* Determine the number of rows in the coefficient matrix. This expression
      * needs to change to be able to accomodate biquad elements. */
-    double rows = (mesh->nelemx+1)*(mesh->nelemy+1)*problem->nvars;
+    double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
    
     /* If an initial guess is not supplied, then the initial guess is all
      * zeroes */
