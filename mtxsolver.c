@@ -72,6 +72,7 @@ matrix* LinSolve(struct fe *problem)
 {
     matrix *guess;
     int rows = (2*problem->mesh->nelemx+1)*(2*problem->mesh->nelemy+1);
+    //int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
     guess = CreateMatrix(rows*problem->nvars, 1);
     AssembleJ(problem, guess);
     problem->F = CreateMatrix(rows*problem->nvars, 1);

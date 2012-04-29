@@ -4,8 +4,8 @@ CFLAGS=-lm -Wall -ggdb
 
 all: spheroid 
 
-2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o
-	gcc -o 2dlaplace 2dlaplace.c integrate.c basis.c matrix.c mesh.c mtxsolver.c vector.c finite-element.c -lm -ggdb
+2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o isoparam.o
+	gcc -o 2dlaplace 2dlaplace.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o -lm -ggdb
 
 ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p1.o
 	$(CC) -o ce675p1 ce675p1.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o $(CFLAGS)

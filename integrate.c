@@ -165,6 +165,11 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
             }
+            printf("i = %d, j = %d, result = %g, XXi = %g, XEta = %g, J = %g\n",
+                    i, j, result,
+                    IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2),
+                    IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2),
+                    IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2));
         }
     }
 
@@ -177,7 +182,7 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
     int i, j;
     basis *b;
     double result = 0;
-    double tmp1, tmp2;
+    double tmp1 = 0, tmp2 = 0;
     double *x, *w;
     x = x3;
     w = w3;
@@ -186,50 +191,53 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
     for(i=0; i<NPTS; i++) {
         for(j=0; j<NPTS; j++) {
             if(dx == 1) {
-                tmp1 += w[i]/2 * w[j]/2
+                tmp1 += 1
                     * ( b->Eval2Dx(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dy(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                tmp2 += w[i]/2 * w[j]/2
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                tmp2 += 1
                     * ( b->Eval2Dx(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYEta(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dy(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapYXi(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
 
             } else if(dy == 1) {
-                tmp1 += w[i]/2 * w[j]/2 
+                tmp1 += 1
                     * ( b->Eval2Dy(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dx(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
-                tmp2 += w[i]/2 * w[j]/2 
+                tmp2 += 1
                     * ( b->Eval2Dy(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dx(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
-                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
-                    * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+                    * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
             } else {
-                tmp1 += w[i]/2 * w[j]/2 
+                tmp1 += 1
                     * b->Eval2D(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
                 
-                tmp2 += w[i]/2 * w[j]/2 
+                tmp2 += 1
                     * b->Eval2D(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
             }
-            result += tmp1*tmp2;
+            result += w[i]/2 * w[j]/2 * tmp1*tmp2 * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
+            tmp1 = 0;
+            tmp2 = 0;
+            //printf("i = %d, j = %d, result = %g, XXi = %g, XEta = %g, J = %g\n",
+            //        i, j, result,
+            //        IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2),
+            //        IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2),
+            //        IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2));
         }
     }
 

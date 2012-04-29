@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     b = MakeQuadBasis(2);
 
     /* Create a uniform mesh */
-    mesh = MakeSpheroidMesh(b, 0, 5, 2, 2);
+    mesh = MakeSpheroidMesh(b, 0, 5, 10, 10);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     problem->nvars = 1;

@@ -7,8 +7,10 @@
 #include "basis.h"
 #include "mesh.h"
 #include "isoparam.h"
+#include "integrate.h"
 #include "finite-element.h"
 
+/*
 int main(int argc, char *argv[])
 {
     Mesh2D *mesh;
@@ -19,7 +21,6 @@ int main(int argc, char *argv[])
 
     //mesh = GenerateUniformMesh2D(0, 10, 0, 10, 10, 10);
     mesh = MakeSpheroidMesh(p->b, 0, 5, 5, 5);
-/*
     PrintVector(mesh->elem[i]->points[0]);
     PrintVector(mesh->elem[i]->points[1]);
     PrintVector(mesh->elem[i]->points[2]);
@@ -29,7 +30,6 @@ int main(int argc, char *argv[])
     printf("dx/deta = %g\n", IMapXEta(p, mesh->elem[i], .5, .5));
     printf("dy/dxi = %g\n", IMapYXi(p, mesh->elem[i], .5, .5));
     printf("dy/deta = %g\n", IMapYEta(p, mesh->elem[i], .5, .5));
-*/
     MeshPrint(mesh);
 
     DestroyMesh2D(mesh);
@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+*/
 
 /*
 int main(int argc, char *argv[])
@@ -48,6 +49,18 @@ int main(int argc, char *argv[])
     return 0;
 }
 */
+
+int main()
+{
+    Mesh2D *mesh;
+    struct fe *p;
+    mesh = GenerateUniformMesh2D(0, 1, 0, 1,
+                                 1, 1);
+    p = CreateFE(MakeLinBasis(2), mesh, NULL, NULL, NULL);
+    printf("%g\n", quad2d32d3(p, mesh->elem[0], 0, 0, 0, 1));
+    return 0;
+}
+
 
 /* Verify that the node locations are where they should be. Just prints out the
  * values of the four basis functions for a bilinear element at each of the four

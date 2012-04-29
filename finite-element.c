@@ -57,7 +57,9 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
 
     /* Determine the number of rows in the coefficient matrix. This expression
      * needs to change to be able to accomodate biquad elements. */
+    //double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
     double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
+
    
     /* If an initial guess is not supplied, then the initial guess is all
      * zeroes */
@@ -71,8 +73,8 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
      * matrix for each and then add it to the global matrix as appropriate */
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         /* Generate the element matrix for the specified element width */
-    //MeshPrint(mesh);
         j = problem->makej(problem, mesh->elem[i], guess);
+        mtxprnt(j);
 
         //j = CreateOnesMatrix(8, 8); // for testing purposes
 
@@ -110,7 +112,7 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
     int r = b->n - b->overlap;
 
     /* Determine the number of rows required for the global matrix */
-    rows = (mesh->nelemx+1)*(mesh->nelemy+1);
+    rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1);
 
     F = CreateMatrix(rows, 1);
 

@@ -138,13 +138,14 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
                               double y1, double y2,
                               int nx, int ny)
 {
-    int i, j, z;
+    int i, j, k, z;
     double DeltaX, DeltaY;
     DeltaX = (x2-x1)/nx;
     DeltaY = (y2-y1)/ny;
 
     Mesh2D *mesh;
     mesh = (Mesh2D*) calloc(1, sizeof(Mesh2D));
+    Elem2D *e;
 
     mesh->x1 = x1;
     mesh->x2 = x2;
@@ -155,27 +156,39 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
     mesh->nelemy = ny;
 
     mesh->elem = (Elem2D**) calloc(nx*ny, sizeof(Elem2D*));
+    mesh->nodes = (vector**) calloc((nx+1)*(ny+1), sizeof(vector*));
 
     /* TODO: automatically change the direction in which the elements are
      * numbered for maximum efficiency. */
     for(i=0; i<ny; i++) {
         for(j=0; j<nx; j++) {
             z = i*ny+j; // Abreviate the the index.
-            mesh->elem[z] = CreateElem2D(NULL); /* DOESN"T WORK! */
+            /* TODO: Fix the hack! */
+            mesh->elem[z] = CreateElem2D(MakeLinBasis(2));
+            e=mesh->elem[z];
 
             setvalV(mesh->elem[z]->points[0], 0, x1+j*DeltaX);
             setvalV(mesh->elem[z]->points[0], 1, y1+i*DeltaY);
 
             setvalV(mesh->elem[z]->points[1], 0, x1+j*DeltaX);
             setvalV(mesh->elem[z]->points[1], 1, y1+(i+1)*DeltaY);
-            
+
             setvalV(mesh->elem[z]->points[2], 0, x1+(j+1)*DeltaX);
             setvalV(mesh->elem[z]->points[2], 1, y1+i*DeltaY);
 
             setvalV(mesh->elem[z]->points[3], 0, x1+(j+1)*DeltaX);
             setvalV(mesh->elem[z]->points[3], 1, y1+(i+1)*DeltaY);
 
-            /* TODO: Add in node numbers */
+            /* Determine the global node numbers for each node in the
+             * element. Used for matrix assembly. */
+            setvalV(e->map, 0, (double) i*(nx+1)+j);
+            setvalV(e->map, 1, (double) (i+1)*(nx+1)+j);
+            setvalV(e->map, 2, (double) i*(nx+1)+j+1);
+            setvalV(e->map, 3, (double) (i+1)*(nx+1)+j+1);
+
+            for(k=0;k<4;k++) {
+                mesh->nodes[(int) valV(e->map, k)] = e->points[k];
+            }
 
         }
     }

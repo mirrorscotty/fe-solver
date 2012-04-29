@@ -8,27 +8,24 @@
 #include "mesh.h"
 #include "finite-element.h"
 
-matrix* CreateElementMatrix(struct fe *p, matrix *guess)
+matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
 {
     basis *b;
-    Elem2D *elem;
     
     b = p->b;
-    /* Todo: Fix this. */
-    elem = &(p->mesh->elem[0]);
     
     int i, j;
     double value = 0;
-    double dx = elem->dx;
-    double dy = elem->dy;
+    double dx = 1;//elem->dx;
+    double dy = 1;//elem->dy;
     matrix *m;
 
     m = CreateMatrix(b->n, b->n);
 
     for(i=0; i<b->n; i++) {
         for(j=0; j<b->n; j++) {
-            value = dy/dx * quad2d3(b, i, 1, 0) * quad2d3(b, j, 1, 0);
-            value += dx/dy * quad2d3(b, i, 0, 1) * quad2d3(b, j, 0, 1);
+            value = dy/dx * quad2d32d3(p, elem, i, j, 1, 0);
+            value += dx/dy * quad2d32d3(p, elem, i, j, 0, 1);
             setval(m, value, i, j);
         }
     }
@@ -37,7 +34,7 @@ matrix* CreateElementMatrix(struct fe *p, matrix *guess)
 }
 
 /* Create the load vector */
-matrix* CreateElementLoad(struct fe *p, matrix *guess) {
+matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
     int i;
     matrix *f;
     
@@ -102,13 +99,48 @@ void ApplyAllBCs(struct fe *p)
     }
 }
 
+int IsOnXAxis(struct fe* p, int node)
+{
+    double tol = 1e-10;
+    if(fabs(valV(p->mesh->nodes[node], 1)) < tol)
+        return 1;
+    else
+        return 0;
+}
+
+int IsOnYAxis(struct fe* p, int node)
+{
+    double tol = 1e-10;
+    if(fabs(valV(p->mesh->nodes[node], 0)) < tol)
+        return 1;
+    else
+        return 0;
+}
+
+double YAxisBC(struct fe *p, int node)
+{
+    double y = valV(p->mesh->nodes[node], 1);
+    return y*(2-y);
+}
+
+double XAxisBC(struct fe *p, int node)
+{
+    double x = valV(p->mesh->nodes[node], 0);
+    return x*(x-2);
+}
+
+void ApplyAllBCs2(struct fe *p)
+{
+    ApplyEssentialBC(p, &IsOnXAxis, &XAxisBC);
+    ApplyEssentialBC(p, &IsOnYAxis, &YAxisBC);
+}
 
 int main(int argc, char *argv[])
 {
     Mesh2D *mesh;
     basis *b;
 
-    matrix *J, *F, *E;
+    matrix *E;
     
     struct fe* problem;
 
@@ -119,10 +151,12 @@ int main(int argc, char *argv[])
                                  0.0, 1.0,
                                  1, 1);
     
-    problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
+    MeshPrint(mesh);
+    problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs2);
+    problem->nvars = 1;
     
     //E = SolveMatrixEquation(problem->J, problem->F);
-    E = NLinSolve(problem, NULL);
+    E = LinSolve(problem);
 
     mtxprnt(E);
 
@@ -131,22 +165,6 @@ int main(int argc, char *argv[])
            EvalLin2D(b, 1, 0, 1),
            EvalLin2D(b, 2, 1, 0),
            EvalLin2D(b, 3, 1, 1));
-
-    //J = AssembleJ(&CreateElementMatrix, b, mesh, Pe);
-    //J = AssembleJ(&testelem, b, mesh, Pe);
-
-    //F = AssembleF(&CreateElementLoad, b, mesh, Pe);
-    //F = AssembleF(&testload, b, mesh, Pe);
-
-    //ApplyBoundaryConditions(J, F, b, 0, 1);
-    //ApplyBoundaryConditions(J, F, b, 2, 1);
-    
-    //E = SolveMatrixEquation(J, F);
-
-    /* Clean up the allocated memory */
-    //DestroyMatrix(J);
-    //DestroyMatrix(F);
-    //DestroyMatrix(E);
 
     return 0;
 }
