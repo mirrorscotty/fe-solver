@@ -57,7 +57,7 @@ int IsOnInnerRadius(struct fe* p, int node)
     double tol = 1e-5;
     vector *v;
 
-    e = 0; /* Eccentricity */
+    e = 0.8; /* Eccentricity */
 
     b = 1;
     a = sqrt((1-e*e)*b*b);
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     b = MakeQuadBasis(2);
 
     /* Create a uniform mesh */
-    mesh = MakeSpheroidMesh(b, 0, 5, 10, 10);
+    mesh = MakeSpheroidMesh(b, 0.8, 5, 10, 10);
     
     problem = CreateFE(b, mesh, CreateElementMatrix, CreateElementLoad, ApplyAllBCs);
     problem->nvars = 1;

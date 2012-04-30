@@ -74,7 +74,6 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         /* Generate the element matrix for the specified element width */
         j = problem->makej(problem, mesh->elem[i], guess);
-        mtxprnt(j);
 
         //j = CreateOnesMatrix(8, 8); // for testing purposes
 

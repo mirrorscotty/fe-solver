@@ -81,11 +81,6 @@ matrix* LinSolve(struct fe *problem)
 //    if(fabs(CalcDeterminant(problem->J)) - 1e-10 < 0)
 //        puts("Singular Matrix.");
 
-    mtxprnt(problem->J);
-    puts("");
-    mtxprnt(problem->F);
-    puts("");
-
     return SolveMatrixEquation(problem->J, problem->F);
 }
 

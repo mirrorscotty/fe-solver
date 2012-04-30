@@ -64,7 +64,6 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
                 for(d=0; d<sqrt(nnodes); d++) {
                     r[c][d] = (valV(r1, 2*j+d) - valV(r0, 2*j+d))/Nr/(sqrt(b->n)-b->overlap) * (2*i+c) + valV(r0, 2*j+d);
                     theta[d] = thetamax/Ntheta/(sqrt(b->n)-b->overlap) * (2*j+d);
-                    printf("c=%d, d=%d, r=%g, theta=%g\n", c, d, r[c][d], theta[d]);
                 }
             }
 
@@ -81,7 +80,6 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
             for(c=0; c<sqrt(nnodes); c++) {
                 for(d=0; d<sqrt(nnodes); d++) {
                     setvalV(e->map, sqrt(nnodes)*c+d, (double) (2*i+c)*(2*Nr+1)+2*j+d);
-                    PrintVector(e->map);
                 }
             }
 
@@ -91,7 +89,6 @@ Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
         }
     }
 
-    MeshPrint(mesh);
     return mesh;
 }
 
@@ -233,7 +230,6 @@ Elem2D* CreateElem2D(basis *b)
     for(i=0; i<nnodes; i++)
         elem->points[i] = CreateVector(2);
 
-    printf("nnodes = %d\n", nnodes);
     elem->map = CreateVector(nnodes);
 
     return elem;
