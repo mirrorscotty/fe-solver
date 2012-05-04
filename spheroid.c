@@ -71,9 +71,8 @@ int IsOnInnerRadius(struct fe* p, int node)
 
     f = 1/sqrt(pow(cos(theta), 2)/(a*a) + pow(sin(theta), 2)/(b*b));
 
-    if(fabs(f-r) < tol) {
+    if(fabs(f-r) < tol)
         return 1;
-        }
     else
         return 0;
 }

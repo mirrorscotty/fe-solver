@@ -60,3 +60,30 @@ double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
     //return 1;
     return x;
 }
+
+double IEvalLin2Dx(struct fe *p, Elem2D *elem, int func, double x, double y)
+{
+    double r;
+    basis *b;
+    b = p->b;
+
+    r = 0;
+    r = EvalLin2Dx(b, func, x, y)*IMapYEta(p, elem, x, y);
+    r -= EvalLin2Dy(b, func, x, y)*IMapYXi(p, elem, x, y);
+    r *= IMapJ(p, elem, x, y);
+    return r;
+}
+
+double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
+{
+    double r;
+    basis *b;
+    b = p->b;
+
+    r = 0;
+    r -= EvalLin2Dx(b, func, x, y)*IMapXEta(p, elem, x, y);
+    r += EvalLin2Dy(b, func, x, y)*IMapXXi(p, elem, x, y);
+    r *= IMapJ(p, elem, x, y);
+    return r;
+}
+

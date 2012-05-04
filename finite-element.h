@@ -16,6 +16,7 @@ struct fe {
     matrix *R;
     
     int nvars; /* Number of variables being solved for. */
+    double displace;
     double tol; /* Tolerance for the nonlinear solver */
     
     matrix* (*makej)(struct fe*, Elem2D*, matrix*);
@@ -40,6 +41,6 @@ matrix* AssembleJ(struct fe*, matrix*);
 matrix* AssembleF(struct fe*, matrix*);
 matrix* CalcResidual(struct fe*, matrix*);
 matrix* GetLocalGuess(struct fe*, matrix*, int);
-void ApplyEssentialBC(struct fe*, int (*)(struct fe*, int), double (*)(struct fe*, int));
+void ApplyEssentialBC(struct fe*, int, int (*)(struct fe*, int), double (*)(struct fe*, int));
     
 #endif

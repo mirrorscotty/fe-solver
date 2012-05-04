@@ -15,5 +15,8 @@ double diff2dx(basis*, int, double, double);
 double diff2dy(basis*, int, double, double);
 double quad2d3(struct fe*, Elem2D*, int, int, int);
 double quad2d32d3(struct fe*, Elem2D*, int, int, int, int);
+double quad2d3generic(struct fe*, matrix*, Elem2D*,
+                      double (*)(struct fe*, matrix*, Elem2D*, double, double, int, int),
+                      int, int);
 
 #endif

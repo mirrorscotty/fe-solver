@@ -170,19 +170,20 @@ matrix* GetLocalGuess(struct fe *p, matrix *guess, int elem)
    is applied. The value at that node is then set to whatever the other
    function returns. */
 void ApplyEssentialBC(struct fe* p,
+                      int var,
                       int (*cond)(struct fe*, int),
                       double (*BC)(struct fe*, int))
 {
     int i, j;
     /* Loop through the rows */
-    for(i=0; i<mtxlen2(p->J); i++) {
+    for(i=var; i<mtxlen2(p->J); i+=p->nvars) {
         /* Check to see if the BC should be applied */
-        if(cond(p, i)) {
+        if(cond(p, i/p->nvars)) {
             /* Zero out the row */
             for(j=0; j<mtxlen2(p->J); j++) 
                 setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
             /* Set the appropriate value in the load vector */
-            setval(p->F, BC(p, i), i, 0);
+            setval(p->F, BC(p, i), p->nvars*i+var, 0);
         }
     }
     return;

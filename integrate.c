@@ -244,6 +244,43 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
     return result;
 }
 
+double quad2d3generic(struct fe *p, matrix *guess, Elem2D *elem,
+                      double (*residual)(struct fe*, matrix*, Elem2D*, double, double, int, int),
+                      int f1, int f2)
+{
+    int i, j;
+    double result = 0;
+    double *x, *w;
+    x = x3;
+    w = w3;
+
+    for(i=0; i<NPTS; i++) {
+        for(j=0; j<NPTS; j++) {
+            result += w[i]/2 * w[j]/2 * residual(p, guess, elem, (x[i]+1)/2, (x[j]+1)/2, i, j);
+        }
+    }
+
+    return result;
+}
+
+double quad2d3tri(struct fe *p, matrix *guess, Elem2D *elem,
+                      double (*residual)(struct fe*, matrix*, Elem2D*, double, double, int, int),
+                      int f1, int f2)
+{
+    int i, j;
+    double result = 0;
+    double x[] = { 0.35355339, 0.70710678 };
+    double y[] = { 0.35355339, 0.70710678 };
+    double w[] = { -9/32, 25/96, 25/96, 25/96 };
+
+    for(i=0; i<2; i++) {
+        for(j=0; j<2; j++) {
+            result += w[i*j] * residual(p, guess, elem, i, j, x[i], y[j]);
+        }
+    }
+    return result;
+}
+
 double diff2dx(basis *b, int func, double x, double y)
 {
     double h = 1e-14;

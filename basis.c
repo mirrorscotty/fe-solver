@@ -156,6 +156,36 @@ basis* MakeCubicBasis(int dimension)
 
     return b;
 }
+
+basis* Make2DTriBasis()
+{
+    basis *b;
+    b = NULL;
+    b = (basis*) calloc(1, sizeof(basis));
+
+    if(!b)
+        return NULL;
+
+    b->phi = b->dphi = NULL;
+    b->n = 3;
+    b->overlap = 42;
+    
+    b->phi2d = (double (**)(double, double)) calloc(b->n, sizeof(double(*)(double, double)));
+
+    b->phi2d[1] = &lintri2d1;
+    b->phi2d[2] = &lintri2d2;
+    b->phi2d[3] = &lintri2d3;
+
+    b->dim = 2;
+
+
+    b->Eval2D = &EvalLinTri2D;
+    b->Eval2Dx = &EvalLinTri2Dx;
+    b->Eval2Dy = &EvalLinTri2Dy;
+
+    return b;
+}
+
     
 /* Delete stuff */
 void DestroyBasis(basis *b)
@@ -222,6 +252,23 @@ double EvalQuad2Dy(basis *b, int func, double x, double y)
     i = (func>5)?2:((func>2)?1:0);
     j = func%3;
     return b->phi[i](x) * b->dphi[j](y);
+}
+
+double EvalLinTri2D(basis *b, int func, double x, double y)
+{
+    return b->phi2d[func](x, y);
+}
+
+double EvalLinTri2Dx(basis *b, int func, double x, double y)
+{
+    double h = 1e-14;
+    return (b->phi2d[func](x+h, y) - b->phi2d[func](x-h, y))/(2*h);
+}
+
+double EvalLinTri2Dy(basis *b, int func, double x, double y)
+{
+    double h = 1e-14;
+    return (b->phi2d[func](x, y+h) - b->phi2d[func](x, y-h))/(2*h);
 }
 
 /* Not even slightly finished yet. */
@@ -302,3 +349,17 @@ double dcubic1d1(double x) { return 6*x*x-6*x; }
 double dcubic1d2(double x) { return 1-4*x+3*x*x; }
 double dcubic1d3(double x) { return 6*x-6*x*x; }
 double dcubic1d4(double x) { return 3*x*x-2*x; }
+
+/* 2d Linear Triangle Basis Functions (Isoparametric Coordinates) */
+double lintri2d1(double x, double y) { return x; }
+double lintri2d2(double x, double y) { return y; }
+double lintri2d3(double x, double y) { return 1-x-y; }
+
+/* 2d Quadratic Triangle Basis Functions (Isoparametric Coordinates) */
+double quadtri2d1(double x, double y) { return x*(2*x-1); }
+double quadtri2d2(double x, double y) { return y*(2*y-1); }
+double quadtri2d3(double x, double y) { return (1-x-y)*(2*(1-x-y)-1); }
+double quadtri2d4(double x, double y) { return 4*x*y; }
+double quadtri2d5(double x, double y) { return 4*y*(1-x-y); }
+double quadtri2d6(double x, double y) { return 4*(1-x-y)*x; }
+

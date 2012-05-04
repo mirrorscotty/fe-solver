@@ -2,7 +2,7 @@ CC=gcc
 
 CFLAGS=-lm -Wall -ggdb
 
-all: spheroid 
+all: ce675p2 
 
 2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o isoparam.o
 	gcc -o 2dlaplace 2dlaplace.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o -lm -ggdb
@@ -13,12 +13,19 @@ ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element
 spheroid: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o
 	$(CC) -o spheroid integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o $(CFLAGS)
 
+ce675p2: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p2.o isoparam.o
+	$(CC) -o ce675p2 ce675p2.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o $(CFLAGS)
+
 clean:
 	rm -rf spheroid 2dlaplace ce675p1 *.o *~
 
 
 
 ce675p1.o: ce675p1.c
+	$(CC) -c ce675p1.c $(CFLAGS)
+
+ce675p2.o: ce675p2.c
+	$(CC) -c ce675p2.c $(CFLAGS)
 
 2dlaplace.o: 2dlaplace.c
 	$(CC) -c 2dlaplace.c $(CFLAGS)

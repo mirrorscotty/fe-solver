@@ -6,6 +6,7 @@ struct _basis {
     int overlap; /* Amount of overlap when assembling the global matricies */
     double (**phi)(double); /* Array of basis functions */
     double (**dphi)(double); /* First derivatives of the basis functions */
+    double (**phi2d)(double, double); /* Only for 2d triangles */
     int dim; /* Dimension of the problem */
 
     double (*Eval2D)(struct _basis*, int, double, double);
@@ -29,6 +30,10 @@ double EvalQuad2D(basis*, int, double, double);
 double EvalQuad2Dx(basis*, int, double, double);
 double EvalQuad2Dy(basis*, int, double, double);
 
+double EvalLinTri2D(basis*, int, double, double);
+double EvalLinTri2Dx(basis*, int, double, double);
+double EvalLinTri2Dy(basis*, int, double, double);
+
 double lin1d1(double);
 double lin1d2(double);
 double dlin1d1(double);
@@ -49,5 +54,9 @@ double dcubic1d1(double);
 double dcubic1d2(double);
 double dcubic1d3(double);
 double dcubic1d4(double);
+
+double lintri2d1(double, double);
+double lintri2d2(double, double);
+double lintri2d3(double, double);
 
 #endif
