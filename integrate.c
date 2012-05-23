@@ -256,7 +256,7 @@ double quad2d3generic(struct fe *p, matrix *guess, Elem2D *elem,
 
     for(i=0; i<NPTS; i++) {
         for(j=0; j<NPTS; j++) {
-            result += w[i]/2 * w[j]/2 * residual(p, guess, elem, (x[i]+1)/2, (x[j]+1)/2, i, j);
+            result += w[i]/2 * w[j]/2 * residual(p, guess, elem, (x[i]+1)/2, (x[j]+1)/2, f1, f2);
         }
     }
 

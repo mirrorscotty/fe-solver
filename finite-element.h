@@ -42,5 +42,6 @@ matrix* AssembleF(struct fe*, matrix*);
 matrix* CalcResidual(struct fe*, matrix*);
 matrix* GetLocalGuess(struct fe*, matrix*, int);
 void ApplyEssentialBC(struct fe*, int, int (*)(struct fe*, int), double (*)(struct fe*, int));
+void ApplyNaturalBC(struct fe*, int, int (*)(struct fe*, int), double (*)(struct fe*, int));
     
 #endif

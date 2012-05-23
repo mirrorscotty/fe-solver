@@ -29,7 +29,6 @@ void PrintVector(vector *v)
 {
     int i;
 
-    printf("Length = %d ", len(v));
     printf("[");
     for(i=0; i<len(v)-1; i++) {
         printf(" %g,", valV(v, i));
@@ -38,15 +37,16 @@ void PrintVector(vector *v)
 }
 
 /* Return the i-th value */
-double valV(vector *v, int i)
-{
-    if(i<0 || i>=v->length) {
-        /* Index out of bounds */
-        return 0;
-    }
-
-    return v->v[i];
-}
+//double valV(vector *v, int i)
+//{
+//    if(i<0 || i>=v->length) {
+//        /* Index out of bounds */
+//        return 0;
+//    }
+//
+//    return v->v[i];
+//}
+/* Replaced by a macro for efficiency */
 
 /* Set the i-th value to "val" */
 void setvalV(vector *v, int i, double val)

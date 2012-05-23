@@ -1,14 +1,14 @@
 CC=gcc
 
-CFLAGS=-lm -Wall -ggdb
+CFLAGS=-lm -Wall -ggdb -O2
 
-all: ce675p2 
+all: ce675p1 
 
 2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o isoparam.o
 	gcc -o 2dlaplace 2dlaplace.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o -lm -ggdb
 
-ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p1.o
-	$(CC) -o ce675p1 ce675p1.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o $(CFLAGS)
+ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p1.o isoparam.o
+	$(CC) -o ce675p1 ce675p1.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o $(CFLAGS)
 
 spheroid: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o
 	$(CC) -o spheroid integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o $(CFLAGS)
@@ -17,7 +17,7 @@ ce675p2: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element
 	$(CC) -o ce675p2 ce675p2.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o $(CFLAGS)
 
 clean:
-	rm -rf spheroid 2dlaplace ce675p1 *.o *~
+	rm -rf spheroid 2dlaplace ce675p1 ce675p2 *.o *~
 
 
 

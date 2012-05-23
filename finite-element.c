@@ -58,7 +58,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     /* Determine the number of rows in the coefficient matrix. This expression
      * needs to change to be able to accomodate biquad elements. */
     //double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
-    double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
+    double rows = (mesh->nelemx+1)*(mesh->nelemy+1)*problem->nvars;
 
    
     /* If an initial guess is not supplied, then the initial guess is all
@@ -83,11 +83,11 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
                 c = valV(mesh->elem[i]->map, x);
                 d = valV(mesh->elem[i]->map, y);
 
-                addval(J, val(j, x, y), c, d);
-                //addval(J, val(j, x*2, y*2), c*2, d*2);
-                //addval(J, val(j, x*2+1, y*2), c*2+1, d*2);
-                //addval(J, val(j, x*2, y*2+1), c*2, d*2+1);
-                //addval(J, val(j, x*2+1, y*2+1), c*2+1, d*2+1);
+                //addval(J, val(j, x, y), c, d);
+                addval(J, val(j, x*2, y*2), c*2, d*2);
+                addval(J, val(j, x*2+1, y*2), c*2+1, d*2);
+                addval(J, val(j, x*2, y*2+1), c*2, d*2+1);
+                addval(J, val(j, x*2+1, y*2+1), c*2+1, d*2+1);
             }
         }
 
@@ -111,7 +111,8 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
     int r = b->n - b->overlap;
 
     /* Determine the number of rows required for the global matrix */
-    rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1);
+    //rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1);
+    rows = (mesh->nelemx+1)*(mesh->nelemy+1);
 
     F = CreateMatrix(rows, 1);
 
@@ -178,13 +179,28 @@ void ApplyEssentialBC(struct fe* p,
     /* Loop through the rows */
     for(i=var; i<mtxlen2(p->J); i+=p->nvars) {
         /* Check to see if the BC should be applied */
-        if(cond(p, i/p->nvars)) {
+        if(cond(p, i)) {
+            //printf("Applying Dirchlet boundary condition at node %d for variable %d\n", i/p->nvars, var);
             /* Zero out the row */
             for(j=0; j<mtxlen2(p->J); j++) 
                 setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
             /* Set the appropriate value in the load vector */
-            setval(p->F, BC(p, i), p->nvars*i+var, 0);
+            setval(p->F, BC(p, i), i, 0);
         }
     }
     return;
+}
+
+/* This works the same way, only it applies a Neumann BC */
+void ApplyNaturalBC(struct fe *p,
+                    int var,
+                    int (*cond)(struct fe*, int),
+                    double (*BC)(struct fe*, int))
+{
+    int i;
+    for(i=var; i<mtxlen2(p->J); i+=p->nvars) {
+        if(cond(p, i)) 
+            //printf("Applying Neumann boundary condition at node %d for variable %d\n", i/p->nvars, var);
+            addval(p->F, BC(p, i), i, 0);
+    }
 }

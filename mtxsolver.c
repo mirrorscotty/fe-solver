@@ -88,7 +88,8 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
 {
     matrix *dx; /* How much to update the guess by */
     matrix *newguess;
-    int rows = (2*problem->mesh->nelemx+1)*(2*problem->mesh->nelemy+1);
+    //int rows = (2*problem->mesh->nelemx+1)*(2*problem->mesh->nelemy+1);
+    int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
     int iter = 0;
     int maxiter = 500;
     
@@ -98,10 +99,12 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
 
     do {
         iter++;
+        
         if(problem->J)
             DestroyMatrix(problem->J);
         if(problem->F)
             DestroyMatrix(problem->F);
+        
         AssembleJ(problem, guess);
         problem->F = CreateMatrix(rows*problem->nvars, 1);
         //AssembleF(problem, guess);

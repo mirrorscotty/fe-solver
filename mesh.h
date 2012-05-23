@@ -32,6 +32,7 @@ Mesh2D* MakeSpheroidMesh(basis*, double, double, int, int);
 
 void DestroyMesh2D(Mesh2D*);
 void MeshPrint(Mesh2D*);
+void MeshPrintNodes(Mesh2D*);
 vector* GetNodeCoordinates(Mesh2D*, int);
 Elem2D* CreateElem2D(basis*);
 void DestroyElem2D(Elem2D*);

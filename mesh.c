@@ -22,6 +22,15 @@ void MeshPrint(Mesh2D *mesh)
     return;
 }
 
+void MeshPrintNodes(Mesh2D *mesh)
+{
+    int i;
+    for(i=0; i<(mesh->nelemx+1)*(mesh->nelemy+1); i++) {
+        PrintVector(mesh->nodes[i]);
+    }
+    return;
+}
+
 /* Generate a uniform mesh for a spheroid. r0 is the vector of r values that
  * specifies the size and shape of the hole in the center of the mesh, and r1 is
  * the set of r values defining the outside edge of the mesh. The number of
@@ -186,7 +195,6 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
             for(k=0;k<4;k++) {
                 mesh->nodes[(int) valV(e->map, k)] = e->points[k];
             }
-
         }
     }
 
@@ -197,25 +205,25 @@ Mesh2D* GenerateUniformMesh2D(double x1, double x2,
  * makes sense. */
 vector* GetNodeCoordinates(Mesh2D *mesh, int node)
 {
-    vector *v;
-    v = CreateVector(2);
+    //vector *v;
+    //v = CreateVector(2);
 
-    int x, y;
-    double dx = 0, dy = 0;
+    //int x, y;
+    //double dx = 0, dy = 0;
 
-    x = node / (mesh->nelemy+1);
-    y = node - x*(mesh->nelemy+1);
+    //x = node / (mesh->nelemy+1);
+    //y = node - x*(mesh->nelemy+1);
 
     // Cheat because the mesh is always uniform.
     //dx = mesh->elem[0].dx;
     //dy = mesh->elem[0].dy;
 
-    setvalV(v, 0, x*dx);
-    setvalV(v, 1, y*dy);
+    //setvalV(v, 0, x*dx);
+    //setvalV(v, 1, y*dy);
 
 //    PrintVector(v);
 
-    return v;
+    return mesh->nodes[node];
 }
 
 
