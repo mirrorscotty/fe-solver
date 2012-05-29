@@ -62,8 +62,8 @@ double ElemJdRxdx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
 
     double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
     double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
-    double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
-    double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
+   // double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
+   // double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
     
     //printf("F:\n[%g, %g; %g, %g]\n", Fxx, Fxy, Fyx, Fyy);
     
@@ -88,6 +88,8 @@ double ElemJdRxdx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
     value += c/2 *(Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y)) * 
                   (Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y));
     
+    value *= IMapJ(p, elem, x, y);
+    
     return value;
 }
 
@@ -111,6 +113,8 @@ double ElemJdRxdy(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
                             IEvalLin2Dy(p, elem, f1, x, y) * IEvalLin2Dy(p, elem, f2, x, y));
     value += c/2 *(Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y)) * 
                   (Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y));
+                  
+    value *= IMapJ(p, elem, x, y);
 
     return value;
 }
@@ -136,6 +140,8 @@ double ElemJdRydx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
     value += c/2 *(Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f2, x, y)) * 
                   (Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y));
  
+    value *= IMapJ(p, elem, x, y);
+    
     return value;
 }
 
@@ -147,8 +153,8 @@ double ElemJdRydy(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
     double a = C*v/((1+v)*(1-2*v));
     double c = C/(1+v);
 
-    double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
-    double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
+    //double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
+    //double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
     double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
     double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
     
@@ -171,6 +177,8 @@ double ElemJdRydy(struct fe *p, matrix *guess, Elem2D *elem, double x, double y,
     value += c/2 *(Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f2, x, y)) * 
                   (Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y));
 
+    value *= IMapJ(p, elem, x, y);
+    
     return value;
 }
 
@@ -371,14 +379,14 @@ int main(int argc, char *argv[])
 
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh2D(0.0, 1.0,
-                                 0.0, 1.0,
-                                 4, 4);
+                                 0.0, 2.0,
+                                 8, 8);
     
     problem = CreateFE(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
     problem->nvars = 2;
     
-    problem->P = -10;
-    problem->a = -.1;
+    problem->P = .1;
+    problem->a = .01;
     
     E = NLinSolve(problem, NULL);
 

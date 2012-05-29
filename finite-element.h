@@ -27,6 +27,13 @@ struct fe {
     /* Problem-specific parameters */
     double P;
     double a;
+    
+    /* Arc length to use when using the nonlinear solver */
+    double c;
+    
+    /* Pointers to the current and previous guess (for nonlinear solver */
+    matrix *guess;
+    matrix *prevguess;
 };
 
 struct fe* CreateFE(basis*,
