@@ -21,6 +21,13 @@ struct fe* CreateFE(basis* b,
     problem->applybcs = applybcs;
     
     problem->tol = 1e-10;
+
+    /* Todo: fix this so it works always, not just for linear interpolation. */
+    problem->nrows = (mesh->nelemx+1)*(mesh->nelemy+1);
+
+    /* Initialize values. These should probably be set later in the program. */
+    problem->nconstr = 0;
+    problem->nvars = 0;
     
     return problem;
 }
@@ -58,7 +65,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
     /* Determine the number of rows in the coefficient matrix. This expression
      * needs to change to be able to accomodate biquad elements. */
     //double rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1)*problem->nvars;
-    double rows = (mesh->nelemx+1)*(mesh->nelemy+1)*problem->nvars;
+    double rows = problem->nrows*problem->nvars;
 
    
     /* If an initial guess is not supplied, then the initial guess is all
@@ -112,7 +119,7 @@ matrix* AssembleF(struct fe *problem, matrix *guess)
 
     /* Determine the number of rows required for the global matrix */
     //rows = (2*mesh->nelemx+1)*(2*mesh->nelemy+1);
-    rows = (mesh->nelemx+1)*(mesh->nelemy+1);
+    rows = problem->nrows;
 
     F = CreateMatrix(rows, 1);
 
@@ -145,14 +152,15 @@ matrix* CalcResidual(struct fe *problem, matrix* guess)
 matrix* GetLocalGuess(struct fe *p, matrix *guess, int elem)
 {
     matrix* lguess;
-    int x, y, i, j;
+    int x, i, j;
+    //int y;
     lguess = CreateMatrix(p->nvars*p->b->n, 1);
     
     int ny = p->mesh->nelemy;
     
     for(i=0; i<mtxlen2(lguess); i+=p->nvars) {
         x = elem / (p->mesh->nelemy+1);
-        y = elem - x*(p->mesh->nelemy+1);
+        //y = elem - x*(p->mesh->nelemy+1);
         
         for(j=0; j<p->nvars; j++) {
             setval(lguess, val(guess, p->nvars*(x)+j, 0), 0, 0);
@@ -177,12 +185,12 @@ void ApplyEssentialBC(struct fe* p,
 {
     int i, j;
     /* Loop through the rows */
-    for(i=var; i<mtxlen2(p->J); i+=p->nvars) {
+    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
         /* Check to see if the BC should be applied */
         if(cond(p, i)) {
             //printf("Applying Dirchlet boundary condition at node %d for variable %d\n", i/p->nvars, var);
             /* Zero out the row */
-            for(j=0; j<mtxlen2(p->J); j++) 
+            for(j=0; j<p->nrows*p->nvars; j++) 
                 setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
             /* Set the appropriate value in the load vector */
             setval(p->F, BC(p, i), i, 0);
@@ -198,7 +206,7 @@ void ApplyNaturalBC(struct fe *p,
                     double (*BC)(struct fe*, int))
 {
     int i;
-    for(i=var; i<mtxlen2(p->J); i+=p->nvars) {
+    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
         if(cond(p, i)) 
             //printf("Applying Neumann boundary condition at node %d for variable %d\n", i/p->nvars, var);
             addval(p->F, BC(p, i), i, 0);

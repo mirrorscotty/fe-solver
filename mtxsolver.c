@@ -44,6 +44,8 @@ void ReverseElimination(matrix *a) {
 	}
 }
 
+/* Solve an matrix equation of the form Ax=B, where x is the vector of
+ * unknowns. */
 matrix* SolveMatrixEquation(matrix *A, matrix *B)
 {
 	matrix *C, *u;
@@ -55,7 +57,8 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
 	return u;
 }
 
-/* Return 0 if not converged, and 1 if we're done iterating. */
+/* Check the convergance of the nonlinear solver. Return 0 if not converged,
+ * and 1 if we're done iterating. */
 int CheckConverg(struct fe *problem, matrix *dx)
 {
     int rows = mtxlen2(dx);
@@ -68,28 +71,38 @@ int CheckConverg(struct fe *problem, matrix *dx)
     return 1;
 }
     
+/* Linear finite element solver. It assembles the global jacobian and load
+ * vectors, then solves the whole system. It returns a matrix with the
+ * solution. */
 matrix* LinSolve(struct fe *problem)
 {
     matrix *guess;
-    int rows = (2*problem->mesh->nelemx+1)*(2*problem->mesh->nelemy+1);
+    int rows = problem->nrows;
     //int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
     guess = CreateMatrix(rows*problem->nvars, 1);
     AssembleJ(problem, guess);
     problem->F = CreateMatrix(rows*problem->nvars, 1);
     problem->applybcs(problem);
     
+    /* Calculate the determinate of the jacobian matrix to see if we're going to
+     * good results. Currently this takes forever, and is commented for that
+     * reason. */
 //    if(fabs(CalcDeterminant(problem->J)) - 1e-10 < 0)
 //        puts("Singular Matrix.");
 
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
+/* Nonlinear finite element solver. This does all the same stuff as the linear
+ * solver (assembling the global matricies), but utilizes an initial guess to
+ * calculate them. It then iterates using Newton's method and updates this
+ * guess at each iteration. */
 matrix* NLinSolve(struct fe *problem, matrix *guess)
 {
     matrix *dx; /* How much to update the guess by */
     matrix *newguess;
     //int rows = (2*problem->mesh->nelemx+1)*(2*problem->mesh->nelemy+1);
-    int rows = (problem->mesh->nelemx+1)*(problem->mesh->nelemy+1);
+    int rows = problem->nrows;
     int iter = 0;
     int maxiter = 500;
     
@@ -109,7 +122,7 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
         problem->F = CreateMatrix(rows*problem->nvars, 1);
         //AssembleF(problem, guess);
         problem->applybcs(problem);
-        
+
         //if(!CalcDeterminant(problem->J)) {
         //    iter = -1;
         //   break;
