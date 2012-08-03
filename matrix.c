@@ -362,7 +362,7 @@ matrix* CreateMatrix(int row, int col)
     for(i=0; i<row; i++) {
         A->array[i] = (double*) calloc(col, sizeof(double));
         if(!A->array[i]) {
-            fprintf(stderr, "Failed to allocate %lu bytes: %s\n", (unsigned long) sizeof(double)*col, strerror(errno));
+            fprintf(stderr, "Failed to allocate %lu bytes: %s\n", sizeof(double)*col, strerror(errno));
             return A;
         }
     }

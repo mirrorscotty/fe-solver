@@ -47,14 +47,14 @@ basis* MakeLinBasis(int dimension)
         b->phi[0] = &lin1d1;
         b->phi[1] = &lin1d2;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
         b->dphi[0] = &dlin1d1;
         b->dphi[1] = &dlin1d2;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;
@@ -93,7 +93,7 @@ basis* MakeQuadBasis(int dimension)
         b->phi[1] = &quad1d2;
         b->phi[2] = &quad1d3;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
@@ -101,7 +101,7 @@ basis* MakeQuadBasis(int dimension)
         b->dphi[1] = &dquad1d2;
         b->dphi[2] = &dquad1d3;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;
@@ -140,7 +140,7 @@ basis* MakeCubicBasis(int dimension)
         b->phi[2] = &cubic1d3;
         b->phi[3] = &cubic1d4;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     if(b->dphi) {
@@ -149,7 +149,7 @@ basis* MakeCubicBasis(int dimension)
         b->dphi[2] = &dcubic1d3;
         b->dphi[3] = &dcubic1d4;
     } else {
-        fprintf(stderr, "Failed to allocate %lu bytes.\n", (unsigned long) sizeof(double(*)(double))*b->n);
+        fprintf(stderr, "Failed to allocate %lu bytes.\n", sizeof(double(*)(double))*b->n);
     }
 
     b->dim = dimension;

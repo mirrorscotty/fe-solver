@@ -6,7 +6,6 @@
 #include "mtxsolver.h"
 #include "integrate.h"
 #include "mesh.h"
-#include "isoparam.h"
 #include "finite-element.h"
 
 /* Chroniker delta function */
@@ -15,202 +14,129 @@ int ChronDelta(int a, int b)
     return (a==b)?1:0;
 }
 
-/* Deformation gradient tensor 
- * I'm not sure this function makes sense */
-double FTensor(struct fe *p, Elem2D *elem, matrix *guess, int a, int b, double x, double y)
+/* Deformation gradient tensor */
+double FTensor(struct fe *p, matrix *guess, int a, int b)
 {
-    double Fab;
+    double Fab = 0;
     int i;
     
     Fab = ChronDelta(a, b);
     
     for(i=b; i<mtxlen2(guess); i+=2) {
         if(a) {
-            Fab += IEvalLin2Dy(p, elem, i/2, x, y) * val(guess, i, 0);
+            Fab += quad2d3(p->b, i, 0, 1) * val(guess, i, 0);
         } else {
-            Fab += IEvalLin2Dx(p, elem, i/2, x, y) * val(guess, i, 0);
+            Fab += quad2d3(p->b, i, 1, 0) * val(guess, i, 0);
         }
     }
     return Fab;
 }
 
 /* Calculate the desired element of the Lagrangian strain tensor. */
-double ETensor(struct fe *p, Elem2D *elem, matrix *guess, int a, int b, double x, double y)
+double ETensor(struct fe *p, matrix *guess, int a, int b)
 {
-    return (FTensor(p, elem, guess, b, a, x, y)*FTensor(p, elem, guess, a, b, x, y) - ChronDelta(a, b))/2;
+    return (FTensor(p, guess, b, a)*FTensor(p, guess, a, b) - ChronDelta(a, b))/2;
 }
 
 /* Return the a,b component of the second Piola-Kirchhoff stress tensor */
-double STensor(struct fe *p, Elem2D *elem, matrix *guess, int a, int b, double x, double y)
+double STensor(struct fe *p, matrix *guess, int a, int b)
 {
     double C = 2e3;
     double v = 0.3;
     double Sab = 0;
-    Sab = C*v/((1+v)*(1-2*v)) * (ETensor(p, elem, guess, 0, 0, x, y)+ETensor(p, elem, guess, 1, 1, x, y)) * ChronDelta(a,b);
-    Sab += C/(1+v)*ETensor(p, elem, guess, a, b, x, y);
+    Sab = C*v/((1+v)*(1-2*v)) * (ETensor(p, guess, 0, 0)+ETensor(p, guess, 1, 1)) * ChronDelta(a,b);
+    Sab += C/(1+v)*ETensor(p, guess, a, b);
     
     return Sab;
 }
 
-double ElemJdRxdx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y, int f1, int f2)
-{
-    double value;
-    double C = 2e3;
-    double v = 0.3;
-    double a = C*v/((1+v)*(1-2*v));
-    double c = C/(1+v);
-
-    double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
-    double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
-   // double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
-   // double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
-    
-    //printf("F:\n[%g, %g; %g, %g]\n", Fxx, Fxy, Fyx, Fyy);
-    
-    double Sxx = STensor(p, elem, guess, 0, 0, x, y);
-    double Sxy = STensor(p, elem, guess, 0, 1, x, y);
-    double Syx = STensor(p, elem, guess, 1, 0, x, y);
-    double Syy = STensor(p, elem, guess, 1, 1, x, y);
-
-    //printf("S:\n[%g, %g; %g, %g]\n", Sxx, Sxy, Syx, Syy);
-    
-    double A = IEvalLin2Dx(p, elem, f1, x, y) * Sxx * IEvalLin2Dx(p, elem, f2, x, y);
-    A += IEvalLin2Dx(p, elem, f1, x, y) * Sxy * IEvalLin2Dy(p, elem, f2, x, y);
-    A += IEvalLin2Dy(p, elem, f1, x, y) * Syx * IEvalLin2Dx(p, elem, f2, x, y);
-    A += IEvalLin2Dy(p, elem, f1, x, y) * Syy * IEvalLin2Dy(p, elem, f2, x, y);
-
-    value = 0;
-    value += A;
-    value += a*(Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y)) * 
-               (Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 * (Fxx*Fxx + Fxy*Fxy)*(IEvalLin2Dx(p, elem, f1, x, y) * IEvalLin2Dx(p, elem, f2, x, y) +
-                IEvalLin2Dy(p, elem, f1, x, y) * IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 *(Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y)) * 
-                  (Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y));
-    
-    value *= IMapJ(p, elem, x, y);
-    
-    return value;
-}
-
-double ElemJdRxdy(struct fe *p, matrix *guess, Elem2D *elem, double x, double y, int f1, int f2)
-{
-    double value;
-    double C = 2e3;
-    double v = 0.3;
-    double a = C*v/((1+v)*(1-2*v));
-    double c = C/(1+v);
-
-    double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
-    double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
-    double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
-    double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
-    
-    value = 0;
-    value += a*(Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y)) * 
-               (Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 * (Fyx*Fxx+Fyx*Fxy)*(IEvalLin2Dx(p, elem, f1, x, y) * IEvalLin2Dx(p, elem, f2, x, y) +
-                            IEvalLin2Dy(p, elem, f1, x, y) * IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 *(Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y)) * 
-                  (Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y));
-                  
-    value *= IMapJ(p, elem, x, y);
-
-    return value;
-}
-
-double ElemJdRydx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y, int f1, int f2)
-{
-    double value;
-    double C = 2e3;
-    double v = 0.3;
-    double a = C*v/((1+v)*(1-2*v));
-    double c = C/(1+v);
-
-    double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
-    double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
-    double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
-    double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
-    
-    value = 0;
-    value += a*(Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y)) * 
-               (Fxx*IEvalLin2Dx(p, elem, f2, x, y) + Fxy*IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 * (Fxx*Fyx+Fxy*Fyy)*(IEvalLin2Dx(p, elem, f1, x, y) * IEvalLin2Dx(p, elem, f2, x, y) +
-                            IEvalLin2Dy(p, elem, f1, x, y) * IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 *(Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f2, x, y)) * 
-                  (Fxx*IEvalLin2Dx(p, elem, f1, x, y) + Fxy*IEvalLin2Dy(p, elem, f1, x, y));
- 
-    value *= IMapJ(p, elem, x, y);
-    
-    return value;
-}
-
-double ElemJdRydy(struct fe *p, matrix *guess, Elem2D *elem, double x, double y, int f1, int f2)
-{
-    double value;
-    double C = 2e3;
-    double v = 0.3;
-    double a = C*v/((1+v)*(1-2*v));
-    double c = C/(1+v);
-
-    //double Fxx = FTensor(p, elem, guess, 0, 0, x, y);
-    //double Fxy = FTensor(p, elem, guess, 0, 1, x, y);
-    double Fyx = FTensor(p, elem, guess, 1, 0, x, y);
-    double Fyy = FTensor(p, elem, guess, 1, 1, x, y);
-    
-    double Sxx = STensor(p, elem, guess, 0, 0, x, y);
-    double Sxy = STensor(p, elem, guess, 0, 1, x, y);
-    double Syx = STensor(p, elem, guess, 1, 0, x, y);
-    double Syy = STensor(p, elem, guess, 1, 1, x, y);
-
-    double A = IEvalLin2Dx(p, elem, f1, x, y) * Sxx * IEvalLin2Dx(p, elem, f2, x, y);
-    A += IEvalLin2Dx(p, elem, f1, x, y) * Sxy * IEvalLin2Dy(p, elem, f2, x, y);
-    A += IEvalLin2Dy(p, elem, f1, x, y) * Syx * IEvalLin2Dx(p, elem, f2, x, y);
-    A += IEvalLin2Dy(p, elem, f1, x, y) * Syy * IEvalLin2Dy(p, elem, f2, x, y);
-
-    value = 0;
-    value += A;
-    value += a*(Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y)) * 
-               (Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y));
-    value += c/2 * (Fyx*Fyx+Fyy*Fyy)*(IEvalLin2Dx(p, elem, f1, x, y) * IEvalLin2Dx(p, elem, f2, x, y) +
-                            IEvalLin2Dy(p, elem, f1, x, y) * IEvalLin2Dy(p, elem, f2, x, y));
-    value += c/2 *(Fyx*IEvalLin2Dx(p, elem, f2, x, y) + Fyy*IEvalLin2Dy(p, elem, f2, x, y)) * 
-                  (Fyx*IEvalLin2Dx(p, elem, f1, x, y) + Fyy*IEvalLin2Dy(p, elem, f1, x, y));
-
-    value *= IMapJ(p, elem, x, y);
-    
-    return value;
-}
-
-matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
+matrix* CreateElementMatrix(struct fe *p, matrix *guess)
 {
     basis *b;
-    b = p->b;
+    Elem2D *elem;
     
+    b = p->b;
     int nvars = p->nvars;
+    int var;
+    
+    /* Todo: Fix this. */
+    elem = &(p->mesh->elem[0]);
     
     int i, j;
     double value = 0;
+    double dx = elem->dx;
+    double dy = elem->dy;
     matrix *m;
     
+    
+    double Fxx = FTensor(p, guess, 0, 0);
+    double Fxy = FTensor(p, guess, 0, 1);
+    double Fyx = FTensor(p, guess, 1, 0);
+    double Fyy = FTensor(p, guess, 1, 1);
+    
+    double Sxx = STensor(p, guess, 0, 0);
+    double Sxy = STensor(p, guess, 0, 1);
+    double Syx = STensor(p, guess, 1, 0);
+    double Syy = STensor(p, guess, 1, 1);
+
     m = CreateMatrix(b->n*nvars, b->n*nvars);
+    
+    double C = 2e3;
+    double v = 0.3;
+    double a = C*v/((1+v)*(1-2*v));
+    double c = C/(1+v);
     
     for(i=0; i<b->n*nvars; i+=nvars) {
         for(j=0; j<b->n*nvars; j+=nvars) {
+            /* Scalars */
+            double A = quad2d3(b, i/2, 1, 0)/dx * Sxx * quad2d3(b, j/2, 1, 0)/dx;
+            A += quad2d3(b, i/2, 1, 0)/dx * Sxy * quad2d3(b, j/2, 0, 1)/dy;
+            A += quad2d3(b, i/2, 0, 1)/dy * Syx * quad2d3(b, j/2, 1, 0)/dx;
+            A += quad2d3(b, i/2, 0, 1)/dy * Syy * quad2d3(b, j/2, 0, 1)/dy;
+            
             /* dRx/dx */
-            value = quad2d3generic(p, guess, elem, &ElemJdRxdx, i/2, j/2);
+            value = 0;
+            value += A;
+            value += a*(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                       (Fxx*quad2d3(b, j/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy);
+            value += c/2 * Fxx*Fxx*(quad2d3(b, i/2, 1, 0)/dx * quad2d3(b, j/2, 1, 0)/dx +
+                                    quad2d3(b, i/2, 0, 1)/dy * quad2d3(b, j/2, 0, 1)/dy);
+            value += c/2 *(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                          (Fxx*quad2d3(b, j/2, 1, 0)/dy + Fxy*quad2d3(b, i/2, 0, 1)/dy);
+            value *= dx*dy;
             setval(m, value, i, j);
             
             /* dRy/dx */
-            value = quad2d3generic(p, guess, elem, &ElemJdRydx, i/2, j/2);
+            value = 0;
+            value += a*(Fyx*quad2d3(b, i/2, 1, 0)/dx + Fyy*quad2d3(b, i/2, 0, 1)/dy) * 
+                       (Fxx*quad2d3(b, j/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy);
+            value += c/2 * Fyx*Fxy*(quad2d3(b, i/2, 1, 0)/dx * quad2d3(b, j/2, 1, 0)/dx +
+                                    quad2d3(b, i/2, 0, 1)/dy * quad2d3(b, j/2, 0, 1)/dy);
+            value += c/2 *(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                          (Fxx*quad2d3(b, j/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy);
+            value *= dx*dy;
             setval(m, value, i+1, j);
             
             /* dRx/dy */
-            value = quad2d3generic(p, guess, elem, &ElemJdRxdy, i/2, j/2);
+            value = 0;
+            value += a*(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                       (Fyx*quad2d3(b, j/2, 1, 0)/dx + Fyy*quad2d3(b, i/2, 0, 1)/dy);
+            value += c/2 * Fxy*Fyx*(quad2d3(b, i/2, 1, 0)/dx * quad2d3(b, j/2, 1, 0)/dx +
+                                    quad2d3(b, i/2, 0, 1)/dy * quad2d3(b, j/2, 0, 1)/dy);
+            value += c/2 *(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                          (Fxx*quad2d3(b, j/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy);
             setval(m, value, i, j+1);
             
             /* dRy/dy */
-            value = quad2d3generic(p, guess, elem, &ElemJdRydy, i/2, j/2);
+            value = 0;
+            value += A;
+            value += a*(Fyx*quad2d3(b, i/2, 1, 0)/dx + Fyy*quad2d3(b, i/2, 0, 1)/dy) * 
+                       (Fyx*quad2d3(b, j/2, 1, 0)/dx + Fyy*quad2d3(b, i/2, 0, 1)/dy);
+            value += c/2 * Fyy*Fyy*(quad2d3(b, i/2, 1, 0)/dx * quad2d3(b, j/2, 1, 0)/dx +
+                                    quad2d3(b, i/2, 0, 1)/dy * quad2d3(b, j/2, 0, 1)/dy);
+            value += c/2 *(Fxx*quad2d3(b, i/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy) * 
+                          (Fxx*quad2d3(b, j/2, 1, 0)/dx + Fxy*quad2d3(b, i/2, 0, 1)/dy);
+            value *= dx*dy;
             setval(m, value, i+1, j+1);
         }
     }
@@ -219,7 +145,7 @@ matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
 }
 
 /* Create the load vector */
-matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
+matrix* CreateElementLoad(struct fe *p, matrix *guess) {
     int i;
     matrix *f;
     
@@ -235,81 +161,73 @@ matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
     return f;
 }
 
-int IsOnYAxis(struct fe *p, int row)
+/* Simple function to alter J and F so that Dirichlet boundary conditions are
+ * imposed on both ends of the domain. In this case, "leftbc" is imposed at
+ * c = 0, and rightbc is imposed at c = 1.
+ */
+void ApplyDBC(matrix* J, matrix* F, basis *b, int node, double value)
 {
-    double x = valV(p->mesh->nodes[row/p->nvars], 0);
+    int rows = mtxlen2(J);
+    int i;
 
-    if(fabs(x) < 1e-5)
-        return 1;
-    else
-        return 0;
+    for(i=0;i<rows; i++) {
+        setval(J, 0, node, i);
+        setval(J, 0, i, node);
+        //setval(J, 0, rows-o, i);
+    }
+
+    setval(J, 1, node, node);
+
+    setval(F, value, node, 0);
 }
 
-int IsOnXAxis(struct fe *p, int row)
+void ApplyNBC(struct fe *problem, int node, double Pressure)
 {
-    double y = valV(p->mesh->nodes[row/p->nvars], 1);
-
-    if(fabs(y) < 1e-5)
-        return 1;
-    else
-        return 0;
-}
-
-int IsOnRightBoundary(struct fe *p, int row)
-{
-    double width = 1;
-    double x = valV(p->mesh->nodes[row/p->nvars], 0);
+    double P;
+    if(node%2) {
+        P = Pressure*problem->mesh->elem[0].dy/2;
+    } else {
+        P = Pressure*problem->mesh->elem[0].dx/2;
+    }
     
-    if(fabs(x - width) < 1e-5)
-        return 1;
-    else
-        return 0;
-}
-
-int IsOnTopBoundary(struct fe *p, int row)
-{
-    double height = p->mesh->y2 - p->mesh->y1;
-    double y = valV(p->mesh->nodes[row/p->nvars], 1);
-    
-    if(fabs(y - height) < 1e-5)
-        return 1;
-    else
-        return 0;
-}
-
-double Zero(struct fe *p, int row)
-{
-    return 0.0;
-}
-
-double TopPressure(struct fe* p, int row)
-{
-    double dx = p->mesh->x2 - p->mesh->x1;
-    dx = dx/p->mesh->nelemx;
-    double Pressure = p->P;
-    return Pressure * dx/2;
-}
-
-double LeftPressure(struct fe* p, int row)
-{
-    double dy = p->mesh->y2 - p->mesh->y1;
-    double Pressure = p->P;
-    double alpha = p->a;
-    return Pressure * alpha * dy/2;
+    addval(problem->F, P, node, 0);
 }
 
 void ApplyAllBCs(struct fe *p)
 {
+    double P = p->P;
+    double a = p->a;
+    matrix *J, *F;
+    basis *b;
+    Mesh2D *mesh;
+    
+    b = p->b;
+    mesh = p->mesh;
+    F = p->F;
+    J = p->J;
+    
+    int i;
     
     // BC at x=0
-    ApplyNaturalBC(p, 0, &IsOnYAxis, &LeftPressure);
+    for(i=p->nvars; i< (mesh->nelemy+1)*p->nvars; i+=p->nvars) {
+        //ApplyNBC(p, 2, P*a);
+        ApplyNBC(p, i, P*a);
+    }
     
     // BC at y=H
-    ApplyNaturalBC(p, 1, &IsOnTopBoundary, &TopPressure);
+    for(i=(mesh->nelemy+1)*p->nvars; i< (mesh->nelemx+1)*(mesh->nelemy+1)*p->nvars; i+=p->nvars*(mesh->nelemy+1)) {
+        //ApplyNBC(p, 3, P);
+        //ApplyNBC(p, 7, P);
+        ApplyNBC(p, i+1, P);
+    }
     
-    // BC at y=0
-    ApplyEssentialBC(p, 0, &IsOnXAxis, &Zero);
-    ApplyEssentialBC(p, 1, &IsOnXAxis, &Zero);
+     // BC at y=0
+    for(i=0; i< (mesh->nelemx+1)*(mesh->nelemy+1)*p->nvars; i+= p->nvars*(mesh->nelemy+1)) {
+        ApplyDBC(J, F, b, i, 0 );
+        ApplyDBC(J, F, b, i+1, 0);
+        //ApplyDBC(J, F, b, 4, 0);
+        //ApplyDBC(J, F, b, 5, 0);
+    }
     return;
 }
 
@@ -371,8 +289,9 @@ int main(int argc, char *argv[])
 {
     Mesh2D *mesh;
     basis *b;
-    matrix *E;
+    matrix *J, *F, *E;
     struct fe* problem;
+    int i;
 
     /* Make a linear 2D basis */
     b = MakeLinBasis(2);
@@ -380,13 +299,13 @@ int main(int argc, char *argv[])
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh2D(0.0, 1.0,
                                  0.0, 2.0,
-                                 8, 8);
+                                 3, 3);
     
     problem = CreateFE(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
     problem->nvars = 2;
     
-    problem->P = .1;
-    problem->a = .01;
+    problem->P = -1000;
+    problem->a = -.1;
     
     E = NLinSolve(problem, NULL);
 

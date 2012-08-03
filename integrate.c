@@ -256,25 +256,7 @@ double quad2d3generic(struct fe *p, matrix *guess, Elem2D *elem,
 
     for(i=0; i<NPTS; i++) {
         for(j=0; j<NPTS; j++) {
-            result += w[i]/2 * w[j]/2 * residual(p, guess, elem, (x[i]+1)/2, (x[j]+1)/2, f1, f2);
-        }
-    }
-
-    return result;
-}
-
-double quad2d3arc(struct fe *p, matrix *guess, matrix *prevguess, Elem2D *elem,
-                  double (*residual)(struct fe*, matrix*, matrix*, Elem2D*, double, double))
-{
-    int i, j;
-    double result = 0;
-    double *x, *w;
-    x = x3;
-    w = w3;
-
-    for(i=0; i<NPTS; i++) {
-        for(j=0; j<NPTS; j++) {
-            result += w[i]/2 * w[j]/2 * residual(p, guess, prevguess, elem, (x[i]+1)/2, (x[j]+1)/2);
+            result += w[i]/2 * w[j]/2 * residual(p, guess, elem, (x[i]+1)/2, (x[j]+1)/2, i, j);
         }
     }
 

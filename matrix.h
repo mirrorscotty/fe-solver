@@ -43,7 +43,7 @@ typedef struct {
 
 vector* CreateVector(int);
 void DestroyVector(vector*);
-//double valV(vector*, int);
+double valV(vector*, int);
 void setvalV(vector*, int, double);
 int len(vector*);
 void PrintVector(vector*);
@@ -53,7 +53,5 @@ vector* subtractV(vector*, vector*);
 double dotV(vector*, vector*);
 vector* scalarmultV(double, vector*);
 int equalV(vector*, vector*);
-
-#define valV(VECTOR, INDEX) (VECTOR)->v[(INDEX)]
 
 #endif
