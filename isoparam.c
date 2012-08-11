@@ -87,3 +87,19 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
     return r;
 }
 
+/* 1D stuff */
+IMap1D(struct fe1d *p, Elem1D *elem, xi)
+{
+    double x1, x2;
+    double result = 0;
+    basis *b;
+    b = p->b;
+    int n = p->b->n;
+    int i;
+
+    for(i=0; i<n; i++) {
+        result += b->phi[i](xi) * valV(elem->points, i);
+    }
+
+    return result;
+}

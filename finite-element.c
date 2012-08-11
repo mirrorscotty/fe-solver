@@ -32,6 +32,7 @@ struct fe* CreateFE(basis* b,
     return problem;
 }
 
+/* Todo: make sure this actually frees everything. */
 void DestroyFE(struct fe* p)
 {
     if(p->b)
@@ -80,6 +81,7 @@ matrix* AssembleJ(struct fe *problem, matrix *guess)
      * matrix for each and then add it to the global matrix as appropriate */
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         /* Generate the element matrix for the specified element width */
+        /* Fixme: get the local guess here? */
         j = problem->makej(problem, mesh->elem[i], guess);
 
         //j = CreateOnesMatrix(8, 8); // for testing purposes

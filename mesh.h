@@ -11,6 +11,7 @@ typedef struct {
     vector* map;
 } Elem2D;
 
+/* For 1D meshes, just use the x-coordinate. The variable nelemy should be 1 */
 typedef struct {
     int nelemx;
     int nelemy;

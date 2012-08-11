@@ -140,6 +140,7 @@ Mesh2D* MakeSpheroidMesh(basis *bas, double e, double r, int Nr, int Nt)
     return mesh;
 }
 
+/* Todo: allow for the creation of quadratic meshes */
 Mesh2D* GenerateUniformMesh2D(double x1, double x2,
                               double y1, double y2,
                               int nx, int ny)
@@ -259,7 +260,9 @@ void DestroyMesh2D(Mesh2D *mesh)
 {
     int i;
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++)
-        free(mesh->elem[i]);
+        DestroyElem2D(mesh->elem[i]);
+        // Used to use the memory-leaking hack commented below. This was bad.
+        //free(mesh->elem[i]);
     free(mesh->nodes);
     free(mesh->elem);
     free(mesh);

@@ -17,7 +17,7 @@ struct fe {
     matrix *F;
     matrix *R;
     
-    int nvars; /* Number of independant variables. */
+    int nvars; /* Number of dependant variables. */
     int nrows; /* Number of rows (nodes) in the final solution. */
     int nconstr; /* Number of additional constraints (arc length, etc.) */
 

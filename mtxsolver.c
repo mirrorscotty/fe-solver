@@ -93,6 +93,26 @@ matrix* LinSolve(struct fe *problem)
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
+/* 1D version of the above function. */
+/* Todo: replace this function and the above one by a macro for simplicity. */
+matrix *LinSolve1D(struct fe1d *problem) {
+    matrix *guess;
+    int rows = problem->nrows;
+    guess = CreateMatrix(rows*problem->nvars, 1);
+    AssembleJ1D(problem, guess);
+    problem->F = CreateMatrix(rows*problem->nvars, 1);
+    problem->applybcs(problem);
+    
+    /* Calculate the determinate of the jacobian matrix to see if we're going to
+     * good results. Currently this takes forever, and is commented for that
+     * reason. */
+//    if(fabs(CalcDeterminant(problem->J)) - 1e-10 < 0)
+//        puts("Singular Matrix.");
+
+    return SolveMatrixEquation(problem->J, problem->F);
+}
+
+
 /* Nonlinear finite element solver. This does all the same stuff as the linear
  * solver (assembling the global matricies), but utilizes an initial guess to
  * calculate them. It then iterates using Newton's method and updates this

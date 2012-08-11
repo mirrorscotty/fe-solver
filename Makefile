@@ -1,6 +1,6 @@
 CC=gcc
 
-CFLAGS=-lm -Wall -ggdb -O2
+CFLAGS=-lm -I. -I..-Wall -ggdb -O2
 
 all: ce675p1 
 
@@ -21,17 +21,17 @@ clean:
 
 
 
-ce675p1.o: ce675p1.c
-	$(CC) -c ce675p1.c $(CFLAGS)
+ce675p1.o: problems/ce675p1.c
+	$(CC) -c problems/ce675p1.c $(CFLAGS)
 
-ce675p2.o: ce675p2.c
-	$(CC) -c ce675p2.c $(CFLAGS)
+ce675p2.o: problems/ce675p2.c
+	$(CC) -c problems/ce675p2.c $(CFLAGS)
 
-2dlaplace.o: 2dlaplace.c
-	$(CC) -c 2dlaplace.c $(CFLAGS)
+2dlaplace.o: problems/2dlaplace.c
+	$(CC) -c problems/2dlaplace.c $(CFLAGS)
 
-spheroid.o: spheroid.c
-	$(CC) -c spheroid.c $(CFLAGS)
+spheroid.o: problems/spheroid.c
+	$(CC) -c problems/spheroid.c $(CFLAGS)
 
 integrate.o: integrate.c integrate.h
 	$(CC) -c integrate.c $(CFLAGS)
