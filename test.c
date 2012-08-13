@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include "basis.h"
-#include "mesh.h"
+#include "mesh2d.h"
 #include "isoparam.h"
 #include "integrate.h"
 #include "finite-element.h"

@@ -5,7 +5,7 @@
 #include "basis.h"
 #include "mtxsolver.h"
 #include "integrate.h"
-#include "mesh.h"
+#include "mesh2d.h"
 #include "isoparam.h"
 #include "finite-element.h"
 

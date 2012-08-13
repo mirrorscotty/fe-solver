@@ -2,7 +2,7 @@
 #define INTEGRATE_H
 
 #include "basis.h"
-#include "mesh.h"
+#include "mesh2d.h"
 #include "finite-element.h"
 #include "finite-element1d.h"
 

@@ -3,7 +3,7 @@
 
 #include "matrix.h"
 #include "basis.h"
-#include "mesh.h"
+#include "mesh2d.h"
 
 struct fe;
 

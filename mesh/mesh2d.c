@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "matrix.h"
-#include "mesh.h"
+#include "mesh2d.h"
 
 /* Print out a mesh in a somewhat readable format */
 void MeshPrint(Mesh2D *mesh)

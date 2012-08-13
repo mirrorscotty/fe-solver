@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "basis.h"
-#include "mesh.h"
+#include "mesh2d.h"
 #include "matrix.h"
 #include "finite-element.h"
 

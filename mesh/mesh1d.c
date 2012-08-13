@@ -7,7 +7,7 @@
 
 void meshprnt1d(Mesh1D* mesh)
 {
-    int i, j;
+    int i;
     printf("Elements: %d\n", mesh->nelem);
     printf("---------------------\n");
     for(i=0; i<mesh->nelem; i++) {
@@ -26,7 +26,6 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 
     Mesh1D *mesh;
     mesh = (Mesh1D*) calloc(1, sizeof(Mesh1D));
-    Elem1D *e;
 
     mesh->x1 = x1;
     mesh->x2 = x2;
@@ -56,7 +55,6 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 Elem1D* CreateElem1D(basis *b)
 {
     Elem1D *elem;
-    int i;
     int nnodes = b->n;
     elem = (Elem1D*) calloc(1, sizeof(Elem1D));
     elem->points = CreateVector(nnodes);

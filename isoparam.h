@@ -1,7 +1,7 @@
 #ifndef ISOPARAM_H
 #define ISOPARAM_H
 
-#include "mesh.h"
+#include "mesh2d.h"
 #include "finite-element.h"
 #include "finite-element1d.h"
 
