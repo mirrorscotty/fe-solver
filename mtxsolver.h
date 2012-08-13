@@ -2,6 +2,7 @@
 #define MTXSOLVER_H
 
 #include "finite-element.h"
+#include "finite-element1d.h"
 
 void ForwardSubstitution(matrix*);
 void ReverseElimination(matrix*);

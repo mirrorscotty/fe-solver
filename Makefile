@@ -2,19 +2,21 @@ CC=gcc
 
 CFLAGS=-lm -I. -I..-Wall -ggdb -O2
 
+OBJECTFILES=integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o
+
 all: ce675p1 
 
-2dlaplace: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o 2dlaplace.o isoparam.o
-	gcc -o 2dlaplace 2dlaplace.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o -lm -ggdb
+2dlaplace: 2dlaplace.o $(OBJECTFILES)
+	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
 
-ce675p1: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p1.o isoparam.o
-	$(CC) -o ce675p1 ce675p1.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o $(CFLAGS)
+ce675p1: ce675p1.o $(OBJECTFILES)
+	$(CC) -o ce675p1 ce675p1.o $(OBJECTFILES) $(CFLAGS)
 
-spheroid: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o
-	$(CC) -o spheroid integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o spheroid.o $(CFLAGS)
+spheroid: spheroid.o $(OBJECTFILES)
+	$(CC) -o spheroid spheroid.o $(OBJECTFILES) $(CFLAGS)
 
-ce675p2: integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o ce675p2.o isoparam.o
-	$(CC) -o ce675p2 ce675p2.o integrate.o basis.o matrix.o mesh.o mtxsolver.o vector.o finite-element.o isoparam.o $(CFLAGS)
+ce675p2: ce675p2.o $(OBJECTFILES)
+	$(CC) -o ce675p2 ce675p2.o $(OBJECTFILES) $(CFLAGS)
 
 clean:
 	rm -rf spheroid 2dlaplace ce675p1 ce675p2 *.o *~
@@ -57,3 +59,8 @@ finite-element.o: finite-element.c finite-element.h
 isoparam.o: isoparam.c isoparam.h
 	$(CC) -c isoparam.c $(CFLAGS)
 
+finite-element1d.o: finite-element1d.c finite-element1d.h
+	$(CC) -c finite-element1d.c $(CFLAGS)
+
+mesh1d.o: mesh1d.h mesh1d.c
+	$(CC) -c mesh1d.c $(CFLAGS)

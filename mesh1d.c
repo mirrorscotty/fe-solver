@@ -7,7 +7,7 @@
 
 Mesh1D* GenerateUniformMesh1D(double x1, double x2, int nx)
 {
-    int i;
+    int i, j;
     double dx = (x2-x1)/nx;
 
     Mesh1D *mesh;
@@ -19,7 +19,7 @@ Mesh1D* GenerateUniformMesh1D(double x1, double x2, int nx)
 
     mesh->nelem = nx;
 
-    mesh->elem = (Elem1D**) calloc(nx, sizeof(Elem2D));
+    mesh->elem = (Elem1D**) calloc(nx, sizeof(Elem1D));
     mesh->nodes = CreateVector(nx+1);
 
     for(i=0; i<nx; i++) {
@@ -31,7 +31,7 @@ Mesh1D* GenerateUniformMesh1D(double x1, double x2, int nx)
 
         for(j=0; j<2; j++) {
             setvalV(mesh->nodes, (int) valV(mesh->elem[i]->map, j),
-                    valV(mesh->elem[i]->points, j);
+                    valV(mesh->elem[i]->points, j));
         }
     }
 

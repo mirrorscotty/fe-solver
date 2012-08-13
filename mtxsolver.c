@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "matrix.h"
 #include "finite-element.h"
+#include "finite-element1d.h"
 
 void SwapRows(matrix*, int, int);
 int FindPivot(matrix*, int);
@@ -95,7 +96,8 @@ matrix* LinSolve(struct fe *problem)
 
 /* 1D version of the above function. */
 /* Todo: replace this function and the above one by a macro for simplicity. */
-matrix *LinSolve1D(struct fe1d *problem) {
+matrix* LinSolve1D(struct fe1d *problem)
+{
     matrix *guess;
     int rows = problem->nrows;
     guess = CreateMatrix(rows*problem->nvars, 1);

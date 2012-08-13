@@ -26,3 +26,5 @@ void DestroyMesh1D(Mesh1D*);
 Elem1D* CreateElem1D(basis*);
 void DestroyElem1D(Elem1D*);
 
+#endif
+

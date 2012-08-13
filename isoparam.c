@@ -88,7 +88,7 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
 }
 
 /* 1D stuff */
-IMap1D(struct fe1d *p, Elem1D *elem, xi)
+double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
 {
     double x1, x2;
     double result = 0;

@@ -22,11 +22,11 @@ struct fe1d {
 
     /* Functions to make the element mass/stiffness matrix and the load vector */
     matrix* (*makej)(struct fe1d*, Elem1D*, matrix*);
-    matrix* (*makek)(struct fe1d*, Elem1D*, matrix*);
+    matrix* (*makef)(struct fe1d*, Elem1D*, matrix*);
 
     /* Function to apply all the relevant boundary conditions for the problem. */
     void (*applybcs)(struct fe1d*);
-}
+};
 
 struct fe1d* CreateFE1D(basis*, Mesh1D*,
                         matrix* (*)(struct fe1d*, Elem1D*, matrix*),
@@ -36,4 +36,6 @@ void DestroyFE1D(struct fe1d*);
 
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
+
+#endif
 

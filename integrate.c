@@ -245,7 +245,7 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
 }
 
 double quad1d3generic(struct fe *p, matrix *guess, Elem1D *elem,
-                      double (*residual)(struct fe*, matrix*, Elem1D, double, int, int),
+                      double (*residual)(struct fe*, matrix*, Elem1D*, double, int, int),
                       int f1, int f2)
 {
     int i;

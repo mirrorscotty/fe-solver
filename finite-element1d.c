@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
-#include "basis.c"
-#include "mesh1d.c"
-#include "matrix.c"
+#include "basis.h"
+#include "mesh1d.h"
+#include "matrix.h"
 #include "finite-element1d.h"
 
 struct fe1d* CreateFE1D(basis *b,
@@ -88,7 +88,7 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
     return J;
 }
 
-matrix *AssembleF(struct fe1d *problem, matrix *guess)
+matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
 {
     Mesh1D *mesh = problem->mesh;
     basis *b = problem->b;
