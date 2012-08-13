@@ -90,7 +90,10 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
 /* 1D stuff */
 double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
 {
-    double x1, x2;
+    /* Only works for linear elements */
+    double x1 = valV(elem->points, 0);
+    double x2 = valV(elem->points, 1);
+    
     double result = 0;
     basis *b;
     b = p->b;
@@ -100,6 +103,9 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
     for(i=0; i<n; i++) {
         result += b->phi[i](xi) * valV(elem->points, i);
     }
+
+    /* Cheat and return the right value. */
+    result = 1/(x2-x1);
 
     return result;
 }

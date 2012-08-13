@@ -116,3 +116,44 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     return F;
 }
 
+/* These functions are copied almost verbatim from the 2d file. */
+/* Function to apply Dirchlet boundary conditions. The second argument is a
+   function that determines whether or not the boundary condition is applied
+   for the current row (node). If the function evaluates as true, then the BC
+   is applied. The value at that node is then set to whatever the other
+   function returns. */
+void ApplyEssentialBC1D(struct fe1d* p,
+                      int var,
+                      int (*cond)(struct fe1d*, int),
+                      double (*BC)(struct fe1d*, int))
+{
+    int i, j;
+    /* Loop through the rows */
+    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
+        /* Check to see if the BC should be applied */
+        if(cond(p, i)) {
+            //printf("Applying Dirchlet boundary condition at node %d for variable %d\n", i/p->nvars, var);
+            /* Zero out the row */
+            for(j=0; j<p->nrows*p->nvars; j++)
+                setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
+            /* Set the appropriate value in the load vector */
+            setval(p->F, BC(p, i), i, 0);
+        }
+    }
+    return;
+}
+
+/* This works the same way, only it applies a Neumann BC */
+void ApplyNaturalBC1D(struct fe1d *p,
+                    int var,
+                    int (*cond)(struct fe1d*, int),
+                    double (*BC)(struct fe1d*, int))
+{
+    int i;
+    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
+        if(cond(p, i))
+            //printf("Applying Neumann boundary condition at node %d for variable %d\n", i/p->nvars, var);
+            addval(p->F, BC(p, i), i, 0);
+    }
+}
+

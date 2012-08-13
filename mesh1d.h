@@ -21,10 +21,11 @@ typedef struct {
     vector *nodes;
 } Mesh1D;
 
-Mesh1D* GenerateUniformMesh1D(double, double, int);
+Mesh1D* GenerateUniformMesh1D(basis*, double, double, int);
 void DestroyMesh1D(Mesh1D*);
 Elem1D* CreateElem1D(basis*);
 void DestroyElem1D(Elem1D*);
+void meshprnt1d(Mesh1D*);
 
 #endif
 

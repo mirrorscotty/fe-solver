@@ -13,7 +13,7 @@ void MeshPrint(Mesh2D *mesh)
     printf("---------------------\n");
     for(i=0; i<mesh->nelemx*mesh->nelemy; i++) {
         printf("Element #%d\n---------------------\n", i);
-    PrintVector(mesh->elem[i]->map);
+        PrintVector(mesh->elem[i]->map);
         for(j=0; j<len(mesh->elem[i]->map); j++) {
             PrintVector(mesh->elem[i]->points[j]);
         }

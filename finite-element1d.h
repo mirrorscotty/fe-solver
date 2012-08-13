@@ -1,5 +1,5 @@
 #ifndef FINITE_ELEMENT1D_H
-#define FINITE_ELEMENT1D_h
+#define FINITE_ELEMENT1D_H
 
 #include "matrix.h"
 #include "basis.h"
@@ -36,6 +36,11 @@ void DestroyFE1D(struct fe1d*);
 
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
+
+void ApplyEssentialBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
+                        double (*)(struct fe1d*, int));
+void ApplyNaturalBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
+                      double (*)(struct fe1d*, int));
 
 #endif
 

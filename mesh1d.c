@@ -5,7 +5,21 @@
 #include "matrix.h"
 #include "mesh1d.h"
 
-Mesh1D* GenerateUniformMesh1D(double x1, double x2, int nx)
+void meshprnt1d(Mesh1D* mesh)
+{
+    int i, j;
+    printf("Elements: %d\n", mesh->nelem);
+    printf("---------------------\n");
+    for(i=0; i<mesh->nelem; i++) {
+        printf("Element #%d\n---------------------\n", i);
+        PrintVector(mesh->elem[i]->map);
+        PrintVector(mesh->elem[i]->points);
+        puts("");
+    }
+    return;
+}
+
+Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 {
     int i, j;
     double dx = (x2-x1)/nx;
@@ -23,6 +37,7 @@ Mesh1D* GenerateUniformMesh1D(double x1, double x2, int nx)
     mesh->nodes = CreateVector(nx+1);
 
     for(i=0; i<nx; i++) {
+        mesh->elem[i] = CreateElem1D(b);
         setvalV(mesh->elem[i]->points, 0, x1+dx*i);
         setvalV(mesh->elem[i]->points, 1, x1+dx*(i+1));
 

@@ -5,18 +5,23 @@
 #include "basis.h"
 #include "mtxsolver.h"
 #include "integrate.h"
-#include "mesh.h"
+#include "mesh1d.h"
 #include "isoparam.h"
-#include "finite-element.h"
+#include "finite-element1d.h"
 
-double ElemJdRxdx(struct fe *p, matrix *guess, Elem2D *elem, double x, double y, int f1, int f2)
+double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
-    double value;
+    double value = 0;
+    basis *b;
+    b = p->b;
     
+    value  = IMap1D(p, elem, x)*b->dphi[f1](x);
+    value *= b->dphi[f2](x);
+
     return value;
 }
 
-matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
+matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
 {
     basis *b;
     b = p->b;
@@ -31,8 +36,7 @@ matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
     
     for(i=0; i<b->n*nvars; i+=nvars) {
         for(j=0; j<b->n*nvars; j+=nvars) {
-            /* dRx/dx */
-            value = quad2d3generic(p, guess, elem, &ElemJdRxdx, i/2, j/2);
+            value = quad1d3generic(p, guess, elem, &Residual, i, j);
             setval(m, value, i, j);
         }
     }
@@ -41,7 +45,7 @@ matrix* CreateElementMatrix(struct fe *p, Elem2D *elem, matrix *guess)
 }
 
 /* Create the load vector */
-matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
+matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
     int i;
     matrix *f;
     
@@ -58,10 +62,10 @@ matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
 }
 
 /* Todo: double-check these functions */
-int IsOnRightBoundary(struct fe *p, int row)
+int IsOnRightBoundary(struct fe1d *p, int row)
 {
-    double width = 1;
-    double x = valV(p->mesh->nodes[row/p->nvars], 0);
+    double width = p->mesh->x2 - p->mesh->x1;
+    double x = valV(p->mesh->nodes, row/p->nvars);
     
     if(fabs(x - width) < 1e-5)
         return 1;
@@ -69,59 +73,57 @@ int IsOnRightBoundary(struct fe *p, int row)
         return 0;
 }
 
-int IsOnLeftBoundary(struct fe *p, int row)
+int IsOnLeftBoundary(struct fe1d *p, int row)
 {
-    double height = p->mesh->y2 - p->mesh->y1;
-    double y = valV(p->mesh->nodes[row/p->nvars], 0);
-    
-    if(fabs(y - height) < 1e-5)
+    double x = valV(p->mesh->nodes, row/p->nvars);
+  
+    if(fabs(x) < 1e-5)
         return 1;
     else
         return 0;
 }
 
-double Zero(struct fe *p, int row)
+double Zero(struct fe1d *p, int row)
 {
     return 0.0;
 }
 
-void ApplyAllBCs(struct fe *p)
+double One(struct fe1d *p, int row)
+{
+    return 1.0;
+}
+
+void ApplyAllBCs(struct fe1d *p)
 {
     
     // BC at x=0
-    ApplyNaturalBC(p, 0, &IsOnLeftBoundary, &Zero);
+    ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Zero);
     
     // BC at x=L
-    ApplyNaturalBC(p, 0, &IsOnRightBoundary, &Zero);
+    ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &One);
     
     return;
 }
 
 int main(int argc, char *argv[])
 {
-    Mesh2D *mesh;
+    Mesh1D *mesh;
     basis *b;
     matrix *E;
-    struct fe* problem;
+    struct fe1d* problem;
 
-    /* Make a linear 2D basis */
-    b = MakeLinBasis(2);
+    /* Make a linear 1D basis */
+    b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(0, 1, 5);
-    meshprnt(mesh);
+    mesh = GenerateUniformMesh1D(b, 0.0, 1.0, 5);
     
-    //problem = CreateFE(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
-    //problem->nvars = 1;
+    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
+    problem->nvars = 1;
     
-    /* Not used */
-    //problem->P = .1;
-    //problem->a = .01;
-    
-    //E = NLinSolve(problem, NULL);
+    E = LinSolve1D(problem);
 
-    //mtxprnt(E);
-    //puts("");
+    mtxprnt(E);
     
     return 0;
 }
