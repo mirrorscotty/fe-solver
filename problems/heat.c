@@ -9,14 +9,27 @@
 #include "isoparam.h"
 #include "finite-element1d.h"
 
+/* Creates the Jacobian and helps solve for the current time step */
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
     double value = 0;
     basis *b;
     b = p->b;
     
-    value  = IMap1D(p, elem, x)*b->dphi[f1](x);
-    value *= b->dphi[f2](x);
+    value  = b->phi[f1](x) * b->phi[f2](x);
+
+    return value;
+}
+
+/* Used in calculating the load vector/stuff from the previous time step. */
+double R2D2(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
+{
+    double value = 0;
+    basis *b;
+    b = p->b;
+
+    value  = b->phi[f1](x) * b->phi[f2](x);
+    value -= p->dt * b->dphi[f1](x) * b->dphi[f2](x) * IMap1D(p, elem, x);
 
     return value;
 }
@@ -44,24 +57,29 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
     return m;
 }
 
-/* Create the load vector */
+/* Create the load vector... thing */
 matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
-    int i;
-    matrix *f;
-    
     basis *b;
     b = p->b;
-
-    f = CreateMatrix(b->n, 1);
-
-    for(i=0; i<b->n; i++) {
-        setval(f, 0, i, 0);
+    
+    int nvars = p->nvars;
+    
+    int i, j;
+    double value = 0;
+    matrix *m;
+    
+    m = CreateMatrix(b->n*nvars, b->n*nvars);
+    
+    for(i=0; i<b->n*nvars; i+=nvars) {
+        for(j=0; j<b->n*nvars; j+=nvars) {
+            value = quad1d3generic(p, guess, elem, &R2D2, i, j);
+            setval(m, value, i, j);
+        }
     }
 
-    return f;
+    return m;
 }
 
-/* Todo: double-check these functions */
 int IsOnRightBoundary(struct fe1d *p, int row)
 {
     double width = p->mesh->x2 - p->mesh->x1;
@@ -105,11 +123,17 @@ void ApplyAllBCs(struct fe1d *p)
     return;
 }
 
+
+/* Function that sets the initial condition. */
+double InitialCondition(double x)
+{
+    return 0.5;
+}
+
 int main(int argc, char *argv[])
 {
     Mesh1D *mesh;
     basis *b;
-    matrix *E;
     struct fe1d* problem;
 
     /* Make a linear 1D basis */
@@ -118,12 +142,14 @@ int main(int argc, char *argv[])
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh1D(b, 0.0, 1.0, 5);
     
-    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs);
+    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs, 100);
     problem->nvars = 1;
-    
-    E = LinSolve1D(problem);
+    problem->dt = .01;
 
-    mtxprnt(E);
-    
+    ApplyInitialCondition(problem, 0, &InitialCondition);
+    while(problem->t<problem->maxsteps)
+        StoreSolution(problem, LinSolve1DTrans(problem));
+    PrintSolution(problem, problem->maxsteps-1);
+
     return 0;
 }

@@ -4,6 +4,7 @@
 #include "matrix.h"
 #include "basis.h"
 #include "mesh1d.h"
+#include "solution.h"
 
 struct fe1d;
 
@@ -14,6 +15,11 @@ struct fe1d {
     matrix *J;
     matrix *R;
     matrix *F;
+
+    solution **soln; /* Stored solutions for each time step. */
+    int t; /* Current time index. */
+    int maxsteps; /* Maximum number of time steps to be allowed. */
+    double dt; /* The time step for the initial step. */
 
     int nvars; /* Number of dependant variables. */
     int nrows; /* Number of rows (nodes) in the final solution. */
@@ -31,16 +37,23 @@ struct fe1d {
 struct fe1d* CreateFE1D(basis*, Mesh1D*,
                         matrix* (*)(struct fe1d*, Elem1D*, matrix*),
                         matrix* (*)(struct fe1d*, Elem1D*, matrix*),
-                        void (*)(struct fe1d*));
+                        void (*)(struct fe1d*), int);
 void DestroyFE1D(struct fe1d*);
 
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
+matrix* AssembleF1DTrans(struct fe1d*, matrix*);
 
 void ApplyEssentialBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
                         double (*)(struct fe1d*, int));
 void ApplyNaturalBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
                       double (*)(struct fe1d*, int));
+
+void ApplyInitialCondition(struct fe1d*, int, double (*)(double));
+
+int StoreSolution(struct fe1d*, matrix*);
+solution* FetchSolution(struct fe1d*, int);
+void PrintSolution(struct fe1d*, int);
 
 #endif
 

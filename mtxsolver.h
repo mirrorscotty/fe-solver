@@ -9,6 +9,7 @@ void ReverseElimination(matrix*);
 matrix* SolveMatrixEquation(matrix*, matrix*);
 matrix* LinSolve(struct fe*);
 matrix* LinSolve1D(struct fe1d*);
+matrix* LinSolve1DTrans(struct fe1d*);
 matrix* NLinSolve(struct fe*, matrix*);
 
 #endif

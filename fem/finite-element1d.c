@@ -4,12 +4,14 @@
 #include "mesh1d.h"
 #include "matrix.h"
 #include "finite-element1d.h"
+#include "solution.h"
 
 struct fe1d* CreateFE1D(basis *b,
                         Mesh1D* mesh,
                         matrix* (*makej)(struct fe1d*, Elem1D*, matrix*),
                         matrix* (*makef)(struct fe1d*, Elem1D*, matrix*),
-                        void (*applybcs)(struct fe1d*))
+                        void (*applybcs)(struct fe1d*),
+                        int maxsteps)
     {
     struct fe1d* problem;
     problem = (struct fe1d*) calloc(1, sizeof(struct fe1d));
@@ -27,6 +29,10 @@ struct fe1d* CreateFE1D(basis *b,
 
     /* Initialize values. These should probably be set later in the program. */
     problem->nvars = 0;
+
+    problem->t = 0;
+    problem->maxsteps = maxsteps;
+    problem->soln = (solution**) calloc(problem->maxsteps, sizeof(solution*));
 
     problem->F = NULL;
     problem->R = NULL;
@@ -80,8 +86,8 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
                 addval(J, val(j, x, y), c, d);
             }
         }
+        DestroyMatrix(j);
     }
-    DestroyMatrix(j);
 
     problem->J = J;
 
@@ -93,7 +99,7 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     Mesh1D *mesh = problem->mesh;
     basis *b = problem->b;
 
-    matrix *F, *f, *lguess;
+    matrix *F, *f;// *lguess;
     int i, j, rows;
     int r = b->n - b->overlap;
 
@@ -114,6 +120,44 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     problem->F = F;
 
     return F;
+}
+
+matrix *AssembleF1DTrans(struct fe1d *problem, matrix *guess)
+{
+    Mesh1D *mesh = problem->mesh;
+    basis *b = problem->b;
+
+    matrix *M, *m;
+    solution *prevsoln;
+    int i, x, y;
+    int c, d;
+
+    double rows = problem->nrows*problem->nvars;
+
+    if(!guess)
+        guess = CreateMatrix(rows, 1);
+
+    M = CreateMatrix(rows, rows);
+
+    for(i=0; i<mesh->nelem; i++) {
+        m = problem->makef(problem, mesh->elem[i], guess);
+
+        for(x=0; x<b->n; x++) {
+            for(y=0; y<b->n; y++) {
+                c = valV(mesh->elem[i]->map, x);
+                d = valV(mesh->elem[i]->map, y);
+
+                addval(M, val(m, x, y), c, d);
+            }
+        }
+        DestroyMatrix(m);
+    }
+
+    prevsoln = FetchSolution(problem, problem->t-1);
+
+    problem->F = mtxmul(M, prevsoln->values);
+
+    return M;
 }
 
 /* These functions are copied almost verbatim from the 2d file. */
@@ -155,5 +199,63 @@ void ApplyNaturalBC1D(struct fe1d *p,
             //printf("Applying Neumann boundary condition at node %d for variable %d\n", i/p->nvars, var);
             addval(p->F, BC(p, i), i, 0);
     }
+}
+
+/* Apply the initial condition for the specifed variable. The supplied function
+ * should return the value of the dependant variable and accept the independant
+ * variable as its only argument. */
+void ApplyInitialCondition(struct fe1d *p,
+                           int var,
+                           double (*f)(double))
+{
+    int i;
+    double x; /* The x value at the current mesh node. */
+    int n = p->nvars; /* The total number of dependant variables */
+
+    matrix *InitSoln;
+    InitSoln = CreateMatrix(p->nrows*p->nvars, 1);
+
+    for(i=var; i<p->nrows*n; i+=n) {
+        x = valV(p->mesh->nodes, i/n);
+        setval(InitSoln, f(x), i, 0);
+    }
+
+    /* This crap here is to make sure that the boundary conditions are applied
+     * to the initial state of the system. Bad things happen if this isn't done.
+     */
+    p->F = InitSoln;
+    p->J = CreateMatrix(p->nrows*p->nrows, p->nrows*p->nrows);
+    p->applybcs(p);
+    DestroyMatrix(p->J);
+
+    StoreSolution(p, InitSoln);
+}
+        
+
+
+/* Store the solution and advance the current time index. Returns 0 on failure.
+ */
+int StoreSolution(struct fe1d* p, matrix* values)
+{
+    if(p->t == p->maxsteps)
+        return 0;
+    p->soln[p->t] = CreateSolution(p->t, p->dt, values);
+    p->t = p->t + 1;
+    return 1;
+}
+
+solution* FetchSolution(struct fe1d *p, int t)
+{
+    if(t < p->t)
+        return p->soln[t];
+    else
+        return NULL;
+}
+
+void PrintSolution(struct fe1d *p, int t)
+{
+    solution *s;
+    s = FetchSolution(p, t);
+    mtxprnt(s->values);
 }
 
