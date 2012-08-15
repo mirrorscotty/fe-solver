@@ -1,0 +1,3 @@
+[submodule "material-data"]
+	path = material-data
+	url = git@github.com:mirrorscotty/material-data.git

@@ -1,8 +1,8 @@
 CC=gcc
 
-CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Wall -ggdb -O0
+CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/freezing -Wall -ggdb -O0
 
-OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o time.o
+OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o freezing.o 
 
 all: heat
 
@@ -25,6 +25,8 @@ clean:
 	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat *.o *~
 
 
+freezing.o: material-data/freezing/freezing.c material-data/freezing/freezing.h
+	$(CC) -c material-data/freezing/freezing.c $(CFLAGS)
 
 ce675p1.o: problems/ce675p1.c
 	$(CC) -c problems/ce675p1.c $(CFLAGS)
@@ -78,5 +80,3 @@ solution.o: fem/solution.c fem/solution.h
 isoparam.o: isoparam.c isoparam.h
 	$(CC) -c isoparam.c $(CFLAGS)
 
-time.o: time.c time.h
-	$(CC) -c time.c $(CFLAGS)

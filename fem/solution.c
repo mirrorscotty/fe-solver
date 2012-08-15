@@ -24,14 +24,16 @@ void DestroySolution(solution *s)
 
 /* This function needs to be modified to support hermite cubic basis functions.
  */
-double IEvalSoln1D(struct fe1d *p, Elem1D *elem, solution *s, double xi)
+double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 {   
     int i;
     double result = 0;
     int n = p->b->n;
+    int nvars = p->nvars;
 
     for(i=0; i<n; i++) {
-        result += p->b->phi[i](xi) * val(s->values, valV(elem->map, i), 0);
+        result += p->b->phi[i](xi)
+                  * val(s->values, valV(elem->map, i)*nvars, 0);
     }
     
     return result;

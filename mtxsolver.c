@@ -121,15 +121,8 @@ matrix* LinSolve1DTrans(struct fe1d *problem)
     guess = CreateMatrix(rows*problem->nvars, 1);
     AssembleJ1D(problem, guess);
     AssembleF1DTrans(problem, guess);
-    //problem->F = CreateMatrix(rows*problem->nvars, 1);
     problem->applybcs(problem);
     
-    /* Calculate the determinate of the jacobian matrix to see if we're going to
-     * good results. Currently this takes forever, and is commented for that
-     * reason. */
-//    if(fabs(CalcDeterminant(problem->J)) - 1e-10 < 0)
-//        puts("Singular Matrix.");
-
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
