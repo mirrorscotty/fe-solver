@@ -246,6 +246,9 @@ int StoreSolution(struct fe1d* p, matrix* values)
 
 solution* FetchSolution(struct fe1d *p, int t)
 {
+    if(t < 0)
+        return NULL;
+
     if(t < p->t)
         return p->soln[t];
     else

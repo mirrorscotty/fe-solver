@@ -40,8 +40,8 @@ double R2D2(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f
     T = EvalSoln1D(p, 0, elem, s, x);
 
     value  = b->phi[f1](x) * b->phi[f2](x);
-    value -= p->dt * alpha(T) * IMap1D(p, elem, x)
-             * b->dphi[f1](x) * b->dphi[f2](x);
+    value -= p->dt * IMap1D(p, elem, x)
+             * b->dphi[f1](x) * b->dphi[f2](x);// * alpha(T);
 
     return value;
 }
@@ -152,6 +152,25 @@ double Right(struct fe1d *p, int row)
     return 290.0;
 }
 
+double ConvBC(struct fe1d *p, int row)
+{
+    double h = 1;
+    double Tinf = 290;
+    double T;
+
+    /* Fetch the value of T from the previous solution. If this is being
+     * applied at the initial condition, then simply return 0.*/
+    solution *s;
+    s = FetchSolution(p, p->t-1);
+    if(s) {
+        T = val(s->values, row, 0);
+        printf("T = %g\n", T);
+        return -h*(T-Tinf)/T;
+    } else {
+        return 0;
+    }
+}
+
 void ApplyAllBCs(struct fe1d *p)
 {
     
@@ -159,7 +178,7 @@ void ApplyAllBCs(struct fe1d *p)
     ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Left);
     
     // BC at x=L
-    ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &Right);
+    ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
     
     return;
 }
@@ -168,7 +187,7 @@ void ApplyAllBCs(struct fe1d *p)
 /* Function that sets the initial condition. */
 double InitTemp(double x)
 {
-    return 290;
+    return 273;
 }
 
 double InitC(double x)
@@ -190,9 +209,9 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, 1.0, 15);
+    mesh = GenerateUniformMesh1D(b, 0.0, 1.0, 5);
     
-    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs, 100000);
+    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs, 100);
     problem->nvars = 1;
     problem->dt = .001;
 
