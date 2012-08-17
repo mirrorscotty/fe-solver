@@ -21,8 +21,9 @@ void meshprnt1d(Mesh1D* mesh)
 
 Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 {
-    int i, j;
+    int i, j, k;
     double dx = (x2-x1)/nx;
+    int n = b->n; /* Number of nodes per element */
 
     Mesh1D *mesh;
     mesh = (Mesh1D*) calloc(1, sizeof(Mesh1D));
@@ -33,17 +34,17 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
     mesh->nelem = nx;
 
     mesh->elem = (Elem1D**) calloc(nx, sizeof(Elem1D));
-    mesh->nodes = CreateVector(nx+1);
+    mesh->nodes = CreateVector((n-1)*nx+1);
 
     for(i=0; i<nx; i++) {
         mesh->elem[i] = CreateElem1D(b);
-        setvalV(mesh->elem[i]->points, 0, x1+dx*i);
-        setvalV(mesh->elem[i]->points, 1, x1+dx*(i+1));
+        for(k=0; k<n; k++) {
+            setvalV(mesh->elem[i]->points, k, x1+dx*(i*(n-1)+k)/(n-1));
 
-        setvalV(mesh->elem[i]->map, 0, i);
-        setvalV(mesh->elem[i]->map, 1, i+1);
+            setvalV(mesh->elem[i]->map, k, i*(n-1)+k);
+        }
 
-        for(j=0; j<2; j++) {
+        for(j=0; j<n; j++) {
             setvalV(mesh->nodes, (int) valV(mesh->elem[i]->map, j),
                     valV(mesh->elem[i]->points, j));
         }

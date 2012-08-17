@@ -21,8 +21,11 @@ ce675p2: ce675p2.o $(OBJECTFILES)
 heat: heat.o $(OBJECTFILES)
 	$(CC) -o heat heat.o $(OBJECTFILES) $(CFLAGS)
 
+meshtest: problems/meshtest.c $(OBJECTFILES)
+	$(CC) -o meshtest problems/meshtest.c $(OBJECTFILES) $(CFLAGS)
+
 clean:
-	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat *.o *~
+	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat meshtest *.o *~
 
 
 freezing.o: material-data/freezing/freezing.c material-data/freezing/freezing.h
