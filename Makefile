@@ -4,7 +4,7 @@ CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/freezing -Wall -ggdb -O0
 
 OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o freezing.o 
 
-all: heat
+all: heat-explicit heat-implicit
 
 2dlaplace: 2dlaplace.o $(OBJECTFILES)
 	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
@@ -18,14 +18,17 @@ spheroid: spheroid.o $(OBJECTFILES)
 ce675p2: ce675p2.o $(OBJECTFILES)
 	$(CC) -o ce675p2 ce675p2.o $(OBJECTFILES) $(CFLAGS)
 
-heat: heat.o $(OBJECTFILES)
-	$(CC) -o heat heat.o $(OBJECTFILES) $(CFLAGS)
+heat-explicit: heat-explicit.o $(OBJECTFILES)
+	$(CC) -o heat-explicit heat-explicit.o $(OBJECTFILES) $(CFLAGS)
+
+heat-implicit: heat-implicit.o $(OBJECTFILES)
+	$(CC) -o heat-implicit heat-implicit.o $(OBJECTFILES) $(CFLAGS)
 
 meshtest: problems/meshtest.c $(OBJECTFILES)
 	$(CC) -o meshtest problems/meshtest.c $(OBJECTFILES) $(CFLAGS)
 
 clean:
-	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat meshtest *.o *~
+	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-implicit heat-explicit meshtest *.o *~
 
 
 freezing.o: material-data/freezing/freezing.c material-data/freezing/freezing.h
@@ -43,8 +46,11 @@ ce675p2.o: problems/ce675p2.c
 spheroid.o: problems/spheroid.c
 	$(CC) -c problems/spheroid.c $(CFLAGS)
 
-heat.o: problems/heat.c
-	$(CC) -c problems/heat.c $(CFLAGS)
+heat-implicit.o: problems/heat-implicit.c
+	$(CC) -c problems/heat-implicit.c $(CFLAGS)
+
+heat-explicit.o: problems/heat-explicit.c
+	$(CC) -c problems/heat-explicit.c $(CFLAGS)
 
 
 matrix.o: matrix/matrix.c matrix/matrix.h
