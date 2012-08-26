@@ -146,6 +146,26 @@ matrix* mtxmul(matrix *A, matrix *B)
     return C;
 }
 
+matrix* mtxmulconst(matrix *A, double k)
+{
+    int Ar, Ac;
+    int i, j;
+    matrix *C;
+
+    Ar = mtxlen2(A);
+    Ac = mtxlen1(A);
+
+    C = CreateMatrix(Ar, Ac);
+
+    for(i=0; i<Ar; i++) {
+        for(j=0; j<Ac; j++) {
+            setval(C, k*val(A, i, j), i, j);
+        }
+    }
+
+    return C;
+}
+
 /* Add two matricies.
  * Todo: Add error checking to make sure the dimensions agree.
  */
@@ -169,6 +189,7 @@ matrix* mtxadd(matrix *A, matrix *B)
     return C;
 }
 
+/* Multiply a matrix by -1 in place. */
 matrix* mtxneg(matrix *A)
 {
     int i, j;

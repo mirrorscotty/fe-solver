@@ -19,7 +19,8 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     basis *b;
     b = p->b;
     
-    value  = b->phi[f1](x) * b->phi[f2](x);
+    value  = b->dphi[f1](x) * b->dphi[f2](x);
+    value *= IMap1D(p, elem, x);
 
     return value;
 }
@@ -27,21 +28,21 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
 /* Used in calculating the load vector/stuff from the previous time step. */
 /* Note: This function fails pretty badly if a material data file isn't loaded.
  */
-double R2D2(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
+double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
     double value = 0;
     basis *b;
     b = p->b;
 
     /* This is just to fetch the value of T */
-    double T;
-    solution *s;
-    s = FetchSolution(p, p->t-1);
-    T = EvalSoln1D(p, 0, elem, s, x);
+    //double T;
+    //solution *s;
+    //s = FetchSolution(p, p->t-1);
+    //T = EvalSoln1D(p, 0, elem, s, x);
 
-    value  = b->phi[f1](x) * b->phi[f2](x);
-    value -= p->dt * IMap1D(p, elem, x)
-             * b->dphi[f1](x) * b->dphi[f2](x);// * alpha(T);
+    value  = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
+    //value -= p->dt * IMap1D(p, elem, x)
+    //         * b->dphi[f1](x) * b->dphi[f2](x);// * alpha(T);
 
     return value;
 }
@@ -96,7 +97,7 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
 }
 
 /* Create the load vector... thing */
-matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
+matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
     basis *b;
     b = p->b;
     
@@ -110,16 +111,27 @@ matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
     
     for(i=0; i<b->n*v; i+=v) {
         for(j=0; j<b->n*v; j+=v) {
-            value = quad1d3generic(p, guess, elem, &R2D2, i/v, j/v);
+            value = quad1d3generic(p, guess, elem, &ResDt, i/v, j/v);
             setval(m, value, i, j);
-
-            //value = quad1d3generic(p, guess, elem, &R5D2, i/v, j/v);
-            //setval(m, value, i+1, j+1);
         }
     }
 
     return m;
 }
+
+matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
+    basis *b;
+    b = p->b;
+    
+    int v = p->nvars;
+    
+    matrix *m;
+    
+    m = CreateMatrix(b->n*v, 1);
+
+    return m;
+}
+   
 
 int IsOnRightBoundary(struct fe1d *p, int row)
 {
@@ -152,6 +164,11 @@ double Right(struct fe1d *p, int row)
     return 290.0;
 }
 
+double Zero(struct fe1d *p, int row)
+{
+    return 0.0;
+}
+
 double ConvBC(struct fe1d *p, int row)
 {
     double h = 1;
@@ -163,7 +180,7 @@ double ConvBC(struct fe1d *p, int row)
     solution *s;
     s = FetchSolution(p, p->t-1);
     if(s) {
-        T = val(s->values, row, 0);
+        T = val(s->val, row, 0);
         printf("T = %g\n", T);
         return -h*(T-Tinf)/T;
     } else {
@@ -175,10 +192,12 @@ void ApplyAllBCs(struct fe1d *p)
 {
     
     // BC at x=0
-    ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Left);
+    //ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Left);
     
     // BC at x=L
-    ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
+    //ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
+    ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Zero);
+    ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &Zero);
     
     return;
 }
@@ -187,7 +206,8 @@ void ApplyAllBCs(struct fe1d *p)
 /* Function that sets the initial condition. */
 double InitTemp(double x)
 {
-    return 273;
+    //return 273;
+    return 1-pow(x-1,2);
 }
 
 double InitC(double x)
@@ -199,6 +219,7 @@ int main(int argc, char *argv[])
 {
     Mesh1D *mesh;
     basis *b;
+    matrix *IC;
     struct fe1d* problem;
 
     /* Load a data file if one is supplied. */
@@ -209,18 +230,33 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, 1.0, 5);
+    mesh = GenerateUniformMesh1D(b, 0.0, 2.0, 6);
     
-    problem = CreateFE1D(b, mesh, &CreateElementMatrix, &CreateElementLoad, &ApplyAllBCs, 100);
+    problem = CreateFE1D(b, mesh,
+                         &CreateDTimeMatrix,
+                         &CreateElementMatrix,
+                         &CreateElementLoad,
+                         &ApplyAllBCs,
+                         3000);
     problem->nvars = 1;
     problem->dt = .001;
 
-    ApplyInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
+    IC = GenerateInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
     //ApplyInitialCondition(problem, 1, &InitC); /* Initial concentration */
+    //
+    FE1DTransInit(problem, IC);
 
     while(problem->t<problem->maxsteps)
-        StoreSolution(problem, LinSolve1DTrans(problem));
+        LinSolve1DTrans(problem);
+    printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
     PrintSolution(problem, problem->maxsteps-1);
+
+    puts("\nJ");
+    mtxprnt(problem->J);
+    puts("\ndJ");
+    mtxprnt(problem->dJ);
+    puts("\nF");
+    mtxprnt(problem->F);
 
     return 0;
 }

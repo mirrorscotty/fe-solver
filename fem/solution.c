@@ -11,14 +11,16 @@ solution* CreateSolution(int tindex, double deltat, matrix *values)
 
     s->t = tindex;
     s->dt = deltat;
-    s->values = values;
+    s->val = values;
+    s->dval = NULL;
 
     return s;
 }
 
 void DestroySolution(solution *s)
 {
-    DestroyMatrix(s->values);
+    DestroyMatrix(s->val);
+    DestroyMatrix(s->dval);
     free(s);
 }
 
@@ -33,7 +35,7 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 
     for(i=0; i<n; i++) {
         result += p->b->phi[i](xi)
-                  * val(s->values, valV(elem->map, i)*nvars, 0);
+                  * val(s->val, valV(elem->map, i)*nvars, 0);
     }
     
     return result;

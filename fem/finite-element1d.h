@@ -13,6 +13,7 @@ struct fe1d {
     Mesh1D *mesh;
 
     matrix *J;
+    matrix *dJ;
     matrix *R;
     matrix *F;
 
@@ -27,6 +28,7 @@ struct fe1d {
     double tol; /* Tolerance for the nonlinear solver */
 
     /* Functions to make the element mass/stiffness matrix and the load vector */
+    matrix* (*makedj)(struct fe1d*, Elem1D*, matrix*);
     matrix* (*makej)(struct fe1d*, Elem1D*, matrix*);
     matrix* (*makef)(struct fe1d*, Elem1D*, matrix*);
 
@@ -37,11 +39,14 @@ struct fe1d {
 struct fe1d* CreateFE1D(basis*, Mesh1D*,
                         matrix* (*)(struct fe1d*, Elem1D*, matrix*),
                         matrix* (*)(struct fe1d*, Elem1D*, matrix*),
+                        matrix* (*)(struct fe1d*, Elem1D*, matrix*),
                         void (*)(struct fe1d*), int);
 void DestroyFE1D(struct fe1d*);
 
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
+
+void FE1DTransInit();
 matrix* AssembleF1DTrans(struct fe1d*, matrix*);
 
 void ApplyEssentialBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
@@ -49,9 +54,9 @@ void ApplyEssentialBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
 void ApplyNaturalBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
                       double (*)(struct fe1d*, int));
 
-void ApplyInitialCondition(struct fe1d*, int, double (*)(double));
+matrix* GenerateInitialCondition(struct fe1d*, int, double (*)(double));
 
-int StoreSolution(struct fe1d*, matrix*);
+int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);
 void PrintSolution(struct fe1d*, int);
 

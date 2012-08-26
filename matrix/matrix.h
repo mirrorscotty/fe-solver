@@ -22,6 +22,7 @@ matrix* CreateMatrix(int, int);
 matrix* CreateOnesMatrix(int, int);
 matrix* mtxtrn(matrix*);
 matrix* mtxmul(matrix*, matrix*);
+matrix* mtxmulconst(matrix*, double k);
 matrix* mtxadd(matrix*, matrix*);
 matrix* mtxneg(matrix*);
 matrix* CalcAdj(matrix*);

@@ -114,16 +114,46 @@ matrix* LinSolve1D(struct fe1d *problem)
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
+/* Explicit time integration algorithm (Forward Euler) */
 matrix* LinSolve1DTrans(struct fe1d *problem)
 {
-    matrix *guess;
-    int rows = problem->nrows;
-    guess = CreateMatrix(rows*problem->nvars, 1);
-    AssembleJ1D(problem, guess);
-    AssembleF1DTrans(problem, guess);
-    problem->applybcs(problem);
+    matrix *guess, *du, *u;
+    matrix *tmp1, *tmp2, *tmp3, *tmp4;
+    matrix *dresult, *result;
+    solution *prev; /* The solution at the previous time step */
+
+    /* Get the previous solution */
+    prev = FetchSolution(problem, problem->t-1);
+    du = prev->dval;
+    u = prev->val;
+
+    tmp1 = mtxmulconst(du, problem->dt);
+    tmp2 = mtxadd(u, tmp1);
+    mtxneg(tmp2);
+    tmp3 = mtxmul(problem->J, tmp2);
+
+    tmp4 = mtxadd(problem->F, tmp3);
+
+    /* Solve for du/dt */
+    dresult = SolveMatrixEquation(problem->dJ, tmp4);
+
+    DestroyMatrix(tmp1);
+    DestroyMatrix(tmp2);
+    DestroyMatrix(tmp3);
+    DestroyMatrix(tmp4);
+
+    /* Solve for u */
+    tmp1 = mtxmul(problem->dJ, dresult);
+    mtxneg(tmp1);
+    tmp2 = mtxadd(problem->F, tmp1);
+    result = SolveMatrixEquation(problem->J, tmp2);
+
+    DestroyMatrix(tmp1);
+    DestroyMatrix(tmp2);
+
+    StoreSolution(problem, result, dresult);
     
-    return SolveMatrixEquation(problem->J, problem->F);
+    return result;
 }
 
 /* Nonlinear finite element solver. This does all the same stuff as the linear
