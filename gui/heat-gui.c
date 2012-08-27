@@ -12,6 +12,8 @@
 
 #include "material-data/freezing/freezing.h"
 
+#include "heat-gui.h"
+
 /* The following two functions are for heat conduction. */
 /* Creates the Jacobian and helps solve for the current time step */
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
@@ -215,50 +217,5 @@ double react2(double cprev, double T, double dt)
     T = fabs(T);
     
     return cprev - dt*A*exp(-Ea/(R*T));
-}
-
-int main(int argc, char *argv[])
-{
-    Mesh1D *mesh;
-    basis *b;
-    matrix *IC;
-    struct fe1d* problem;
-
-    /* Load a data file if one is supplied. */
-    if(argc == 2)
-        init(argv[1]);
-
-    /* Make a linear 1D basis */
-    b = MakeLinBasis(1);
-
-    /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, 2.0, 6);
-    
-    problem = CreateFE1D(b, mesh,
-                         &CreateDTimeMatrix,
-                         &CreateElementMatrix,
-                         &CreateElementLoad,
-                         &ApplyAllBCs,
-                         3);
-    problem->nvars = 1;
-    problem->dt = .001;
-
-    IC = GenerateInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
-    //ApplyInitialCondition(problem, 1, &InitC); /* Initial concentration */
-    //
-    FE1DTransInit(problem, IC);
-
-    while(problem->t<problem->maxsteps)
-        LinSolve1DTrans(problem);
-    printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
-    PrintSolution(problem, 1);
-
-    FE1DInitAuxSolns(problem, 2);
-    SolveODE(problem, 0, 0, &react1, 1);
-    SolveODE(problem, 0, 1, &react2, 2);
-    PrintAuxSoln(problem, 0, 1);
-    PrintAuxSoln(problem, 1, 1);
-
-    return 0;
 }
 

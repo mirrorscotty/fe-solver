@@ -59,3 +59,8 @@ void PrintAuxSoln(struct fe1d *p, int var, int t)
     mtxprnt(s->val);
 }
 
+solution* FetchAuxSoln(struct fe1d *p, int var, int t)
+{
+    return p->auxsolns[var][t];
+}
+

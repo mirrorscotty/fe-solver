@@ -48,16 +48,18 @@ struct fe1d* CreateFE1D(basis *b,
 
 void DestroyFE1D(struct fe1d* p)
 {
-    if(p->b)
-        DestroyBasis(p->b);
-    if(p->F)
-        DestroyMatrix(p->F);
-    if(p->R)
-        DestroyMatrix(p->R);
-    if(p->J)
-        DestroyMatrix(p->J);
-    if(p->mesh)
-        DestroyMesh1D(p->mesh);
+    if(p) {
+        if(p->b)
+            DestroyBasis(p->b);
+        if(p->F)
+            DestroyMatrix(p->F);
+        if(p->R)
+            DestroyMatrix(p->R);
+        if(p->J)
+            DestroyMatrix(p->J);
+        if(p->mesh)
+            DestroyMesh1D(p->mesh);
+    }
     return;
 }
 

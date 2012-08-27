@@ -50,7 +50,7 @@ void DestroyFE1D(struct fe1d*);
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
 
-void FE1DTransInit();
+void FE1DTransInit(struct fe1d*, matrix*);
 matrix* AssembleF1DTrans(struct fe1d*, matrix*);
 
 void ApplyEssentialBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
