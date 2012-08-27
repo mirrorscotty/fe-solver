@@ -8,6 +8,7 @@
 #include "mesh1d.h"
 #include "isoparam.h"
 #include "finite-element1d.h"
+#include "auxsoln.h"
 
 #include "material-data/freezing/freezing.h"
 
@@ -51,23 +52,6 @@ double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
 double ReactResidual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
     return p->b->phi[f1](x) * p->b->phi[f2](x);
-}
-
-double R5D2(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
-{
-    double value;
-    double R = 8.314, A = 1, Ea = 2000; /* Default values to make gcc happy. */
-
-    /* This is just to fetch the value of T */
-    double T;
-    solution *s;
-    s = FetchSolution(p, p->t-1);
-    T = EvalSoln1D(p, 0, elem, s, x);
-
-    value = p->b->phi[f1](x) * p->b->phi[f2](x);
-    value += p->dt * A * exp(-Ea / (R * T));
-
-    return value;
 }
 
 matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
@@ -202,7 +186,6 @@ void ApplyAllBCs(struct fe1d *p)
     return;
 }
 
-
 /* Function that sets the initial condition. */
 double InitTemp(double x)
 {
@@ -213,6 +196,31 @@ double InitTemp(double x)
 double InitC(double x)
 {
     return 1;
+}
+
+/* ODEs */
+double react1(double cprev, double T, double dt)
+{
+    double A, Ea, R;
+    A = 1;
+    Ea = 1;
+    R = 1;
+
+    T = fabs(T);
+    
+    return cprev - dt*A*exp(-Ea/(R*T));
+}
+
+double react2(double cprev, double T, double dt)
+{
+    double A, Ea, R;
+    A = 2;
+    Ea = 2;
+    R = 2;
+
+    T = fabs(T);
+    
+    return cprev - dt*A*exp(-Ea/(R*T));
 }
 
 int main(int argc, char *argv[])
@@ -237,7 +245,7 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         3000);
+                         3);
     problem->nvars = 1;
     problem->dt = .001;
 
@@ -249,14 +257,14 @@ int main(int argc, char *argv[])
     while(problem->t<problem->maxsteps)
         LinSolve1DTrans(problem);
     printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
-    PrintSolution(problem, problem->maxsteps-1);
+    PrintSolution(problem, 1);
 
-    puts("\nJ");
-    mtxprnt(problem->J);
-    puts("\ndJ");
-    mtxprnt(problem->dJ);
-    puts("\nF");
-    mtxprnt(problem->F);
+    FE1DInitAuxSolns(problem, 2);
+    SolveODE(problem, 0, 0, &react1, 1);
+    SolveODE(problem, 0, 1, &react2, 2);
+    PrintAuxSoln(problem, 0, 1);
+    PrintAuxSoln(problem, 1, 1);
 
     return 0;
 }
+

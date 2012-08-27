@@ -2,7 +2,7 @@ CC=gcc
 
 CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/freezing -Wall -ggdb -O0
 
-OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o freezing.o 
+OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o freezing.o auxsoln.o
 
 all: heat-explicit
 
@@ -70,6 +70,12 @@ finite-element.o: fem/finite-element.c fem/finite-element.h
 finite-element1d.o: fem/finite-element1d.c fem/finite-element1d.h
 	$(CC) -c fem/finite-element1d.c $(CFLAGS)
 
+solution.o: fem/solution.c fem/solution.h
+	$(CC) -c fem/solution.c $(CFLAGS)
+
+auxsoln.o: fem/auxsoln.c fem/auxsoln.h
+	$(CC) -c fem/auxsoln.c $(CFLAGS)
+
 
 integrate.o: integrate.c integrate.h
 	$(CC) -c integrate.c $(CFLAGS)
@@ -79,9 +85,6 @@ basis.o: basis.c basis.h
 
 mtxsolver.o: mtxsolver.c mtxsolver.h
 	$(CC) -c mtxsolver.c $(CFLAGS)
-
-solution.o: fem/solution.c fem/solution.h
-	$(CC) -c fem/solution.c $(CFLAGS)
 
 isoparam.o: isoparam.c isoparam.h
 	$(CC) -c isoparam.c $(CFLAGS)

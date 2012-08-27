@@ -34,6 +34,10 @@ struct fe1d {
 
     /* Function to apply all the relevant boundary conditions for the problem. */
     void (*applybcs)(struct fe1d*);
+
+    /* Stuff for ODEs */
+    solution ***auxsolns;
+    int extravars;
 };
 
 struct fe1d* CreateFE1D(basis*, Mesh1D*,
