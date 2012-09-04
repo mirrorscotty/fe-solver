@@ -19,8 +19,10 @@ solution* CreateSolution(int tindex, double deltat, matrix *values)
 
 void DestroySolution(solution *s)
 {
-    DestroyMatrix(s->val);
-    DestroyMatrix(s->dval);
+    if(s->val)
+        DestroyMatrix(s->val);
+    if(s->dval)
+        DestroyMatrix(s->dval);
     free(s);
 }
 

@@ -57,17 +57,16 @@ int main(int argc, char *argv[])
     puts("");
     PrintSolution(problem, 2);
 
+    FE1DInitAuxSolns(problem, 2);
+    SolveODE(problem, 0, 0, &react1, 1);
+    SolveODE(problem, 0, 1, &react2, 2);
+    puts("");
+    PrintAuxSoln(problem, 0, 1);
+    puts("");
+    PrintAuxSoln(problem, 1, 1);
+
     /* Clean up */
     DestroyFE1D(problem);
-    
-
-//    FE1DInitAuxSolns(problem, 2);
-//    SolveODE(problem, 0, 0, &react1, 1);
-//    SolveODE(problem, 0, 1, &react2, 2);
-//    puts("");
-//    PrintAuxSoln(problem, 0, 1);
-//    puts("");
-//    PrintAuxSoln(problem, 1, 1);
 
     return 0;
 }

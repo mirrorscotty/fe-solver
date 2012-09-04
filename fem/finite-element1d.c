@@ -48,7 +48,7 @@ struct fe1d* CreateFE1D(basis *b,
 
 void DestroyFE1D(struct fe1d* p)
 {
-    int i;
+    int i, j;
 
     if(p) {
         if(p->b)
@@ -66,9 +66,20 @@ void DestroyFE1D(struct fe1d* p)
 
         if(p->soln) {
             for(i=0; i<p->maxsteps; i++)
-                free(p->soln[i]);
+                DestroySolution(p->soln[i]);
             free(p->soln);
         }
+
+        if(p->auxsolns) {
+            for(i=0; i<p->extravars; i++) {
+                for(j=0; j<p->maxsteps; j++)
+                    DestroySolution(p->auxsolns[i][j]);
+                free(p->auxsolns[i]);
+            }
+            free(p->auxsolns);
+        }
+
+        free(p);
     }
 
     return;
@@ -109,6 +120,8 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
 
     problem->J = J;
 
+    DestroyMatrix(guess);
+
     return J;
 }
 
@@ -146,6 +159,8 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
     }
 
     problem->dJ = dJ;
+
+    DestroyMatrix(guess);
 
     return dJ;
 }
@@ -189,7 +204,7 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
 
     /* Store the initial solution in the load vector so that the boundary
      * conditions get applied to it. */
-    problem->F = InitSoln;
+    //problem->F = InitSoln;
 
     AssembleJ1D(problem, NULL);
     AssembledJ1D(problem, NULL);
