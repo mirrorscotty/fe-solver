@@ -1,10 +1,10 @@
 CC=gcc
 
-CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/freezing -Wall -ggdb -O0
+CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/freezing -Igui -Wall -g3 -O0
 
 OBJECTFILES=integrate.o basis.o matrix.o mesh2d.o mtxsolver.o vector.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o freezing.o auxsoln.o
 
-all: heat-explicit
+all: heat-cyl
 
 2dlaplace: 2dlaplace.o $(OBJECTFILES)
 	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
@@ -21,11 +21,14 @@ ce675p2: ce675p2.o $(OBJECTFILES)
 heat-explicit: heat-explicit.o $(OBJECTFILES)
 	$(CC) -o heat-explicit heat-explicit.o $(OBJECTFILES) $(CFLAGS)
 
+heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
+	$(CC) -o heat-cyl heat-cyl.o heat-gui.o $(OBJECTFILES) $(CFLAGS)
+
 meshtest: problems/meshtest.c $(OBJECTFILES)
 	$(CC) -o meshtest problems/meshtest.c $(OBJECTFILES) $(CFLAGS)
 
 clean:
-	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit meshtest *.o *~
+	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest *.o *~
 
 
 freezing.o: material-data/freezing/freezing.c material-data/freezing/freezing.h
@@ -48,6 +51,12 @@ heat-implicit.o: problems/heat-implicit.c
 
 heat-explicit.o: problems/heat-explicit.c
 	$(CC) -c problems/heat-explicit.c $(CFLAGS)
+
+heat-cyl.o: problems/heat-cyl.c gui/heat-gui.h
+	$(CC) -c problems/heat-cyl.c $(CFLAGS)
+
+heat-gui.o: gui/heat-gui.c gui/heat-gui.h
+	$(CC) -c gui/heat-gui.c $(CFLAGS)
 
 
 matrix.o: matrix/matrix.c matrix/matrix.h

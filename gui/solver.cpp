@@ -335,16 +335,10 @@ void Solver::setupDomain()
     problem->dt = Deltat;
 
     printf("dt = %g\n", problem->dt);
-    IC = GenerateInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
+   // IC = GenerateInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
+    IC = GenerateInitCondConst(problem, 0, spinTInit->value());
     FE1DTransInit(problem, IC);
     FE1DInitAuxSolns(problem, 2);
-
-    //while(problem->t<problem->maxsteps)
-    //    LinSolve1DTrans(problem);
-    //PrintSolution(problem, 1);
-
-    //SolveODE(problem, 0, 0, &react1, 1);
-    //SolveODE(problem, 0, 1, &react2, 2);
 
     return;
 }
@@ -357,8 +351,8 @@ void Solver::solveProblems()
     int timeindex = 0;
     int t;
     
-    // Set all the global variables to 0 so that things don't break hs orribly
-    //  if everything wasn't defined.
+    // Set all the global variables to 0 so that things don't break horribly
+    // if everything wasn't defined.
     initialize_variables();
 
     // Set the datalist to NULL since we don't want to deal with old values.
@@ -386,9 +380,12 @@ void Solver::solveProblems()
 
     // Solve
     while(problem->t<problem->maxsteps) {
-        LinSolve1DTrans(problem);
+        LinSolve1DTransImp(problem);
+        mtxprnt(problem->F);
         progressBar->setValue( (int) problem->t/problem->maxsteps* 100);
     }
+    SolveODE(problem, 0, 0, &react1, spinC1Init->value());
+    SolveODE(problem, 0, 1, &react2, spinC2Init->value());
 
     // Plot the data for node 0. This should be configureable, but isn't.
     if(!radioTime->isChecked()) {

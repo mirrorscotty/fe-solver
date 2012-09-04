@@ -114,13 +114,25 @@ matrix* LinSolve1D(struct fe1d *problem)
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
-/* Explicit time integration algorithm (Forward Euler) */
+/* Explicit time integration algorithm (Forward Euler)
+ * This solver fails horribly if a Neumann boundary condition is imposed. Also,
+ * it may not be entirely stable anyway. */
 matrix* LinSolve1DTrans(struct fe1d *problem)
 {
-    matrix *guess, *du, *u;
+    matrix *du, *u;
     matrix *tmp1, *tmp2, *tmp3, *tmp4;
     matrix *dresult, *result;
     solution *prev; /* The solution at the previous time step */
+
+    /* Initialize the matricies */
+    DestroyMatrix(problem->J);
+    DestroyMatrix(problem->dJ);
+    DestroyMatrix(problem->F);
+    AssembleJ1D(problem, NULL);
+    AssembledJ1D(problem, NULL);
+    AssembleF1D(problem, NULL);
+    problem->applybcs(problem);
+
 
     /* Get the previous solution */
     prev = FetchSolution(problem, problem->t-1);
@@ -153,6 +165,89 @@ matrix* LinSolve1DTrans(struct fe1d *problem)
 
     StoreSolution(problem, result, dresult);
     
+    return result;
+}
+
+/* Implicit time integration solver. Works with both backward difference
+ * integration (BD) and the trapazoid rule (TR). In either case, the algorithm
+ * is unconditionally stable. */
+matrix* LinSolve1DTransImp(struct fe1d *problem)
+{
+    /* Constants that determine the integration algorithm. If a=1 and b=0, then
+     * the backward difference method is being used. For the trapazoid rule,
+     * a=2, and b=-1. */
+    int a, b;
+    matrix *du, *u;
+    /* Used to store intermediate calculations */
+    matrix *tmp1, *tmp2, *tmp3, *tmp4;
+    matrix *dresult, *result;
+    solution *prev; /* Solution at previous time step */
+
+    /* Use BD for testing */
+    a = 1; b = 0;
+
+    /* Initialize the matricies */
+    DestroyMatrix(problem->J);
+    DestroyMatrix(problem->dJ);
+    DestroyMatrix(problem->F);
+    AssembleJ1D(problem, NULL);
+    AssembledJ1D(problem, NULL);
+    AssembleF1D(problem, NULL);
+    problem->applybcs(problem);
+
+    /* Get the previous solution */
+    prev = FetchSolution(problem, problem->t-1);
+    du = prev->dval;
+    u = prev->val;
+
+    /* Calculate the matrix to be multiplied by the unknown vector */
+    tmp1 = mtxmulconst(problem->dJ, a/problem->dt);
+    tmp2 = mtxadd(tmp1, problem->J);
+
+    DestroyMatrix(tmp1);
+    
+    /* Determine the right hand side of the equation. The if statement is there
+     * so that this function can be used for both TR and BD, but not waste an
+     * extra step multiplying by 0 for BD. */
+    tmp1 = mtxmulconst(problem->dJ, a/problem->dt);
+    tmp3 = mtxmul(tmp1, u);
+
+    DestroyMatrix(tmp1);
+
+    if(b) {
+        tmp1 = mtxmulconst(problem->dJ, b);
+        tmp4 = mtxmul(tmp1, du);
+        mtxneg(tmp4);
+        DestroyMatrix(tmp1);
+
+        tmp1 = mtxadd(tmp3, tmp4);
+        DestroyMatrix(tmp4);
+        DestroyMatrix(tmp3);
+    } else {
+        tmp1 = tmp3;
+    }
+
+    tmp3 = mtxadd(tmp1, problem->F);
+    DestroyMatrix(tmp1);
+
+    result = SolveMatrixEquation(tmp2, tmp3);
+
+    DestroyMatrix(tmp2);
+    DestroyMatrix(tmp3);
+
+
+    /* Solve for the time derivative of the result. */
+    tmp1 = mtxmul(problem->J, result);
+    mtxneg(tmp1);
+    tmp2 = mtxadd(problem->F, tmp1);
+
+    dresult = SolveMatrixEquation(problem->dJ, tmp2);
+
+    DestroyMatrix(tmp1);
+    DestroyMatrix(tmp2);
+
+    StoreSolution(problem, result, dresult);
+
     return result;
 }
 

@@ -61,6 +61,21 @@ double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
     return x;
 }
 
+double IMapCyl1D(struct fe1d *p, Elem1D *elem, double xi)
+{
+    double x = 0;
+    basis *b;
+    int n, i;
+
+    b = p->b;
+    n = b->n;
+
+    for(i=0; i<n; i++)
+        x += b->phi[i](xi) * valV(elem->points, i);
+
+    return x;
+}
+
 double IEvalLin2Dx(struct fe *p, Elem2D *elem, int func, double x, double y)
 {
     double r;

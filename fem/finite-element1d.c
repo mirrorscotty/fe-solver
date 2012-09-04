@@ -48,6 +48,8 @@ struct fe1d* CreateFE1D(basis *b,
 
 void DestroyFE1D(struct fe1d* p)
 {
+    int i;
+
     if(p) {
         if(p->b)
             DestroyBasis(p->b);
@@ -57,9 +59,18 @@ void DestroyFE1D(struct fe1d* p)
             DestroyMatrix(p->R);
         if(p->J)
             DestroyMatrix(p->J);
+        if(p->dJ)
+            DestroyMatrix(p->dJ);
         if(p->mesh)
             DestroyMesh1D(p->mesh);
+
+        if(p->soln) {
+            for(i=0; i<p->maxsteps; i++)
+                free(p->soln[i]);
+            free(p->soln);
+        }
     }
+
     return;
 }
 
@@ -173,6 +184,7 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
 void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
 {
     matrix *f;
+    matrix *tmp;
     matrix *dsoln;
 
     /* Store the initial solution in the load vector so that the boundary
@@ -183,7 +195,7 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     AssembledJ1D(problem, NULL);
 
     /* Apply the boundary conditions */
-    problem->applybcs(problem);
+    //problem->applybcs(problem);
 
     /* Generate the appropriate load vector */
     AssembleF1D(problem, NULL);
@@ -195,52 +207,14 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     /* Solve for the time derivative at t=0 */
     f = mtxmul(problem->J, InitSoln);
     mtxneg(f);
-    dsoln = SolveMatrixEquation(problem->dJ, f);
+    tmp = mtxadd(f, problem->F);
+    dsoln = SolveMatrixEquation(problem->dJ, tmp);
     DestroyMatrix(f);
+    DestroyMatrix(tmp);
 
     /* Store the initial solution */
     StoreSolution(problem, InitSoln, dsoln);
 }
-
-/*
-   matrix *AssembleF1DTrans(struct fe1d *problem, matrix *guess)
-   {
-   Mesh1D *mesh = problem->mesh;
-   basis *b = problem->b;
-
-   matrix *M, *m;
-   solution *prevsoln;
-   int i, x, y;
-   int c, d;
-
-   double rows = problem->nrows*problem->nvars;
-
-   if(!guess)
-   guess = CreateMatrix(rows, 1);
-
-   M = CreateMatrix(rows, rows);
-
-   for(i=0; i<mesh->nelem; i++) {
-   m = problem->makef(problem, mesh->elem[i], guess);
-
-   for(x=0; x<b->n; x++) {
-   for(y=0; y<b->n; y++) {
-   c = valV(mesh->elem[i]->map, x);
-   d = valV(mesh->elem[i]->map, y);
-
-   addval(M, val(m, x, y), c, d);
-   }
-   }
-   DestroyMatrix(m);
-   }
-
-   prevsoln = FetchSolution(problem, problem->t-1);
-
-   problem->F = mtxmul(M, prevsoln->val);
-
-   return M;
-   }
-   */
 
 /* These functions are copied almost verbatim from the 2d file. */
 /* Function to apply Dirchlet boundary conditions. The second argument is a
@@ -305,16 +279,25 @@ matrix* GenerateInitialCondition(struct fe1d *p,
     }
 
     return InitSoln;
-    /* This crap here is to make sure that the boundary conditions are applied
-     * to the initial state of the system. Bad things happen if this isn't done.
-     */
-    //p->F = InitSoln;
-    //    p->J = CreateMatrix(p->nrows*p->nrows, p->nrows*p->nrows);
-    //  p->applybcs(p);
-    //DestroyMatrix(p->J);
-
-    //StoreSolution(p, InitSoln);
 }
+
+matrix* GenerateInitCondConst(struct fe1d *p, int var, double value)
+{
+    int i;
+    double x; /* The x value at the current mesh node. */
+    int n = p->nvars; /* The total number of dependant variables */
+
+    matrix *InitSoln;
+    InitSoln = CreateMatrix(p->nrows*p->nvars, 1);
+
+    for(i=var; i<p->nrows*n; i+=n) {
+        x = valV(p->mesh->nodes, i/n);
+        setval(InitSoln, value, i, 0);
+    }
+
+    return InitSoln;
+}
+
 
 /* Store the solution and advance the current time index. Returns 0 on failure.
  * The first arguement is the problem to store the solutions in.

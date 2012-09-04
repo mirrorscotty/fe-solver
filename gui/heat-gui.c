@@ -14,6 +14,8 @@
 
 #include "heat-gui.h"
 
+extern double To;
+
 /* The following two functions are for heat conduction. */
 /* Creates the Jacobian and helps solve for the current time step */
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
@@ -21,9 +23,22 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     double value = 0;
     basis *b;
     b = p->b;
-    
+
+     /* This is just to fetch the value of T */
+    //double T;
+    //solution *s;
+    //s = FetchSolution(p, p->t-1);
+    //T = EvalSoln1D(p, 0, elem, s, x);
+
+   
     value  = b->dphi[f1](x) * b->dphi[f2](x);
+//    value *= 1e-5;
     value *= IMap1D(p, elem, x);
+    value *= IMapCyl1D(p, elem, x);
+
+//    if(valV(elem->map, f1) == p->mesh->nnodes-1) {
+//        value += ConvBC(p, valV(elem->map, f1));
+//    }
 
     return value;
 }
@@ -33,19 +48,13 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
  */
 double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
-    double value = 0;
+    double value;
     basis *b;
     b = p->b;
 
-    /* This is just to fetch the value of T */
-    //double T;
-    //solution *s;
-    //s = FetchSolution(p, p->t-1);
-    //T = EvalSoln1D(p, 0, elem, s, x);
-
-    value  = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
-    //value -= p->dt * IMap1D(p, elem, x)
-    //         * b->dphi[f1](x) * b->dphi[f2](x);// * alpha(T);
+    value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
+    value *= IMapCyl1D(p, elem, x);
+//    value *= -1;
 
     return value;
 }
@@ -67,16 +76,13 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
         for(j=0; j<b->n*v; j+=v) {
             value = quad1d3generic(p, guess, elem, &Residual, i/v, j/v);
             setval(m, value, i, j);
-
-            //value = quad1d3generic(p, guess, elem, &ReactResidual, i/v, j/v);
-            //setval(m, value, i+1, j+1);
         }
     }
 
     return m;
 }
 
-/* Create the load vector... thing */
+/* Create the coefficient matrix for the time derivatives */
 matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
     basis *b;
     b = p->b;
@@ -99,6 +105,7 @@ matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
     return m;
 }
 
+/* Create the load vector... thing */
 matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
     basis *b;
     b = p->b;
@@ -111,7 +118,6 @@ matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
 
     return m;
 }
-   
 
 int IsOnRightBoundary(struct fe1d *p, int row)
 {
@@ -149,10 +155,14 @@ double Zero(struct fe1d *p, int row)
     return 0.0;
 }
 
+/* The way this function is implemented is probably not mathematically accurate.
+ * Strictly speaking, for the implicit solver, the temperature fetched should be
+ * the temperature at the next time step, not the one that we already have the
+ * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double h = 1;
-    double Tinf = 290;
+    double h = -1;
+    double Tinf = 274;
     double T;
 
     /* Fetch the value of T from the previous solution. If this is being
@@ -162,7 +172,9 @@ double ConvBC(struct fe1d *p, int row)
     if(s) {
         T = val(s->val, row, 0);
         printf("T = %g\n", T);
-        return -h*(T-Tinf)/T;
+        if(T==0)
+            return 0;
+        return h*(T-Tinf);
     } else {
         return 0;
     }
@@ -175,23 +187,9 @@ void ApplyAllBCs(struct fe1d *p)
     //ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Left);
     
     // BC at x=L
-    //ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
-    ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Zero);
-    ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &Zero);
-    
+    ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
+
     return;
-}
-
-/* Function that sets the initial condition. */
-double InitTemp(double x)
-{
-    //return 273;
-    return 1-pow(x-1,2);
-}
-
-double InitC(double x)
-{
-    return 1;
 }
 
 /* ODEs */

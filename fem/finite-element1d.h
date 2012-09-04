@@ -48,6 +48,7 @@ struct fe1d* CreateFE1D(basis*, Mesh1D*,
 void DestroyFE1D(struct fe1d*);
 
 matrix* AssembleJ1D(struct fe1d*, matrix*);
+matrix* AssembledJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
 
 void FE1DTransInit(struct fe1d*, matrix*);
@@ -59,6 +60,7 @@ void ApplyNaturalBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
                       double (*)(struct fe1d*, int));
 
 matrix* GenerateInitialCondition(struct fe1d*, int, double (*)(double));
+matrix* GenerateInitCondConst(struct fe1d*, int, double);
 
 int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);

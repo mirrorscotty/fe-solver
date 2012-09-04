@@ -38,7 +38,7 @@ basis* MakeLinBasis(int dimension)
     }
     b->phi = b->dphi = NULL;
 
-    b->n = pow(2,  dimension);
+    b->n = pow(2, dimension);
     b->overlap = pow(1, dimension);
 
     b->phi = (double(**)(double)) malloc(sizeof(double(*)(double))*b->n);

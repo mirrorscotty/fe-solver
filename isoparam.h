@@ -13,6 +13,7 @@ double IMap1D(struct fe1d*, Elem1D*, double);
 
 double IMapJ(struct fe*, Elem2D*, double, double);
 double IMapCyl(struct fe*, Elem2D*, double, double);
+double IMapCyl1D(struct fe1d*, Elem1D*, double);
 
 double IEvalLin2Dx(struct fe*, Elem2D*, int, double, double);
 double IEvalLin2Dy(struct fe*, Elem2D*, int, double, double);
