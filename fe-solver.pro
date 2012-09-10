@@ -16,7 +16,8 @@ TARGET = solver
 OBJECTS_DIR = ./tmp
 
 DEPENDPATH += . \
-              extras \
+#              extras \
+              scaling \
               fem \
               gui \
               matrix \
@@ -28,9 +29,10 @@ DEPENDPATH += . \
 #              material-data/freezing
 INCLUDEPATH += . \
                matrix \
+               scaling \
                fem \
                mesh \
-               extras \
+#               extras \
                gui \
                material-data/can
 #               material-data/freezing \
@@ -42,8 +44,9 @@ HEADERS += arclength.h \
            integrate.h \
            isoparam.h \
            mtxsolver.h \
-           extras/function.h \
-           extras/symbolic.h \
+#           extras/function.h \
+#           extras/symbolic.h \
+           scaling/scaling_ht.h \
            fem/auxsoln.h \
            fem/finite-element.h \
            fem/finite-element1d.h \
@@ -64,6 +67,7 @@ SOURCES += basis.c \
            integrate.c \
            isoparam.c \
            mtxsolver.c \
+           scaling/scaling_ht.c \
            fem/auxsoln.c \
            fem/finite-element.c \
            fem/finite-element1d.c \

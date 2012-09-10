@@ -36,13 +36,13 @@ void SolveODE(struct fe1d *p, int var, int extravar,
     for(t=1; t<tmax; t++) {
         sprev = s;
         s = FetchSolution(p, t);
-        dt = s->dt;
+        dt = uscaleTime(p->charvals, s->dt);
 
         tmpprev = tmp;
         tmp = CreateSolution(t, dt, CreateMatrix(rows, 1));
         for(i=0; i<rows; i++) {
             cprev = val(tmpprev->val, i, 0);
-            T = val(s->val, i, 0);
+            T = uscaleTemp(p->charvals, val(s->val, i, 0));
 
             setval(tmp->val, eqn(cprev, T, dt), i, 0);
         }

@@ -6,6 +6,8 @@
 #include "mesh1d.h"
 #include "solution.h"
 
+#include "scaling_ht.h"
+
 struct fe1d;
 
 struct fe1d {
@@ -38,6 +40,9 @@ struct fe1d {
     /* Stuff for ODEs */
     solution ***auxsolns;
     int extravars;
+
+    /* Scaling stuff */
+    scaling_ht charvals;
 };
 
 struct fe1d* CreateFE1D(basis*, Mesh1D*,

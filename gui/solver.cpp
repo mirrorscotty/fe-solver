@@ -312,7 +312,7 @@ void Solver::setupDomain()
 {
     // Load the required parameters
     int NNodes = spinNodes->value();
-    double Deltax = spinWidth->value()/NNodes;
+    //double Deltax = spinWidth->value()/NNodes;
     double Deltat = spinDt->value();
     int NTimeSteps = (int) (spintEnd->value()/Deltat);
 
@@ -320,26 +320,49 @@ void Solver::setupDomain()
     basis *b;
     matrix *IC;
 
+    scaling_ht charvals; /* Scaling parameters */
+
+    /* Define the characteristic temperature to be the initial temperature of
+     * the can. */ 
+    double Tc = spinTInit->value();
+    /* Characteristic length = Domain radius */
+    double Lc = spinWidth->value();
+    /* Set the heat transfer coefficient as well. */
+    double h = spinHRight->value();
+
+    charvals = SetupScaling(alpha(Tc), Tc, Lc, k(Tc), h);
+
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    /* TODO: Fix the gui to make it more FE-friendly */
-    mesh = GenerateUniformMesh1D(b, 0.0, NNodes*Deltax, NNodes-1);
+    mesh = GenerateUniformMesh1D(b, 0.0, 1.0, NNodes-1);
 
+    /* Initialize most of the FE structure */
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
                          NTimeSteps);
-    problem->nvars = 1;
-    problem->dt = Deltat;
+
+    /* Set the values for dimensionless groups and stuff */
+    problem->charvals = charvals;
+
+    problem->nvars = 1; /* Set the number of variables to solve for */
+    /* This bit might be a bit sketch */
+    problem->dt = scaleTime(charvals, Deltat); /* Set the time step */
 
     printf("dt = %g\n", problem->dt);
-   // IC = GenerateInitialCondition(problem, 0, &InitTemp); /* Initial temperature */
-    IC = GenerateInitCondConst(problem, 0, spinTInit->value());
+
+    /* Set the initial condition. Due to the way the dimensionless groups are
+     * specified, the initial condition should always be 1. */
+    IC = GenerateInitCondConst(problem, 0, 1);
+
+    /* Initialize the transient solver */
     FE1DTransInit(problem, IC);
+
+    /* Allocate space for solutions to two ODEs based on the PDE solution */
     FE1DInitAuxSolns(problem, 2);
 
     return;
@@ -362,20 +385,21 @@ void Solver::solveProblems()
 
     // Clean up stuff that was there before.
     DestroyFE1D(problem);
-    // Initialize the problem
-    setupDomain();
 
     // Save the data to the global variables used by the material property
     // funcitons. (Also bad.)
     tmp = datalist;
     while(tmp) {
         store_data(tmp);
-        if(strcmp(tmp->name, "HConv") == 0) {
-            seth(tmp->value);
-            printh();
-        }
+        //if(strcmp(tmp->name, "HConv") == 0) {
+        //    seth(tmp->value);
+        //    printh();
+        //}
         tmp = tmp->next;
     }
+
+    // Initialize the problem
+    setupDomain();
 
     // Solve
     while(problem->t<problem->maxsteps) {
@@ -383,6 +407,8 @@ void Solver::solveProblems()
         //mtxprnt(problem->F);
         progressBar->setValue( (int) problem->t/problem->maxsteps* 100);
     }
+    /* TODO: Fix this functions so they work properly with dimensionless groups
+     * and such */
     SolveODE(problem, 0, 0, &react1, spinC1Init->value());
     SolveODE(problem, 0, 1, &react2, spinC2Init->value());
 
@@ -453,7 +479,7 @@ void Solver::plotResultsTime(int nodenum)
     /* Create an array with the time values. */
     t = (double*) calloc(npts, sizeof(double));
     for(i=0; i<npts; i++) {
-        t[i] = i*problem->dt;
+        t[i] = uscaleTime(problem->charvals, i*problem->dt);
     }
 
     // Detach the curves from the plot so that they don't show up. If we want
@@ -470,7 +496,7 @@ void Solver::plotResultsTime(int nodenum)
         for(i=0; i<npts; i++) {
     /* TODO: Fix */
             s = FetchSolution(problem, i);
-            T[i] = val(s->val, nodenum, 0);
+            T[i] = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
         }
 
         // Save the data to the curve. This makes a copy of the data, so we can
@@ -514,7 +540,7 @@ void Solver::plotResultsTime(int nodenum)
         a = (double*) calloc(npts, sizeof(double));
         for(i=0; i<npts; i++) {
             s = FetchSolution(problem, i);
-            tmp = val(s->val, nodenum, 0);
+            tmp = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
             a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
         }
 
@@ -552,10 +578,10 @@ void Solver::plotResultsSpace(int t)
     
     /* Create an array with the x values. */
     x = (double*) calloc(npts, sizeof(double));
-    //for(i=0; i<npts; i++) {
+    for(i=0; i<npts; i++) {
         /* This probably shouldn't be accessing the raw data from the vector */
-        x = problem->mesh->nodes->v;
-    //}
+        x[i] = uscaleLength(problem->charvals, valV(problem->mesh->nodes, i));
+    }
 
     // Detach the curves from the plot so that they don't show up. If we want
     // them to show up, we'll reattach them later.
@@ -570,7 +596,7 @@ void Solver::plotResultsSpace(int t)
         // Get the values from the solution.
         s = FetchSolution(problem, t);
         for(i=0; i<npts; i++) {
-            T[i] = val(s->val, i, 0);
+            T[i] = uscaleTemp(problem->charvals, val(s->val, i, 0));
         }
 
         // Save the data to the curve. This makes a copy of the data, so we can
@@ -616,7 +642,7 @@ void Solver::plotResultsSpace(int t)
         s = FetchSolution(problem, t);
         for(i=0; i<npts; i++) {
     /* TODO: Fix */
-            tmp = val(s->val, i, 0);
+            tmp = uscaleTemp(problem->charvals, val(s->val, i, 0));
 
             a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
         }
@@ -629,7 +655,7 @@ void Solver::plotResultsSpace(int t)
 
     // Set the title.
     /* TODO: Fix */
-    sprintf(title, "t = %g", t*problem->dt);
+    sprintf(title, "t = %g", uscaleTime(problem->charvals, t*problem->dt));
     qwtPlot->setTitle(title);
     free(title);
 

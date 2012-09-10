@@ -34,18 +34,17 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     else
         T = EvalSoln1D(p, 0, elem, s, x);
    
+    /* Normally, this should be multiplied by the thermal diffusivity. However,
+     * we will assume that alpha is constant and, because of dimensionless
+     * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
-//    value *= alpha(T); // Multiply by the thermal diffusivity
-//    value *= 0.000113806;
     value *= IMap1D(p, elem, x);
     value *= IMapCyl1D(p, elem, x);
 
     return value;
 }
 
-/* Used in calculating the load vector/stuff from the previous time step. */
-/* Note: This function fails pretty badly if a material data file isn't loaded.
- */
+/* Calculate the coefficient matrix for the time derivative unknowns */
 double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
     double value;
@@ -119,6 +118,8 @@ matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
     return m;
 }
 
+/* Returns true if the specified row (node) is on the right-most boundary of the
+ * domain. */
 int IsOnRightBoundary(struct fe1d *p, int row)
 {
     double width = p->mesh->x2 - p->mesh->x1;
@@ -130,6 +131,7 @@ int IsOnRightBoundary(struct fe1d *p, int row)
         return 0;
 }
 
+/* Same as above, only for the left boundary */
 int IsOnLeftBoundary(struct fe1d *p, int row)
 {
     double x = valV(p->mesh->nodes, row/p->nvars);
@@ -140,20 +142,12 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
         return 0;
 }
 
-double Left(struct fe1d *p, int row)
-{
-    return 273.0;
-}
-
-double Right(struct fe1d *p, int row)
-{
-    return 290.0;
-}
-
-double Zero(struct fe1d *p, int row)
-{
-    return 0.0;
-}
+/* Example function for how to apply a Dirchlet boundary condition
+//double Zero(struct fe1d *p, int row)
+//{
+//    return 0.0;
+//}
+*/
 
 /* The way this function is implemented is probably not mathematically accurate.
  * Strictly speaking, for the implicit solver, the temperature fetched should be
@@ -161,8 +155,9 @@ double Zero(struct fe1d *p, int row)
  * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double Tinf = 274;
+    double Tinf = scaleTemp(p->charvals, 274);
     double T;
+    double Bi = BiotNumber(p->charvals);
 
     /* Fetch the value of T from the previous solution. If this is being
      * applied at the initial condition, then simply return 0.*/
@@ -170,32 +165,20 @@ double ConvBC(struct fe1d *p, int row)
     s = FetchSolution(p, p->t-1);
     if(s) {
         T = val(s->val, row, 0);
-        printf("T = %g, alpha = %g\n", T, alpha(T));
         if(T==0)
             return 0;
-        return -h*(T-Tinf);
+        return -Bi*(T-Tinf);
     } else {
         return 0;
     }
-}
-
-void seth(double x)
-{
-    h = x;
-    return;
-}
-
-double printh()
-{
-    printf("h = %g\n", h);
-    return h;
 }
 
 void ApplyAllBCs(struct fe1d *p)
 {
     
     // BC at x=0
-    //ApplyEssentialBC1D(p, 0, &IsOnLeftBoundary, &Left);
+    //ApplyNaturalBC1D(p, 0, &IsOnLeftBoundary, &Zero);
+    /* The above function isn't needed */
     
     // BC at x=L
     ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
@@ -206,10 +189,10 @@ void ApplyAllBCs(struct fe1d *p)
 /* ODEs */
 double react1(double cprev, double T, double dt)
 {
-    double AA, EaA, R;
-    AA = 1;
-    EaA = 1;
-    R = 1;
+    //double AA, EaA, R;
+    double R = 8.314;
+    //AA = 1;
+    //EaA = 1;
 
     T = fabs(T);
     
@@ -218,10 +201,10 @@ double react1(double cprev, double T, double dt)
 
 double react2(double cprev, double T, double dt)
 {
-    double AB, EaB, R;
-    AB = 2;
-    EaB = 2;
-    R = 2;
+    //double AB, EaB, R;
+    double R = 8.314;
+    //AB = 2;
+    //EaB = 2;
 
     T = fabs(T);
     
