@@ -17,6 +17,7 @@ extern "C" {
 #include "mesh1d.h"
 #include "finite-element1d.h"
 #include "mtxsolver.h"
+#include "output.h"
 }
 
 #include "datafile.h"
@@ -368,7 +369,6 @@ void Solver::setupDomain()
     return;
 }
 
-    /* TODO: Fix */
 void Solver::solveProblems()
 {
     struct var *tmp;
@@ -404,11 +404,8 @@ void Solver::solveProblems()
     // Solve
     while(problem->t<problem->maxsteps) {
         LinSolve1DTransImp(problem);
-        //mtxprnt(problem->F);
         progressBar->setValue( (int) problem->t/problem->maxsteps* 100);
     }
-    /* TODO: Fix this functions so they work properly with dimensionless groups
-     * and such */
     SolveODE(problem, 0, 0, &react1, spinC1Init->value());
     SolveODE(problem, 0, 1, &react2, spinC2Init->value());
 
@@ -464,7 +461,6 @@ void Solver::plotResultsTime(struct Node1D* n)
 */
 
 // Function to plot results at a single node as a function of time.
-/* TODO: FIXME */
 void Solver::plotResultsTime(int nodenum)
 {
     int i;
@@ -494,7 +490,6 @@ void Solver::plotResultsTime(int nodenum)
         T = (double*) calloc(npts, sizeof(double));
         // Get the values from the solution.
         for(i=0; i<npts; i++) {
-    /* TODO: Fix */
             s = FetchSolution(problem, i);
             T[i] = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
         }
@@ -627,7 +622,6 @@ void Solver::plotResultsSpace(int t)
         d = (double*) calloc(npts, sizeof(double));
         s = FetchAuxSoln(problem, 1, t);
         for(i=0; i<npts; i++) {
-    /* TODO: Fix */
             d[i] = val(s->val, i, 0);
         }
 
@@ -641,7 +635,6 @@ void Solver::plotResultsSpace(int t)
         a = (double*) calloc(npts, sizeof(double));
         s = FetchSolution(problem, t);
         for(i=0; i<npts; i++) {
-    /* TODO: Fix */
             tmp = uscaleTemp(problem->charvals, val(s->val, i, 0));
 
             a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
@@ -654,7 +647,6 @@ void Solver::plotResultsSpace(int t)
     }
 
     // Set the title.
-    /* TODO: Fix */
     sprintf(title, "t = %g", uscaleTime(problem->charvals, t*problem->dt));
     qwtPlot->setTitle(title);
     free(title);
@@ -704,7 +696,7 @@ void Solver::loadSimulation()
         // keep going and pretend like it never existed.
         // TODO: Fix the memory leak.
         if(strcmp(tmp->name, "NULL") != 0) {
-            printf("Name: %s -- Value: %g\n", tmp->name, tmp->value);
+            //printf("Name: %s -- Value: %g\n", tmp->name, tmp->value);
             datalist = push_var(datalist, tmp);
         }
     }
@@ -781,11 +773,9 @@ void Solver::saveCSV()
     ba = path.toLocal8Bit();
 
     if(radioTime->isChecked()) {
-    /* TODO: Fix */
-        //CSVOutFixedTime(domain, spinPlotTIndex->value(), ba.data());
+        CSVOutFixedTime(problem, spinPlotTIndex->value(), ba.data());
     } else {
-    /* TODO: Fix */
-        //CSVOutFixedNode(domain->Nodes[spinPlotNode->value()], ba.data());
+        CSVOutFixedNode(problem, spinPlotNode->value(), ba.data());
     }
     return;
 }

@@ -44,6 +44,7 @@ HEADERS += arclength.h \
            integrate.h \
            isoparam.h \
            mtxsolver.h \
+           output.h \
 #           extras/function.h \
 #           extras/symbolic.h \
            scaling/scaling_ht.h \
@@ -67,6 +68,7 @@ SOURCES += basis.c \
            integrate.c \
            isoparam.c \
            mtxsolver.c \
+           output.c \
            scaling/scaling_ht.c \
            fem/auxsoln.c \
            fem/finite-element.c \
