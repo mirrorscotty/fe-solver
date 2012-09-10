@@ -42,7 +42,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="DomainTab">
        <property name="geometry">
@@ -397,8 +397,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>340</width>
-         <height>493</height>
+         <width>323</width>
+         <height>464</height>
         </rect>
        </property>
        <attribute name="label">
@@ -1119,6 +1119,13 @@ p, li { white-space: pre-wrap; }
               <widget class="QSpinBox" name="spinPlotNode"/>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonPlot">
+             <property name="text">
+              <string>Plot Solution</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

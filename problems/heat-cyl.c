@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
     struct fe1d* problem;
 
     /* Load a data file if one is supplied. */
-    //if(argc == 2)
-    //    init(argv[1]);
+    if(argc == 2)
+        init(argv[1]);
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         5);
+                         600);
     problem->nvars = 1;
     problem->dt = .001;
 
@@ -48,14 +48,14 @@ int main(int argc, char *argv[])
     while(problem->t<problem->maxsteps) {
         LinSolve1DTransImp(problem);
     }
-    //printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
+    printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
 
     puts("Solutions:");
-    PrintSolution(problem, 0);
-    puts("");
-    PrintSolution(problem, 1);
-    puts("");
-    PrintSolution(problem, 2);
+    //PrintSolution(problem, 0);
+    //puts("");
+    //PrintSolution(problem, 1);
+    //puts("");
+    PrintSolution(problem, problem->t-1);
 
     FE1DInitAuxSolns(problem, 2);
     SolveODE(problem, 0, 0, &react1, 1);

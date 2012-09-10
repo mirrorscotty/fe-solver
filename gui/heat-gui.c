@@ -10,11 +10,12 @@
 #include "finite-element1d.h"
 #include "auxsoln.h"
 
-#include "material-data/freezing/freezing.h"
+#include "material-data/can/can.h"
 
 #include "heat-gui.h"
 
-extern double To;
+extern double EaA, EaB, AA, AB;
+double h = 5;
 
 /* The following two functions are for heat conduction. */
 /* Creates the Jacobian and helps solve for the current time step */
@@ -24,21 +25,20 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     basis *b;
     b = p->b;
 
-     /* This is just to fetch the value of T */
-    //double T;
-    //solution *s;
-    //s = FetchSolution(p, p->t-1);
-    //T = EvalSoln1D(p, 0, elem, s, x);
-
+    /* This is just to fetch the value of T */
+    double T;
+    solution *s;
+    s = FetchSolution(p, p->t-1);
+    if(!s)
+        T = 273;
+    else
+        T = EvalSoln1D(p, 0, elem, s, x);
    
     value  = b->dphi[f1](x) * b->dphi[f2](x);
-//    value *= 1e-5;
+//    value *= alpha(T); // Multiply by the thermal diffusivity
+//    value *= 0.000113806;
     value *= IMap1D(p, elem, x);
     value *= IMapCyl1D(p, elem, x);
-
-//    if(valV(elem->map, f1) == p->mesh->nnodes-1) {
-//        value += ConvBC(p, valV(elem->map, f1));
-//    }
 
     return value;
 }
@@ -161,7 +161,6 @@ double Zero(struct fe1d *p, int row)
  * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double h = -1;
     double Tinf = 274;
     double T;
 
@@ -171,13 +170,25 @@ double ConvBC(struct fe1d *p, int row)
     s = FetchSolution(p, p->t-1);
     if(s) {
         T = val(s->val, row, 0);
-        printf("T = %g\n", T);
+        printf("T = %g, alpha = %g\n", T, alpha(T));
         if(T==0)
             return 0;
-        return h*(T-Tinf);
+        return -h*(T-Tinf);
     } else {
         return 0;
     }
+}
+
+void seth(double x)
+{
+    h = x;
+    return;
+}
+
+double printh()
+{
+    printf("h = %g\n", h);
+    return h;
 }
 
 void ApplyAllBCs(struct fe1d *p)
@@ -195,25 +206,25 @@ void ApplyAllBCs(struct fe1d *p)
 /* ODEs */
 double react1(double cprev, double T, double dt)
 {
-    double A, Ea, R;
-    A = 1;
-    Ea = 1;
+    double AA, EaA, R;
+    AA = 1;
+    EaA = 1;
     R = 1;
 
     T = fabs(T);
     
-    return cprev - dt*A*exp(-Ea/(R*T));
+    return cprev - dt*AA*exp(-EaA/(R*T));
 }
 
 double react2(double cprev, double T, double dt)
 {
-    double A, Ea, R;
-    A = 2;
-    Ea = 2;
+    double AB, EaB, R;
+    AB = 2;
+    EaB = 2;
     R = 2;
 
     T = fabs(T);
     
-    return cprev - dt*A*exp(-Ea/(R*T));
+    return cprev - dt*AB*exp(-EaB/(R*T));
 }
 

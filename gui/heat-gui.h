@@ -23,5 +23,9 @@ double InitC(double);
 double react1(double, double, double);
 double react2(double, double, double);
 
+
+void seth(double);
+double printh(void);
+
 #endif
 

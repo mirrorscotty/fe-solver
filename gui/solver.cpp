@@ -30,6 +30,7 @@ Solver::Solver(QWidget *parent)
 
     // Connect all the relevant signals
     connect(buttonSolve, SIGNAL( clicked() ), this, SLOT( solveProblems() ));
+    connect(buttonPlot, SIGNAL( clicked() ), this, SLOT( plotSolution() ));
 
     connect(actionQuit, SIGNAL( triggered() ), this, SLOT( quitApplication() ));
     connect(actionSave_Simulation, SIGNAL( triggered() ), this, SLOT( saveSimulation() ));
@@ -222,7 +223,7 @@ void Solver::leftBCShowConvTime()
 }
 
 // Macro to simplify the code for saving data from the gui to a linked list.
-#define GETVARIABLE( VARNAME, BOXNAME ) { tmp->name = #VARNAME; tmp->value = (BOXNAME)->value(); tmp->next = new_var(); tmp = tmp->next; }
+#define GETVARIABLE( VARNAME, BOXNAME ) { strcpy(tmp->name, #VARNAME); tmp->value = (BOXNAME)->value(); tmp->next = new_var(); tmp = tmp->next; }
 // Store all (most of) the data that the user has inputted in the gui in the
 // datalist variable.
 void Solver::storeVariables()
@@ -245,20 +246,16 @@ void Solver::storeVariables()
     GETVARIABLE(To, spinTInit)
     GETVARIABLE(Text_hot, spinTExtHotRight)
     GETVARIABLE(Text_cold, spinTExtColdRight)
+    GETVARIABLE(DomainWidth, spinWidth)
     GETVARIABLE(NNodes, spinNodes)
     GETVARIABLE(Deltat, spinDt)
     GETVARIABLE(t_heat, spinTHeatRight)
     GETVARIABLE(HConv, spinHRight)
     GETVARIABLE(CAinit, spinC1Init)
     GETVARIABLE(CBinit, spinC2Init)
-    
-    tmp->name = "Deltax";
-    tmp->value = spinWidth->value()/spinNodes->value();
-    tmp->next = new_var();
-    tmp = tmp->next;
 
-    tmp->name = "NTimeSteps";
-    tmp->value = (int) (spintEnd->value()/spinDt->value());
+    strcpy(tmp->name, "EndTime");
+    tmp->value = spintEnd->value();
 
     return;
 }
@@ -291,7 +288,12 @@ void Solver::loadVars()
         RESTOREVAR(t_heat, spinTHeatRight)
         RESTOREVAR(HConv, spinHRight)
         RESTOREVAR(CAinit, spinC1Init)
-        RESTOREVAR(CBinit, spinC1Init)
+        RESTOREVAR(CBinit, spinC2Init)
+        RESTOREVAR(DomainWidth, spinWidth)
+        RESTOREVAR(EndTime, spintEnd)
+
+        if(strcmp(tmp->name, "CBinit") == 0)
+            puts("I'm making a note here: Huge Success!");
 
         if(strcmp(tmp->name, "R") == 0) {
             puts("Success!");
@@ -347,9 +349,6 @@ void Solver::setupDomain()
 void Solver::solveProblems()
 {
     struct var *tmp;
-    int nodenum = 0; // Node to use to plot stuff
-    int timeindex = 0;
-    int t;
     
     // Set all the global variables to 0 so that things don't break horribly
     // if everything wasn't defined.
@@ -372,8 +371,8 @@ void Solver::solveProblems()
     while(tmp) {
         store_data(tmp);
         if(strcmp(tmp->name, "HConv") == 0) {
-            //seth(tmp->value);
-            //printh();
+            seth(tmp->value);
+            printh();
         }
         tmp = tmp->next;
     }
@@ -381,13 +380,26 @@ void Solver::solveProblems()
     // Solve
     while(problem->t<problem->maxsteps) {
         LinSolve1DTransImp(problem);
-        mtxprnt(problem->F);
+        //mtxprnt(problem->F);
         progressBar->setValue( (int) problem->t/problem->maxsteps* 100);
     }
     SolveODE(problem, 0, 0, &react1, spinC1Init->value());
     SolveODE(problem, 0, 1, &react2, spinC2Init->value());
 
-    // Plot the data for node 0. This should be configureable, but isn't.
+    plotSolution();
+}
+
+void Solver::plotSolution()
+{
+    int nodenum = 0, timeindex = 0;
+
+    // Check to see if the problem has already been solved. If not, report an
+    // error and return before the program crashes.
+    if(!problem) {
+        QMessageBox::warning(this, "Error", "Please run the simulation before trying to plot stuff.");
+        return;
+    }
+
     if(!radioTime->isChecked()) {
         nodenum = spinPlotNode->value();
         plotResultsTime(nodenum);
@@ -665,8 +677,10 @@ void Solver::loadSimulation()
         // If the variable actually contained something, save it. Otherwise just
         // keep going and pretend like it never existed.
         // TODO: Fix the memory leak.
-        if(strcmp(tmp->name, "NULL") != 0)
+        if(strcmp(tmp->name, "NULL") != 0) {
+            printf("Name: %s -- Value: %g\n", tmp->name, tmp->value);
             datalist = push_var(datalist, tmp);
+        }
     }
 
     // Clean up the buffer.
@@ -707,10 +721,10 @@ void Solver::saveSimulation()
         return;
     }
 
-    //while(tmp) {
-    //    fprintf(fp, "%s = %g\n", tmp->name, tmp->value);
-    //    tmp = tmp->next;
-    //}
+    while(tmp) {
+        fprintf(fp, "%s = %g\n", tmp->name, tmp->value);
+        tmp = tmp->next;
+    }
 
     // Close the file.
     fclose(fp);
@@ -749,8 +763,6 @@ void Solver::saveCSV()
     }
     return;
 }
-        
-
 
 // Bring up an about dialog.
 void Solver::about()

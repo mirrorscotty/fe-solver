@@ -27,6 +27,7 @@ class Solver : public QMainWindow, private Ui::SolverWindow
         void setMaxTIndex(double);
 
         void solveProblems();
+        void plotSolution();
 
     private:
         struct fe1d *problem;
