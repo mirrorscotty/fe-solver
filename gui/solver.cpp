@@ -338,6 +338,7 @@ void Solver::setupDomain()
 
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh1D(b, 0.0, 1.0, NNodes-1);
+    meshprnt1d(mesh);
 
     /* Initialize most of the FE structure */
     problem = CreateFE1D(b, mesh,

@@ -89,6 +89,9 @@ p, li { white-space: pre-wrap; }
             <property name="minimum">
              <number>2</number>
             </property>
+            <property name="maximum">
+             <number>999</number>
+            </property>
            </widget>
           </item>
          </layout>
@@ -397,8 +400,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>323</width>
-         <height>464</height>
+         <width>340</width>
+         <height>493</height>
         </rect>
        </property>
        <attribute name="label">

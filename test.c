@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include "basis.h"
 #include "mesh2d.h"
+#include "mesh1d.h"
 #include "isoparam.h"
 #include "integrate.h"
-#include "finite-element.h"
+#include "finite-element1d.h"
 
 /*
 int main(int argc, char *argv[])
@@ -60,7 +61,6 @@ int main()
     printf("%g\n", quad2d32d3(p, mesh->elem[0], 0, 0, 0, 1));
     return 0;
 }
-
 
 /* Verify that the node locations are where they should be. Just prints out the
  * values of the four basis functions for a bilinear element at each of the four
