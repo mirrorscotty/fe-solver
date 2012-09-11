@@ -3,7 +3,7 @@
 ######################################################################
 
 QMAKEFEATURES += /usr/lib64/qt4/features6
-CONFIG += qwt debug
+CONFIG += qwt
 unix:LIBS += -lqwt6
 unix:INCLUDEPATH += /usr/include/qwt6
 win32:LIBS += C:/Qwt-6.0.1/lib/qwt.dll

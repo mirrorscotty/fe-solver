@@ -75,6 +75,7 @@ Solver::Solver(QWidget *parent)
     comboLeftBC->setEnabled(false);
     comboRightBC->setCurrentIndex(2);
     comboRightBC->setEnabled(false);
+    progressBar->setValue(0);
 }
 
 Solver::~Solver()

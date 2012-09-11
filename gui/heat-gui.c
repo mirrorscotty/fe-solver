@@ -30,7 +30,7 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     solution *s;
     s = FetchSolution(p, p->t-1);
     if(!s)
-        T = 273;
+        T = p->charvals.Tc;
     else
         T = EvalSoln1D(p, 0, elem, s, x);
    
@@ -155,7 +155,7 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
  * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double Tinf = scaleTemp(p->charvals, 274);
+    double Tinf = scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->dt*p->t)));
     double T;
     double Bi = BiotNumber(p->charvals);
 
