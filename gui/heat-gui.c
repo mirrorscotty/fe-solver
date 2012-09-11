@@ -196,7 +196,7 @@ double react1(double cprev, double T, double dt)
 
     T = fabs(T);
     
-    return cprev - dt*AA*exp(-EaA/(R*T));
+    return cprev*(1 - dt*AA*exp(-EaA/(R*T)));
 }
 
 double react2(double cprev, double T, double dt)
@@ -208,6 +208,6 @@ double react2(double cprev, double T, double dt)
 
     T = fabs(T);
     
-    return cprev - dt*AB*exp(-EaB/(R*T));
+    return cprev*(1 - dt*AB*exp(-EaB/(R*T)));
 }
 
