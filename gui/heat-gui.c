@@ -39,7 +39,11 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
+    value *= (alpha(T)/p->charvals.alpha);
     value *= IMapCyl1D(p, elem, x);
+
+    //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));
+    //printf("alpha_c/alpha = %g\n", p->charvals.alpha/alpha(T));
 
     return value;
 }
@@ -142,12 +146,11 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
         return 0;
 }
 
-/* Example function for how to apply a Dirchlet boundary condition
-//double Zero(struct fe1d *p, int row)
-//{
-//    return 0.0;
-//}
-*/
+double ExternalTemp(struct fe1d *p, int row)
+{
+    return scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->t*p->dt)));
+}
+
 
 /* The way this function is implemented is probably not mathematically accurate.
  * Strictly speaking, for the implicit solver, the temperature fetched should be
@@ -175,13 +178,16 @@ double ConvBC(struct fe1d *p, int row)
 
 void ApplyAllBCs(struct fe1d *p)
 {
+    double Bi = BiotNumber(p->charvals); 
     
-    // BC at x=0
-    //ApplyNaturalBC1D(p, 0, &IsOnLeftBoundary, &Zero);
-    /* The above function isn't needed */
-    
-    // BC at x=L
-    ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
+    /* BC at x=L
+     * This approximates any Biot number larger than 100 as Bi->infty. This is a
+     * good approximation for this problem since it results in the outside of
+     * the can reaching the external temperature incredibly quickly (<1sec). */
+    if(Bi<100.00)
+        ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
+    else
+        ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &ExternalTemp);
 
     return;
 }

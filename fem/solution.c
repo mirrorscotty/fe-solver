@@ -19,11 +19,13 @@ solution* CreateSolution(int tindex, double deltat, matrix *values)
 
 void DestroySolution(solution *s)
 {
-    if(s->val)
-        DestroyMatrix(s->val);
-    if(s->dval)
-        DestroyMatrix(s->dval);
-    free(s);
+    if(s) {
+        if(s->val)
+            DestroyMatrix(s->val);
+        if(s->dval)
+            DestroyMatrix(s->dval);
+        free(s);
+    }
 }
 
 /* This function needs to be modified to support hermite cubic basis functions.

@@ -110,6 +110,9 @@ p, li { white-space: pre-wrap; }
             <property name="suffix">
              <string> m</string>
             </property>
+            <property name="decimals">
+             <number>4</number>
+            </property>
             <property name="minimum">
              <double>0.100000000000000</double>
             </property>
@@ -400,8 +403,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>340</width>
-         <height>493</height>
+         <width>323</width>
+         <height>464</height>
         </rect>
        </property>
        <attribute name="label">
@@ -1123,13 +1126,6 @@ p, li { white-space: pre-wrap; }
              </item>
             </layout>
            </item>
-           <item>
-            <widget class="QPushButton" name="buttonPlot">
-             <property name="text">
-              <string>Plot Solution</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </item>
@@ -1138,11 +1134,17 @@ p, li { white-space: pre-wrap; }
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
-         <widget class="QProgressBar" name="progressBar">
-          <property name="value">
-           <number>24</number>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QPushButton" name="buttonSolve">
@@ -1150,6 +1152,26 @@ p, li { white-space: pre-wrap; }
            <string>Solve</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonPlot">
+          <property name="text">
+           <string>Plot Solution</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>

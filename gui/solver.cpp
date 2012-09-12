@@ -75,17 +75,18 @@ Solver::Solver(QWidget *parent)
     comboLeftBC->setEnabled(false);
     comboRightBC->setCurrentIndex(2);
     comboRightBC->setEnabled(false);
-    progressBar->setValue(0);
 }
 
 Solver::~Solver()
 {
-    /* TODO: Fix */
     DestroyFE1D(problem);
     delete Temp;
     delete Prod;
     delete Bact;
     delete alpha;
+
+    if(datalist)
+        destroy_list(datalist);
 
     return;
 }
@@ -231,6 +232,8 @@ void Solver::leftBCShowConvTime()
 void Solver::storeVariables()
 {
     struct var *tmp;
+    if(datalist)
+        destroy_list(datalist);
     datalist = new_var();
     tmp = datalist;
 
@@ -294,11 +297,7 @@ void Solver::loadVars()
         RESTOREVAR(DomainWidth, spinWidth)
         RESTOREVAR(EndTime, spintEnd)
 
-        if(strcmp(tmp->name, "CBinit") == 0)
-            puts("I'm making a note here: Huge Success!");
-
         if(strcmp(tmp->name, "R") == 0) {
-            puts("Success!");
             R = tmp->value;
         }
 
@@ -339,7 +338,6 @@ void Solver::setupDomain()
 
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh1D(b, 0.0, 1.0, NNodes-1);
-    meshprnt1d(mesh);
 
     /* Initialize most of the FE structure */
     problem = CreateFE1D(b, mesh,
@@ -355,8 +353,6 @@ void Solver::setupDomain()
     problem->nvars = 1; /* Set the number of variables to solve for */
     /* This bit might be a bit sketch */
     problem->dt = scaleTime(charvals, Deltat); /* Set the time step */
-
-    printf("dt = %g\n", problem->dt);
 
     /* Set the initial condition. Due to the way the dimensionless groups are
      * specified, the initial condition should always be 1. */
@@ -374,6 +370,8 @@ void Solver::setupDomain()
 void Solver::solveProblems()
 {
     struct var *tmp;
+    QProgressDialog progress("Solving PDE...", "Abort Solution", 0, 100, this);
+    progress.setWindowModality(Qt::WindowModal);
     
     // Set all the global variables to 0 so that things don't break horribly
     // if everything wasn't defined.
@@ -381,6 +379,8 @@ void Solver::solveProblems()
 
     // Set the datalist to NULL since we don't want to deal with old values.
     // This is a horrible idea, and the old data should be cleaned up instead.
+    if(datalist)
+        destroy_list(datalist);
     datalist = NULL;
 
     storeVariables();
@@ -402,16 +402,31 @@ void Solver::solveProblems()
 
     // Initialize the problem
     setupDomain();
+    progress.setMaximum(problem->maxsteps);
 
+    print_global_vars();
+    printf("rho = %g, k = %g, Cp = %g\n", rho(290), k(290), Cp(290));
     // Solve
+    progress.setValue(0);
     while(problem->t<problem->maxsteps) {
         LinSolve1DTransImp(problem);
-        progressBar->setValue( (int) problem->t/problem->maxsteps* 100);
-    }
-    SolveODE(problem, 0, 0, &react1, spinC1Init->value());
-    SolveODE(problem, 0, 1, &react2, spinC2Init->value());
+        progress.setValue(problem->t);
 
-    plotSolution();
+        if(progress.wasCanceled()) {
+            DestroyFE1D(problem);
+            problem = NULL;
+            break;
+        }
+    }
+    
+    if(problem) {
+        progress.setValue(problem->maxsteps);
+
+        SolveODE(problem, 0, 0, &react1, spinC1Init->value());
+        SolveODE(problem, 0, 1, &react2, spinC2Init->value());
+
+        plotSolution();
+    }
 }
 
 void Solver::plotSolution()
@@ -547,7 +562,9 @@ void Solver::plotResultsTime(int nodenum)
         free(a);
     }
 
-    sprintf(title, "x = %g", valV(problem->mesh->nodes, nodenum));
+    sprintf(title, "x = %g",
+            uscaleLength(problem->charvals,
+                         valV(problem->mesh->nodes, nodenum)));
     qwtPlot->setTitle(title);
     free(title);
 
@@ -674,6 +691,13 @@ void Solver::loadSimulation()
     
     buffer = NULL;
     tmp = NULL;
+
+    DestroyFE1D(problem);
+    problem = NULL;
+    if(datalist) {
+        destroy_list(datalist);
+        datalist = NULL;
+    }
 
     // Get the filename to save to.
     path = QFileDialog::getOpenFileName(
