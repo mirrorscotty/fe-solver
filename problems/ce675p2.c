@@ -24,7 +24,7 @@ double FTensor(struct fe *p, Elem2D *elem, matrix *guess, int a, int b, double x
     
     Fab = ChronDelta(a, b);
     
-    for(i=b; i<mtxlen2(guess); i+=2) {
+    for(i=b; i<nRows(guess); i+=2) {
         if(a) {
             Fab += IEvalLin2Dy(p, elem, i, x, y) * val(guess, i, 0);
         } else {
@@ -309,9 +309,9 @@ void ApplyAllBCs(struct fe *p)
 matrix* GetXDisplacements(matrix *Soln) {
     int i;
     matrix* xd;
-    xd = CreateMatrix(mtxlen2(Soln), 1);
+    xd = CreateMatrix(nRows(Soln), 1);
     
-    for(i=0; i<mtxlen2(xd); i++) {
+    for(i=0; i<nRows(xd); i++) {
         setval(xd, val(Soln, i*2, 0), i, 0);
     }
     
@@ -322,9 +322,9 @@ matrix* GetYDisplacements(matrix *Soln)
 {
     int i;
     matrix* yd;
-    yd = CreateMatrix(mtxlen2(Soln), 1);
+    yd = CreateMatrix(nRows(Soln), 1);
     
-    for(i=0; i<mtxlen2(yd); i++) {
+    for(i=0; i<nRows(yd); i++) {
         setval(yd, val(Soln, i*2+1, 0), i, 0);
     }
     
@@ -335,9 +335,9 @@ matrix* GetDeformedCoords(struct fe *p, matrix *Soln)
 {
     matrix *Def;
     int i;
-    Def = CreateMatrix(mtxlen2(Soln)/2, 2);
+    Def = CreateMatrix(nRows(Soln)/2, 2);
     
-    for(i=0; i<mtxlen2(Soln)/2; i++) {
+    for(i=0; i<nRows(Soln)/2; i++) {
         setval(Def, val(Soln, 2*i, 0) + valV(GetNodeCoordinates(p->mesh, i), 0),  i, 0);
         setval(Def, val(Soln, 2*i+1, 0) + valV(GetNodeCoordinates(p->mesh, i), 1), i, 1);
     }
@@ -349,9 +349,9 @@ matrix* FormatDisplacements(struct fe *p, matrix *Soln)
 {
     matrix *Def;
     int i;
-    Def = CreateMatrix(mtxlen2(Soln)/2, 2);
+    Def = CreateMatrix(nRows(Soln)/2, 2);
     
-    for(i=0; i<mtxlen2(Soln)/2; i++) {
+    for(i=0; i<nRows(Soln)/2; i++) {
         setval(Def, val(Soln, 2*i, 0),  i, 0);
         setval(Def, val(Soln, 2*i+1, 0), i, 1);
     }

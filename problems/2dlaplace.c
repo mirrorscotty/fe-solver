@@ -56,7 +56,7 @@ matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
  */
 void ApplyBC(matrix* J, matrix* F, basis *b, int node, double value)
 {
-    int rows = mtxlen2(J);
+    int rows = nRows(J);
     int i;
     int o = b->overlap;
 

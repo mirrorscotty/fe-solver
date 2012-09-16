@@ -14,8 +14,8 @@ typedef struct {
 void DestroyMatrix(matrix*);
 matrix* CalcMinor(matrix*, int, int);
 double CalcDeterminant(matrix*);
-int mtxlen1(matrix*);
-int mtxlen2(matrix*);
+int nCols(matrix*);
+int nRows(matrix*);
 double val(matrix*, int, int);
 void setval(matrix*, double, int, int);
 matrix* CreateMatrix(int, int);

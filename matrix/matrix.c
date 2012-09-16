@@ -19,20 +19,20 @@ matrix* linspace(double start, double end, int nelem)
 }
     
 /* Get the length of a 1D matrix of doubles */
-int mtxlen1(matrix *A)
+int nCols(matrix *A)
 {
     return A->cols;
 }
 
 /* Return the number of rows in a two dimensional matrix of doubles */
-int mtxlen2(matrix *A)
+int nRows(matrix *A)
 {
     return A->rows;
 }
 
 double val(matrix *A, int row, int col)
 {
-    if((row >= mtxlen2(A)) ||  (col >= mtxlen1(A)) || (row < 0) || (col < 0)) {
+    if((row >= nRows(A)) ||  (col >= nCols(A)) || (row < 0) || (col < 0)) {
         fprintf(stderr, "Error: index out of bounds. (%d, %d)\n", row, col);
         return NAN;
     }
@@ -41,7 +41,7 @@ double val(matrix *A, int row, int col)
 
 void setval(matrix *A, double value, int row, int col)
 {
-    if((row >= mtxlen2(A)) ||  (col >= mtxlen1(A)) || (row < 0) || (col < 0)) {
+    if((row >= nRows(A)) ||  (col >= nCols(A)) || (row < 0) || (col < 0)) {
         //fprintf(stderr, "Error: index out of bounds. (%d, %d)\n", row, col);
         return;
     }
@@ -53,9 +53,9 @@ void mtxprnt(matrix *A)
     int i, j;
     double v;
     
-    for(i=0; i<mtxlen2(A); i++) {
+    for(i=0; i<nRows(A); i++) {
         printf("[ ");
-        for(j=0; j<mtxlen1(A); j++) {
+        for(j=0; j<nCols(A); j++) {
             v = val(A, i, j);
             /* If the value is annoyingly close to zero, just print out zero
              * instead. */
@@ -75,8 +75,8 @@ void mtxprntfile(matrix *A, char *filename)
 
     file = fopen(filename, "w");
     
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen1(A); j++) {
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nCols(A); j++) {
             fprintf(file, "%e,", val(A, i, j));
         }
 	fprintf(file, "\n");
@@ -88,13 +88,13 @@ void mtxprntfile(matrix *A, char *filename)
 matrix* mtxtrn(matrix *x)
 {
     matrix *xt;
-    int rows = mtxlen2(x);
-    int cols = mtxlen1(x);
+    int rows = nRows(x);
+    int cols = nCols(x);
     int i, j;
 
     xt = NULL;
 /*
-    if(mtxlen2(x) != mtxlen1(x)) {
+    if(nRows(x) != nCols(x)) {
         fprintf(stderr, "ERROR!");
         return xt;
     }
@@ -120,10 +120,10 @@ matrix* mtxmul(matrix *A, matrix *B)
 
     C = NULL;
     
-    Ar = mtxlen2(A);
-    Ac = mtxlen1(A);
-    Br = mtxlen2(B);
-    Bc = mtxlen1(B);
+    Ar = nRows(A);
+    Ac = nCols(A);
+    Br = nRows(B);
+    Bc = nCols(B);
 
     /* If the matricies dimensions aren't correct, return NULL */
     if(Ac != Br) {
@@ -152,8 +152,8 @@ matrix* mtxmulconst(matrix *A, double k)
     int i, j;
     matrix *C;
 
-    Ar = mtxlen2(A);
-    Ac = mtxlen1(A);
+    Ar = nRows(A);
+    Ac = nCols(A);
 
     C = CreateMatrix(Ar, Ac);
 
@@ -171,8 +171,8 @@ matrix* mtxmulconst(matrix *A, double k)
  */
 matrix* mtxadd(matrix *A, matrix *B)
 {
-    int rows = mtxlen2(A);
-    int cols = mtxlen1(A);
+    int rows = nRows(A);
+    int cols = nCols(A);
     
     matrix *C;
     
@@ -193,8 +193,8 @@ matrix* mtxadd(matrix *A, matrix *B)
 matrix* mtxneg(matrix *A)
 {
     int i, j;
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen1(A); j++) {
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nCols(A); j++) {
             setval(A, -1*val(A, i, j), i, j);
         }
     }
@@ -208,7 +208,7 @@ matrix* CalcMinor(matrix* A, int row, int col) {
     matrix *minor;
 
     minor = NULL;
-    order = mtxlen2(A);
+    order = nRows(A);
 
     if(order <= 1)
         return NULL;
@@ -244,7 +244,7 @@ double CalcDeterminant(matrix *p)
 
     result = 0;
     minor = NULL;
-    order = mtxlen2(p);
+    order = nRows(p);
 
     if(order < 1) {
         fprintf(stderr, "CalcDeterminant(): Invalid Matrix.");
@@ -274,9 +274,9 @@ matrix* CalcAdj(matrix* A)
     double cofactor;
     matrix *minor, *adj, *adjt;
     
-    adj = CreateMatrix(mtxlen2(A), mtxlen2(A));
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen2(A); j++) {
+    adj = CreateMatrix(nRows(A), nRows(A));
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nRows(A); j++) {
             minor = CalcMinor(A, i, j);
             cofactor = pow(-1, (i+j+2)) * CalcDeterminant(minor);
             DestroyMatrix(minor);
@@ -300,10 +300,10 @@ matrix* CalcInv(matrix* A)
     inv = NULL;
     det = CalcDeterminant(A);
     adj = CalcAdj(A);
-    inv = CreateMatrix(mtxlen2(A), mtxlen2(A));
+    inv = CreateMatrix(nRows(A), nRows(A));
     
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen2(A); j++) {
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nRows(A); j++) {
             setval(inv, val(adj, i, j)/det, i, j);
         }
     }
@@ -315,13 +315,13 @@ matrix* AugmentMatrix(matrix *A, matrix *B)
 {
     int i, j;
     matrix *C;
-    C = CreateMatrix(mtxlen2(A), mtxlen1(A)+mtxlen1(B));
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen1(A); j++) {
+    C = CreateMatrix(nRows(A), nCols(A)+nCols(B));
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nCols(A); j++) {
             setval(C, val(A, i, j), i, j);
         }
-        for(j=0; j<mtxlen1(B); j++) {
-            setval(C, val(B, i, j), i, j+mtxlen1(A));
+        for(j=0; j<nCols(B); j++) {
+            setval(C, val(B, i, j), i, j+nCols(A));
         }
     }
 
@@ -332,9 +332,9 @@ matrix* ExtractColumn(matrix*A, int col)
 {
     matrix *B;
     int i;
-    B = CreateMatrix(mtxlen2(A), 1);
+    B = CreateMatrix(nRows(A), 1);
 
-    for(i=0; i<mtxlen2(A); i++) {
+    for(i=0; i<nRows(A); i++) {
 	setval(B, val(A, i, col), i, 0);
     }
 
@@ -344,8 +344,8 @@ matrix* ExtractColumn(matrix*A, int col)
 void Map(matrix* A, double (*func)(double))
 {
     int i, j;
-    for(i=0; i<mtxlen2(A); i++) {
-        for(j=0; j<mtxlen1(A); j++) {
+    for(i=0; i<nRows(A); i++) {
+        for(j=0; j<nCols(A); j++) {
             setval(A, (*func)(val(A, i, j)), i, j);
         }
     }

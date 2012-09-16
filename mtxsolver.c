@@ -11,7 +11,7 @@ int FindPivot(matrix*, int);
 
 void ForwardSubstitution(matrix* a) {
 	int i, j, k, max;
-	int n = mtxlen2(a);
+	int n = nRows(a);
 	double t;
 	for (i = 0; i < n; ++i) {
 		max = i;
@@ -34,7 +34,7 @@ void ForwardSubstitution(matrix* a) {
 
 void ReverseElimination(matrix *a) {
 	int i, j;
-	int n = mtxlen2(a);
+	int n = nRows(a);
 	for (i = n - 1; i >= 0; --i) {
 		setval(a, val(a, i, n)/val(a, i, i), i, n);
 		setval(a, 1, i, i);
@@ -53,7 +53,7 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
 	C = AugmentMatrix(A, B);
 	ForwardSubstitution(C);
 	ReverseElimination(C);
-	u = ExtractColumn(C, mtxlen1(A));
+	u = ExtractColumn(C, nCols(A));
 	DestroyMatrix(C);
 	return u;
 }
@@ -62,7 +62,7 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
  * and 1 if we're done iterating. */
 int CheckConverg(struct fe *problem, matrix *dx)
 {
-    int rows = mtxlen2(dx);
+    int rows = nRows(dx);
     int i;
     
     for(i=0; i<rows; i++) {

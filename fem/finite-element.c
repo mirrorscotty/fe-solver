@@ -160,7 +160,7 @@ matrix* GetLocalGuess(struct fe *p, matrix *guess, int elem)
     
     int ny = p->mesh->nelemy;
     
-    for(i=0; i<mtxlen2(lguess); i+=p->nvars) {
+    for(i=0; i<nRows(lguess); i+=p->nvars) {
         x = elem / (p->mesh->nelemy+1);
         //y = elem - x*(p->mesh->nelemy+1);
         

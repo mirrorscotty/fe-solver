@@ -125,8 +125,8 @@ void PrintResults(struct fe *p, matrix *soln)
 {
     matrix* tmp;
     int i;
-    tmp = CreateMatrix(mtxlen2(soln), 3);
-    for(i=0; i<mtxlen2(soln); i++) {
+    tmp = CreateMatrix(nRows(soln), 3);
+    for(i=0; i<nRows(soln); i++) {
         setval(tmp, valV(p->mesh->nodes[i], 0), i, 0);
         setval(tmp, valV(p->mesh->nodes[i], 1), i, 1);
         setval(tmp, val(soln, i, 0), i, 2);

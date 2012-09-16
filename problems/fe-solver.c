@@ -105,7 +105,7 @@ matrix* AssembleJ(matrix* (*makej)(basis*, double, double), basis *b, matrix* me
     int r = b->n-b->overlap; /* Number of rows to add */
 
     /* Determine the number of elements from the mesh */
-    n = mtxlen2(mesh);
+    n = nRows(mesh);
     /* Determine the number of rows required for the global matrix */
     rows = n*r+b->overlap;
 
@@ -136,7 +136,7 @@ matrix* AssembleF(matrix* (*makef)(basis*, double, double), basis *b, matrix* me
     int n, i, j, rows;
     int r = b->n - b->overlap;
 
-    n = mtxlen2(mesh);
+    n = nRows(mesh);
     /* Determine the number of rows required for the global matrix */
     rows = n*r+b->overlap;
 
@@ -162,7 +162,7 @@ matrix* AssembleF(matrix* (*makef)(basis*, double, double), basis *b, matrix* me
  */
 void ApplyBoundaryConditions(matrix* J, matrix* F, basis *b, double leftbc, double rightbc)
 {
-    int rows = mtxlen2(J);
+    int rows = nRows(J);
     int i;
     int o = b->overlap;
 
@@ -201,7 +201,7 @@ matrix* MeshXCoords(matrix *mesh, basis* b, double left, double right)
     matrix *x;
     int i;
     /* Number of elements */
-    int n = mtxlen2(mesh);
+    int n = nRows(mesh);
     /* Nodes per element */
     int nodes = b->n-b->overlap;
 
@@ -239,20 +239,20 @@ double EvalSolution(matrix *m, basis *b, double x, double left, double right, ma
     xcoord = MeshXCoords(m, b, left, right);
     switch(b->n) {
 	case 2:
-	    for(i=0; x>val(xcoord, i, 0)+val(m,i,0)&&i+2<mtxlen2(xcoord); i++);
+	    for(i=0; x>val(xcoord, i, 0)+val(m,i,0)&&i+2<nRows(xcoord); i++);
 	    c = (x-val(xcoord, i, 0))/val(m, i, 0);
 	    return val(soln, i, 0) * b->phi[0](c)
 	            + val(soln, i+1, 0) * b->phi[1](c);
 	    break;
 	case 3:
-	    for(i=0; x>val(xcoord, i, 0)+val(m, i/2, 0) && i+3<mtxlen2(xcoord); i+=2);
+	    for(i=0; x>val(xcoord, i, 0)+val(m, i/2, 0) && i+3<nRows(xcoord); i+=2);
 	    c = (x-val(xcoord, i, 0))/val(m, i/2, 0);
 	    return val(soln, i, 0) * b->phi[0](c) 
                 + val(soln, i+1, 0) * b->phi[1](c)
                 + val(soln, i+2, 0) * b->phi[2](c);
 	    break;
 	case 4:
-	    for(i=0; x>val(xcoord, i, 0)+val(m,i,0)&&i+2<mtxlen2(xcoord); i++);
+	    for(i=0; x>val(xcoord, i, 0)+val(m,i,0)&&i+2<nRows(xcoord); i++);
 	    c = (x-val(xcoord, i, 0))/val(m, i, 0);
 	    return val(soln, 2*i, 0) * b->phi[0](c)
 	            + val(soln, 2*i+1, 0) * b->phi[1](c)// * val(m, i, 0)

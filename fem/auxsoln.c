@@ -25,7 +25,7 @@ void SolveODE(struct fe1d *p, int var, int extravar,
     int rows;
 
     s = FetchSolution(p, 0);
-    rows = mtxlen2(s->val); /* Determine how many nodes there are */
+    rows = nRows(s->val); /* Determine how many nodes there are */
 
     /* Create the initial condition */
     tmp = CreateSolution(0, 0, CreateMatrix(rows, 1));

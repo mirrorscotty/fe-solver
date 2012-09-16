@@ -144,7 +144,7 @@ void AddArcLengthConstraint(struct fe *p, matrix *guess, matrix *prevguess)
     matrix *Jnew, Fnew;
     matrix *rightcol, *botrow;
     int i, j;
-    int nrows = mtxlen2(p->J);
+    int nrows = nRows(p->J);
     double corner, res;
 
     p->nconstr = 1;
