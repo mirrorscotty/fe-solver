@@ -16,7 +16,7 @@ extern "C" {
 #include "matrix.h"
 #include "mesh1d.h"
 #include "finite-element1d.h"
-#include "mtxsolver.h"
+#include "solve.h"
 #include "output.h"
 }
 

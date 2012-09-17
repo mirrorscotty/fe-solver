@@ -43,7 +43,7 @@ HEADERS += arclength.h \
            basis.h \
            integrate.h \
            isoparam.h \
-           mtxsolver.h \
+           fem/solve.h \
            output.h \
 #           extras/function.h \
 #           extras/symbolic.h \
@@ -58,7 +58,8 @@ HEADERS += arclength.h \
            mesh/mesh1d.h \
            mesh/mesh2d.h \
            material-data/can/can.h \
-           material-data/can/datafile.h
+           material-data/can/datafile.h \
+    matrix/mtxsolver.h
 #           material-data/drying/drying.h \
 #           material-data/drying/drying_D.h \
 #           material-data/drying/regress.h \
@@ -67,8 +68,8 @@ FORMS += gui/solver.ui
 SOURCES += basis.c \
            integrate.c \
            isoparam.c \
-           mtxsolver.c \
            output.c \
+           fem/solve.c \
            scaling/scaling_ht.c \
            fem/auxsoln.c \
            fem/finite-element.c \
@@ -90,7 +91,8 @@ SOURCES += basis.c \
 #           problems/heat-explicit.c \
 #           problems/spheroid.c \
            material-data/can/can.c \
-           material-data/can/datafile.c
+           material-data/can/datafile.c \
+    matrix/mtxsolver.c
 #           material-data/drying/drying.c \
 #           material-data/drying/drying_D.c \
 #           material-data/drying/regress.c \
