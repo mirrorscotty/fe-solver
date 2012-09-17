@@ -59,7 +59,8 @@ HEADERS += arclength.h \
            mesh/mesh2d.h \
            material-data/can/can.h \
            material-data/can/datafile.h \
-    matrix/mtxsolver.h
+    matrix/mtxsolver.h \
+    matrix/bandmatrix.h
 #           material-data/drying/drying.h \
 #           material-data/drying/drying_D.h \
 #           material-data/drying/regress.h \
@@ -92,7 +93,8 @@ SOURCES += basis.c \
 #           problems/spheroid.c \
            material-data/can/can.c \
            material-data/can/datafile.c \
-    matrix/mtxsolver.c
+    matrix/mtxsolver.c \
+    matrix/bandmatrix.c
 #           material-data/drying/drying.c \
 #           material-data/drying/drying_D.c \
 #           material-data/drying/regress.c \
