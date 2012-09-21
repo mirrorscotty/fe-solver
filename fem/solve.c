@@ -193,6 +193,8 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
     DestroyMatrix(tmp2);
 
     StoreSolution(problem, result, dresult);
+    /* Delete the time derivative of the pervious solution to save memory. */
+    DeleteTimeDeriv(prev);
 
     return result;
 }

@@ -15,6 +15,7 @@ typedef struct {
 
 solution* CreateSolution(int, double, matrix*);
 void DestroySolution(solution*);
+void DeleteTimeDeriv(solution*);
 
 double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 
