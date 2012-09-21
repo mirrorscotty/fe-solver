@@ -47,7 +47,7 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 
 void DeleteTimeDeriv(solution *s) {
     //if(s->dval) {
-        free(s->dval);
+        DestroyMatrix(s->dval);
         s->dval = NULL;
     //}
 }
