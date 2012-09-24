@@ -7,7 +7,7 @@
 #include "auxsoln.h"
 #include "scaling_ht.h"
 
-#include "material-data/can/can.h"
+#include "material-data/choi-okos/choi-okos.h"
 
 void CSVOutFixedNode(struct fe1d *p, int row, char *filename)
 {

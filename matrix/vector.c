@@ -36,6 +36,19 @@ void PrintVector(vector *v)
     printf(" %g ]\n", valV(v, len(v)-1));
 }
 
+vector* linspaceV(double start, double end, int nelem)
+{
+    vector *x;
+    int i;
+
+    x = CreateVector(nelem);
+    for(i=0; i<nelem; i++) {
+        setvalV(x, i, start + i*(end-start)/(nelem-1));
+    }
+
+    return x;
+}
+
 /* Return the i-th value */
 //double valV(vector *v, int i)
 //{

@@ -16,7 +16,6 @@ TARGET = solver
 OBJECTS_DIR = ./tmp
 
 DEPENDPATH += . \
-#              extras \
               scaling \
               fem \
               gui \
@@ -24,19 +23,14 @@ DEPENDPATH += . \
               mesh \
               problems \
               extras/doc \
-              material-data/can
-#              material-data/drying \
-#              material-data/freezing
+              material-data/choi-okos
 INCLUDEPATH += . \
                matrix \
                scaling \
                fem \
                mesh \
-#               extras \
                gui \
-               material-data/can
-#               material-data/freezing \
-#               material-data/drying
+               material-data/choi-okos
 
 # Input
 HEADERS += arclength.h \
@@ -45,8 +39,6 @@ HEADERS += arclength.h \
            isoparam.h \
            fem/solve.h \
            output.h \
-#           extras/function.h \
-#           extras/symbolic.h \
            scaling/scaling_ht.h \
            fem/auxsoln.h \
            fem/finite-element.h \
@@ -57,14 +49,11 @@ HEADERS += arclength.h \
            matrix/matrix.h \
            mesh/mesh1d.h \
            mesh/mesh2d.h \
-           material-data/can/can.h \
-           material-data/can/datafile.h \
-    matrix/mtxsolver.h \
-    matrix/bandmatrix.h
-#           material-data/drying/drying.h \
-#           material-data/drying/drying_D.h \
-#           material-data/drying/regress.h \
-#           material-data/freezing/freezing.h
+           material-data/choi-okos/choi-okos.h \
+           material-data/choi-okos/datafile.h \
+           matrix/mtxsolver.h \
+           matrix/bandmatrix.h \
+    about.h
 FORMS += gui/solver.ui
 SOURCES += basis.c \
            integrate.c \
@@ -83,19 +72,8 @@ SOURCES += basis.c \
            matrix/vector.c \
            mesh/mesh1d.c \
            mesh/mesh2d.c \
-#           problems/2dlaplace.c \
-#           problems/ce675p1.c \
-#           problems/ce675p2.c \
-#           problems/drying.c \
-#           problems/fe-solver.c \
-#           problems/heat-exact.c \
-#           problems/heat-explicit.c \
-#           problems/spheroid.c \
-           material-data/can/can.c \
-           material-data/can/datafile.c \
-    matrix/mtxsolver.c \
-    matrix/bandmatrix.c
-#           material-data/drying/drying.c \
-#           material-data/drying/drying_D.c \
-#           material-data/drying/regress.c \
-#           material-data/freezing/freezing.c
+           material-data/choi-okos/choi-okos.c \
+           material-data/choi-okos/datafile.c \
+           matrix/mtxsolver.c \
+           matrix/bandmatrix.c \
+    about.c

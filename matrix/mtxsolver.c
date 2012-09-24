@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "matrix.h"
 #include "mtxsolver.h"
 

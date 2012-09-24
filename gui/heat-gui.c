@@ -10,7 +10,7 @@
 #include "finite-element1d.h"
 #include "auxsoln.h"
 
-#include "material-data/can/can.h"
+#include "material-data/choi-okos/choi-okos.h"
 
 #include "heat-gui.h"
 
@@ -39,7 +39,7 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    value *= (alpha(T)/p->charvals.alpha);
+    value *= (alphaFZ(T)/p->charvals.alpha);
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));
