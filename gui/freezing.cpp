@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "solver.h"
+#include "freezing.h"
 
 extern "C" {
-#include "heat-gui.h"
+#include "freezing-gui.h"
 #include "solution.h"
 #include "auxsoln.h"
 #include "matrix.h"
@@ -33,6 +33,8 @@ Solver::Solver(QWidget *parent)
     // Connect all the relevant signals
     connect(buttonSolve, SIGNAL( clicked() ), this, SLOT( solveProblems() ));
     connect(buttonPlot, SIGNAL( clicked() ), this, SLOT( plotSolution() ));
+    connect(buttonPlotProp, SIGNAL( clicked() ), this, SLOT( plotRandomProperty() ));
+
 
     connect(actionQuit, SIGNAL( triggered() ), this, SLOT( quitApplication() ));
     connect(actionSave_Simulation, SIGNAL( triggered() ), this, SLOT( saveSimulation() ));
@@ -67,16 +69,20 @@ Solver::Solver(QWidget *parent)
     Temp->setPen( QPen( Qt::red ) );
     Prod = new QwtPlotCurve( "Product Concentration" );
     Prod->setPen( QPen( Qt::blue ) );
-    Bact = new QwtPlotCurve( "Bacteria Concentration" );
-    Bact->setPen( QPen( Qt::green ) );
+    ice = new QwtPlotCurve( "Bacteria Concentration" );
+    ice->setPen( QPen( Qt::green ) );
     alpha = new QwtPlotCurve("Thermal Diffusivity");
     alpha->setPen( QPen( Qt::magenta ) );
+    prop = new QwtPlotCurve("Random Property");
+    prop->setPen( QPen( Qt::red ) );
 
     // Initialize the GUI
     comboLeftBC->setCurrentIndex(0);
     comboLeftBC->setEnabled(false);
-    comboRightBC->setCurrentIndex(2);
+    comboRightBC->setCurrentIndex(1);
     comboRightBC->setEnabled(false);
+
+    buttonPlotProp->hide();
 }
 
 Solver::~Solver()
@@ -84,7 +90,7 @@ Solver::~Solver()
     DestroyFE1D(problem);
     delete Temp;
     delete Prod;
-    delete Bact;
+    delete ice;
     delete alpha;
 
     if(datalist)
@@ -248,18 +254,20 @@ void Solver::storeVariables()
     GETVARIABLE(Mice, spinMIce)
     GETVARIABLE(AA, spinA1)
     GETVARIABLE(EaA, spinEa1)
-    GETVARIABLE(AB, spinA2)
-    GETVARIABLE(EaB, spinEa2)
     GETVARIABLE(To, spinTInit)
-    GETVARIABLE(Text_hot, spinTExtHotRight)
-    GETVARIABLE(Text_cold, spinTExtColdRight)
+    GETVARIABLE(Tinf, spinTExtRight)
     GETVARIABLE(DomainWidth, spinWidth)
     GETVARIABLE(NNodes, spinNodes)
     GETVARIABLE(Deltat, spinDt)
-    GETVARIABLE(t_heat, spinTHeatRight)
     GETVARIABLE(HConv, spinHRight)
     GETVARIABLE(CAinit, spinC1Init)
-    GETVARIABLE(CBinit, spinC2Init)
+    GETVARIABLE(MW_pro, spinMW_pro)
+    GETVARIABLE(MW_fat, spinMW_fat)
+    GETVARIABLE(MW_car, spinMW_car)
+    GETVARIABLE(MW_fib, spinMW_fib)
+    GETVARIABLE(MW_ash, spinMW_ash)
+    GETVARIABLE(MW_wat, spinMW_wat)
+    //GETVARIABLE(Hfus, spinHfus)
 
     strcpy(tmp->name, "EndTime");
     tmp->value = spintEnd->value();
@@ -285,23 +293,24 @@ void Solver::loadVars()
         RESTOREVAR(Mice, spinMIce)
         RESTOREVAR(AA, spinA1)
         RESTOREVAR(EaA, spinEa1)
-        RESTOREVAR(AB, spinA2)
-        RESTOREVAR(EaB, spinEa2)
         RESTOREVAR(To, spinTInit)
-        RESTOREVAR(Text_hot, spinTExtHotRight)
-        RESTOREVAR(Text_cold, spinTExtColdRight)
+        RESTOREVAR(Tinf, spinTExtRight)
         RESTOREVAR(NNodes, spinNodes)
         RESTOREVAR(Deltat, spinDt)
-        RESTOREVAR(t_heat, spinTHeatRight)
         RESTOREVAR(HConv, spinHRight)
         RESTOREVAR(CAinit, spinC1Init)
-        RESTOREVAR(CBinit, spinC2Init)
         RESTOREVAR(DomainWidth, spinWidth)
         RESTOREVAR(EndTime, spintEnd)
+        RESTOREVAR(MW_pro, spinMW_pro)
+        RESTOREVAR(MW_fat, spinMW_fat)
+        RESTOREVAR(MW_car, spinMW_car)
+        RESTOREVAR(MW_fib, spinMW_fib)
+        RESTOREVAR(MW_ash, spinMW_ash)
+        RESTOREVAR(MW_wat, spinMW_wat)
 
-        if(strcmp(tmp->name, "R") == 0) {
-            R = tmp->value;
-        }
+        //if(strcmp(tmp->name, "R") == 0) {
+        //    R = tmp->value;
+        //}
 
         tmp = tmp->next;
     }
@@ -333,7 +342,11 @@ void Solver::setupDomain()
     /* Set the heat transfer coefficient as well. */
     double h = spinHRight->value();
 
-    charvals = SetupScaling(alpha(Tc), Tc, Lc, k(Tc), h);
+    charvals = SetupScaling( alphaFZ(Tc), // Characteristic Thermal diffusivity
+                             Tc, // Characteristic temperature
+                             Lc, // characteristic length
+                             k(Tc), // thermal conductivity
+                             h); // convective heat transfer coefficient
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
@@ -364,7 +377,7 @@ void Solver::setupDomain()
     FE1DTransInit(problem, IC);
 
     /* Allocate space for solutions to two ODEs based on the PDE solution */
-    FE1DInitAuxSolns(problem, 2);
+    FE1DInitAuxSolns(problem, 1);
 
     return;
 }
@@ -377,7 +390,7 @@ void Solver::solveProblems()
     
     // Set all the global variables to 0 so that things don't break horribly
     // if everything wasn't defined.
-    initialize_variables();
+   // initialize_variables();
 
     // Set the datalist to NULL since we don't want to deal with old values.
     // This is a horrible idea, and the old data should be cleaned up instead.
@@ -425,7 +438,6 @@ void Solver::solveProblems()
         progress.setValue(problem->maxsteps);
 
         SolveODE(problem, 0, 0, &react1, spinC1Init->value());
-        SolveODE(problem, 0, 1, &react2, spinC2Init->value());
 
         plotSolution();
     }
@@ -479,6 +491,88 @@ void Solver::plotResultsTime(struct Node1D* n)
 }
 */
 
+void Solver::plotFunction(vector *domain, double (*f)(double), QwtPlotCurve *curve)
+{
+    int i;
+    int npts = len(domain);
+    vector *data;
+
+    data = CreateVector(npts);
+    for(i=0; i<npts; i++) {
+        setvalV(data, i, f(valV(domain, i)));
+
+        printf("%g\n", valV(data, i));
+    }
+
+    curve->setSamples(domain->v, data->v, npts);
+    curve->attach(qwtPlot);
+    qwtPlot->replot();
+
+    DestroyVector(data);
+    return;
+}
+
+void Solver::plotRandomProperty() {
+    QStringList properties;
+    QString item;
+    bool ok;
+    struct var *tmp;
+    vector *domain;
+
+    /* This stuff is all copy/pasted from the solveProblems function */
+    // Set all the global variables to 0 so that things don't break horribly
+    // if everything wasn't defined.
+    //initialize_variables();
+
+    // Set the datalist to NULL since we don't want to deal with old values.
+    // This is a horrible idea, and the old data should be cleaned up instead.
+    if(datalist)
+        destroy_list(datalist);
+    datalist = NULL;
+
+    storeVariables();
+
+    // Save the data to the global variables used by the material property
+    // funcitons. (Also bad.)
+    tmp = datalist;
+    while(tmp) {
+        store_data(tmp);
+        //if(strcmp(tmp->name, "HConv") == 0) {
+        //    seth(tmp->value);
+        //    printh();
+        //}
+        tmp = tmp->next;
+    }
+    /* End of copy/pasting! */
+
+    properties << "Heat Capacity" << "Thermal Conductivity" << "Density";
+    properties << "Thermal Diffusivity";
+    item = QInputDialog::getItem(this, "Choose a property to plot.",
+                                 "Property:", properties, 0, false, &ok);
+    if(!ok || item.isEmpty())
+        return;
+
+    domain = linspaceV(223.15, 373.15, 100);
+    //domain = linspaceV(240, 280, 100);
+
+    Temp->detach();
+    Prod->detach();
+    ice->detach();
+    alpha->detach();
+
+    if(item == "Heat Capacity") {
+        plotFunction(domain, &CpFz, prop);
+    } else if(item == "Thermal Conductivity") {
+        plotFunction(domain, &k, prop);
+    } else if(item == "Density") {
+        plotFunction(domain, &rho, prop);
+    } else if(item == "Thermal Diffusivity") {
+        plotFunction(domain, &alphaFZ, prop);
+    }
+
+    DestroyVector(domain);
+}
+
 // Function to plot results at a single node as a function of time.
 void Solver::plotResultsTime(int nodenum)
 {
@@ -486,7 +580,6 @@ void Solver::plotResultsTime(int nodenum)
     int npts = problem->maxsteps;
     double *t, *T, *c, *d, *a, tmp;
     char *title;
-    
     solution *s;
 
     title = (char*) calloc(20, sizeof(char));
@@ -501,8 +594,9 @@ void Solver::plotResultsTime(int nodenum)
     // them to show up, we'll reattach them later.
     Temp->detach();
     Prod->detach();
-    Bact->detach();
+    ice->detach();
     alpha->detach();
+    prop->detach();
 
     // Plot temperature data if the box for it is checked.
     if(checkTemp->isChecked()) {
@@ -531,22 +625,29 @@ void Solver::plotResultsTime(int nodenum)
             c[i] = val(s->val, nodenum, 0);
         }
 
+        /* Fix */
+        for(i=0; i<npts; i++) {
+            s = FetchSolution(problem, i);
+            c[i] = c[i]/(1-Xv_ice(uscaleTemp(problem->charvals, val(s->val, nodenum, 0))));
+        }
+
         Prod->attach(qwtPlot);
 
         Prod->setSamples(t, c, npts);
         free(c);
     }
 
-    if(checkBact->isChecked()) {
+    if(checkXIce->isChecked()) {
         d = (double*) calloc(npts, sizeof(double));
         for(i=0; i<npts; i++) {
-            s = FetchAuxSoln(problem, 1, i);
-            d[i] = val(s->val, nodenum, 0);
+            s = FetchSolution(problem, i);
+            tmp = uscaleTime(problem->charvals, val(s->val, nodenum, 0));
+            d[i] = X_ice(tmp);
         }
 
-        Bact->attach(qwtPlot);
+        ice->attach(qwtPlot);
 
-        Bact->setSamples(t, d, npts);
+        ice->setSamples(t, d, npts);
         free(d);
     }
     
@@ -555,7 +656,7 @@ void Solver::plotResultsTime(int nodenum)
         for(i=0; i<npts; i++) {
             s = FetchSolution(problem, i);
             tmp = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
-            a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
+            a[i] = alphaFZ(tmp);
         }
 
         alpha->attach(qwtPlot);
@@ -563,6 +664,7 @@ void Solver::plotResultsTime(int nodenum)
         alpha->setSamples(t, a, npts);
         free(a);
     }
+
 
     sprintf(title, "x = %g",
             uscaleLength(problem->charvals,
@@ -588,23 +690,27 @@ void Solver::plotResultsSpace(int t)
     double *x, *T, *c, *d, *a, tmp;
     char *title;
 
+    vector *defmesh;
+
     solution *s;
 
     title = (char*) calloc(20, sizeof(char));
     
     /* Create an array with the x values. */
     x = (double*) calloc(npts, sizeof(double));
+    defmesh = deformMesh(problem, t);
     for(i=0; i<npts; i++) {
         /* This probably shouldn't be accessing the raw data from the vector */
-        x[i] = uscaleLength(problem->charvals, valV(problem->mesh->nodes, i));
+        x[i] = uscaleLength(problem->charvals, valV(defmesh, i));
     }
 
     // Detach the curves from the plot so that they don't show up. If we want
     // them to show up, we'll reattach them later.
     Temp->detach();
     Prod->detach();
-    Bact->detach();
+    ice->detach();
     alpha->detach();
+    prop->detach();
 
     // Plot temperature data if the box for it is checked.
     if(checkTemp->isChecked()) {
@@ -633,22 +739,30 @@ void Solver::plotResultsSpace(int t)
             c[i] = val(s->val, i, 0);
         }
 
+        /* Fix */
+        s = FetchSolution(problem, t);
+        for(i=0; i<npts; i++) {
+            c[i] = c[i]/(1-Xv_ice(uscaleTemp(problem->charvals, val(s->val, i, 0))));
+        }
+
         Prod->attach(qwtPlot);
 
         Prod->setSamples(x, c, npts);
         free(c);
     }
 
-    if(checkBact->isChecked()) {
+    if(checkXIce->isChecked()) {
         d = (double*) calloc(npts, sizeof(double));
-        s = FetchAuxSoln(problem, 1, t);
+        s = FetchSolution(problem, t);
         for(i=0; i<npts; i++) {
-            d[i] = val(s->val, i, 0);
+            tmp = uscaleTemp(problem->charvals, val(s->val, i, 0));
+
+            d[i] = X_ice(tmp);
         }
 
-        Bact->attach(qwtPlot);
+        ice->attach(qwtPlot);
 
-        Bact->setSamples(x, d, npts);
+        ice->setSamples(x, d, npts);
         free(d);
     }
     
@@ -680,6 +794,7 @@ void Solver::plotResultsSpace(int t)
 
     // Don't get rid of the "x" array since it'll cause problems later.
     //free(x);
+    DestroyVector(defmesh);
 }
 
 // Load all the simulation data from a text file.
@@ -728,6 +843,9 @@ void Solver::loadSimulation()
             datalist = push_var(datalist, tmp);
         }
     }
+
+/* TODO: FIXME!!! */
+   // get_vars(ba.data());
 
     // Clean up the buffer.
     delete_buffer(buffer);

@@ -1,7 +1,12 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef FREEZING_H
+#define FREEZING_H
 
 #include "ui_freezing.h"
+
+extern "C" {
+#include "matrix.h"
+}
+
 #include <qwt_plot_curve.h>
 
 class Solver : public QMainWindow, private Ui::SolverWindow
@@ -17,6 +22,8 @@ class Solver : public QMainWindow, private Ui::SolverWindow
         void quitApplication();
         void loadSimulation();
         void saveSimulation();
+        void plotRandomProperty();
+
         void about();
         void aboutQt();
         void saveCSV();
@@ -33,7 +40,7 @@ class Solver : public QMainWindow, private Ui::SolverWindow
     private:
         struct fe1d *problem;
         struct var *datalist;
-        QwtPlotCurve *Temp, *Prod, *Bact, *alpha;
+        QwtPlotCurve *Temp, *Prod, *ice, *alpha, *prop;
 
         void leftBCHideAll();
         void rightBCHideAll();
@@ -48,6 +55,7 @@ class Solver : public QMainWindow, private Ui::SolverWindow
         void setupDomain();
         void plotResultsTime(int);
         void plotResultsSpace(int);
+        void plotFunction(vector*, double (*)(double), QwtPlotCurve*);
 };
 
 #endif

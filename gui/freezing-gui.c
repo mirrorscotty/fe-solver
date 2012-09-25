@@ -15,6 +15,7 @@
 #include "heat-gui.h"
 
 extern double EaA, EaB, AA, AB;
+extern double To;
 double h = 5;
 
 /* The following two functions are for heat conduction. */
@@ -39,7 +40,7 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    value *= (alpha(T)/p->charvals.alpha);
+    //value *= alphaFZ(T)/p->charvals.alpha;
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));
@@ -57,7 +58,6 @@ double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
 
     value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
     value *= IMapCyl1D(p, elem, x);
-//    value *= -1;
 
     return value;
 }
@@ -148,9 +148,8 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
 
 double ExternalTemp(struct fe1d *p, int row)
 {
-    return scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->t*p->dt)));
+    return scaleTemp(p->charvals, T_inf());
 }
-
 
 /* The way this function is implemented is probably not mathematically accurate.
  * Strictly speaking, for the implicit solver, the temperature fetched should be
@@ -158,7 +157,7 @@ double ExternalTemp(struct fe1d *p, int row)
  * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double Tinf = scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->dt*p->t)));
+    double Tinf = scaleTemp(p->charvals, T_inf());
     double T;
     double Bi = BiotNumber(p->charvals);
 
@@ -199,21 +198,44 @@ double react1(double cprev, double T, double dt)
     double R = 8.314;
     //AA = 1;
     //EaA = 1;
+    double tmp;
 
     T = fabs(T);
     
-    return cprev*(1 - dt*AA*exp(-EaA/(R*T)));
+    tmp = cprev*(1 - dt*AA*exp(-EaA/(R*T)));
+
+    return tmp;
 }
 
-double react2(double cprev, double T, double dt)
+vector *deformMesh(struct fe1d *p, int t)
 {
-    //double AB, EaB, R;
-    double R = 8.314;
-    //AB = 2;
-    //EaB = 2;
+    double x=0, xi, xi1, xnew;
+    vector *newcoords;
+    vector *oldcoords;
+    int i, nnodes;
+    double T;
 
-    T = fabs(T);
-    
-    return cprev*(1 - dt*AB*exp(-EaB/(R*T)));
+    solution *s;
+
+    oldcoords = p->mesh->nodes;
+    s = FetchSolution(p, t);
+    nnodes = len(oldcoords);
+    newcoords = CreateVector(nnodes);
+
+    for(i=0; i<nnodes-1; i++) {
+        T = uscaleTemp(p->charvals, val(s->val, i, 0));
+
+        xi=valV(oldcoords, i);
+        xi1 = valV(oldcoords, i+1);
+
+        xnew = (xi1-xi)/(rho(To)/rho(T)) + x;
+
+        setvalV(newcoords, i+1, xnew);
+        x = xnew;
+    }
+
+    PrintVector(oldcoords);
+    PrintVector(newcoords);
+
+    return newcoords;
 }
-
