@@ -36,7 +36,7 @@ Solver::Solver(QWidget *parent)
     connect(buttonPlotProp, SIGNAL( clicked() ), this, SLOT( plotRandomProperty() ));
 
 
-    connect(actionQuit, SIGNAL( triggered() ), this, SLOT( quitApplication() ));
+    //connect(actionQuit, SIGNAL( triggered() ), this, SLOT( quitApplication() ));
     connect(actionSave_Simulation, SIGNAL( triggered() ), this, SLOT( saveSimulation() ));
     connect(actionOpen, SIGNAL( triggered() ), this, SLOT( loadSimulation() ));
     connect(actionAbout, SIGNAL( triggered() ), this, SLOT( about() ));
@@ -82,7 +82,7 @@ Solver::Solver(QWidget *parent)
     comboRightBC->setCurrentIndex(1);
     comboRightBC->setEnabled(false);
 
-    buttonPlotProp->hide();
+    //buttonPlotProp->hide();
 }
 
 Solver::~Solver()
@@ -98,6 +98,11 @@ Solver::~Solver()
 
     return;
 }
+
+/******************************************************************************
+ * Boring UI functions that do such things as show/hide buttons, set bounds on*
+ * number entry boxes, and show about dialogs.                                *
+ *****************************************************************************/
 
 // Close the window and exit the program.
 void Solver::quitApplication()
@@ -191,7 +196,7 @@ void Solver::leftBCShowConv()
     lbctext->show();
     spinHLeft->show();
     spinTExtLeft->show();
- 
+
     return;
 }
 
@@ -232,6 +237,23 @@ void Solver::leftBCShowConvTime()
     spinTHeatLeft->show();
     return;
 }
+
+// Bring up an about dialog.
+void Solver::about()
+{
+    QMessageBox::about(this, "About", genAboutString());
+}
+
+void Solver::aboutQt()
+{
+    QMessageBox::aboutQt(this, "About Qt");
+}
+
+
+/******************************************************************************
+ * Functions to load/save stuff.                                              *
+ *****************************************************************************/
+
 
 // Macro to simplify the code for saving data from the gui to a linked list.
 #define GETVARIABLE( VARNAME, BOXNAME ) { strcpy(tmp->name, #VARNAME); tmp->value = (BOXNAME)->value(); tmp->next = new_var(); tmp = tmp->next; }
@@ -316,6 +338,139 @@ void Solver::loadVars()
     }
     return;
 }
+
+// Load all the simulation data from a text file.
+void Solver::loadSimulation()
+{
+    struct var *tmp;
+    QString path;
+    QByteArray ba;
+    char **buffer;
+    int i;
+
+    buffer = NULL;
+    tmp = NULL;
+
+    DestroyFE1D(problem);
+    problem = NULL;
+    if(datalist) {
+        destroy_list(datalist);
+        datalist = NULL;
+    }
+
+    // Get the filename to save to.
+    path = QFileDialog::getOpenFileName(
+            this,
+            "Open",
+            QString::null,
+            QString::null);
+
+    // Convert the filename to a char*
+    ba = path.toLocal8Bit();
+
+    // Read the data file into a buffer.
+    buffer = read_datafile(ba.data());
+
+    // Parse the file line by line. (Hopefully there's not more than 200 lines.)
+    for(i=0; i<200; i++) {
+        // Strip any comments that might be lurking in the file.
+        buffer[i] = remove_comments(buffer[i]);
+        // Parse the line and save it to a variable.
+        tmp = read_line(buffer[i]);
+        // If the variable actually contained something, save it. Otherwise just
+        // keep going and pretend like it never existed.
+        // TODO: Fix the memory leak.
+        if(strcmp(tmp->name, "NULL") != 0) {
+            //printf("Name: %s -- Value: %g\n", tmp->name, tmp->value);
+            datalist = push_var(datalist, tmp);
+        }
+    }
+
+/* TODO: FIXME!!! */
+   // get_vars(ba.data());
+
+    // Clean up the buffer.
+    delete_buffer(buffer);
+
+    // Load the variables into the interface.
+    loadVars();
+    return;
+}
+
+// Save everything the user was working on to a file.
+void Solver::saveSimulation()
+{
+    struct var *tmp;
+    QString path;
+    QByteArray ba;
+    FILE *fp;
+    storeVariables();
+    tmp = datalist;
+
+
+    // Get the filename to save to.
+    path = QFileDialog::getSaveFileName(
+            this,
+            "Save As",
+            QString::null,
+            QString::null);
+
+    // Convert the filename to a char*
+    ba = path.toLocal8Bit();
+
+    // Open up the requested file.
+    fp = fopen( (char*) ba.data(), "w+" );
+    // Check for errors in opening the file.
+    // TODO: Pop up an error message instead of printing stuff to the console.
+    if(!fp) {
+        fprintf(stderr, "Failed to open file for writing.");
+        return;
+    }
+
+    while(tmp) {
+        fprintf(fp, "%s = %g\n", tmp->name, tmp->value);
+        tmp = tmp->next;
+    }
+
+    // Close the file.
+    fclose(fp);
+
+    return;
+}
+
+void Solver::saveCSV()
+{
+    QString path;
+    QByteArray ba;
+
+    // Check to see if the user has run the simulation before trying to save
+    // the output. Stops the program from seg faulting.
+    if(!problem) {
+        QMessageBox::warning(this, "Error", "Please run the simulation before saving the results.");
+        return;
+    }
+
+    // Get the filename to save to.
+    path = QFileDialog::getSaveFileName(
+            this,
+            "Save As",
+            QString::null,
+            QString::null);
+
+    // Convert the filename to a char*
+    ba = path.toLocal8Bit();
+
+    if(radioTime->isChecked()) {
+        CSVOutFixedTime(problem, spinPlotTIndex->value(), ba.data());
+    } else {
+        CSVOutFixedNode(problem, spinPlotNode->value(), ba.data());
+    }
+    return;
+}
+
+/******************************************************************************
+ * Stuff to set up the FE struct so that problems get solved!                 *
+ *****************************************************************************/
 
 // Take the information about the domain from the appropriate fields in the gui
 // and initialize the "domain" variable. Three dependant variables are solved
@@ -441,7 +596,14 @@ void Solver::solveProblems()
 
         plotSolution();
     }
+
+    PrintScalingValues(problem->charvals);
+
 }
+
+/******************************************************************************
+ * Plotting functions.                                                        *
+ *****************************************************************************/
 
 void Solver::plotSolution()
 {
@@ -501,7 +663,7 @@ void Solver::plotFunction(vector *domain, double (*f)(double), QwtPlotCurve *cur
     for(i=0; i<npts; i++) {
         setvalV(data, i, f(valV(domain, i)));
 
-        printf("%g\n", valV(data, i));
+        //printf("%g\n", valV(data, i));
     }
 
     curve->setSamples(domain->v, data->v, npts);
@@ -546,7 +708,7 @@ void Solver::plotRandomProperty() {
     /* End of copy/pasting! */
 
     properties << "Heat Capacity" << "Thermal Conductivity" << "Density";
-    properties << "Thermal Diffusivity";
+    properties << "Thermal Diffusivity" << "Mass Fraction Ice";
     item = QInputDialog::getItem(this, "Choose a property to plot.",
                                  "Property:", properties, 0, false, &ok);
     if(!ok || item.isEmpty())
@@ -568,6 +730,8 @@ void Solver::plotRandomProperty() {
         plotFunction(domain, &rho, prop);
     } else if(item == "Thermal Diffusivity") {
         plotFunction(domain, &alphaFZ, prop);
+    } else if(item == "Mass Fraction Ice") {
+        plotFunction(domain, &X_ice, prop);
     }
 
     DestroyVector(domain);
@@ -797,143 +961,4 @@ void Solver::plotResultsSpace(int t)
     DestroyVector(defmesh);
 }
 
-// Load all the simulation data from a text file.
-void Solver::loadSimulation()
-{
-    struct var *tmp;
-    QString path;
-    QByteArray ba;
-    char **buffer;
-    int i;
-    
-    buffer = NULL;
-    tmp = NULL;
-
-    DestroyFE1D(problem);
-    problem = NULL;
-    if(datalist) {
-        destroy_list(datalist);
-        datalist = NULL;
-    }
-
-    // Get the filename to save to.
-    path = QFileDialog::getOpenFileName(
-            this,
-            "Open",
-            QString::null,
-            QString::null);
-
-    // Convert the filename to a char*
-    ba = path.toLocal8Bit();
-    
-    // Read the data file into a buffer.
-    buffer = read_datafile(ba.data());
-
-    // Parse the file line by line. (Hopefully there's not more than 200 lines.)
-    for(i=0; i<200; i++) {
-        // Strip any comments that might be lurking in the file.
-        buffer[i] = remove_comments(buffer[i]);
-        // Parse the line and save it to a variable.
-        tmp = read_line(buffer[i]);
-        // If the variable actually contained something, save it. Otherwise just
-        // keep going and pretend like it never existed.
-        // TODO: Fix the memory leak.
-        if(strcmp(tmp->name, "NULL") != 0) {
-            //printf("Name: %s -- Value: %g\n", tmp->name, tmp->value);
-            datalist = push_var(datalist, tmp);
-        }
-    }
-
-/* TODO: FIXME!!! */
-   // get_vars(ba.data());
-
-    // Clean up the buffer.
-    delete_buffer(buffer);
-
-    // Load the variables into the interface.
-    loadVars();
-    return;
-}
-
-// Save everything the user was working on to a file.
-void Solver::saveSimulation()
-{
-    struct var *tmp;
-    QString path;
-    QByteArray ba;
-    FILE *fp;
-    storeVariables();
-    tmp = datalist;
-
-
-    // Get the filename to save to.
-    path = QFileDialog::getSaveFileName(
-            this,
-            "Save As",
-            QString::null,
-            QString::null);
-
-    // Convert the filename to a char*
-    ba = path.toLocal8Bit();
-
-    // Open up the requested file.
-    fp = fopen( (char*) ba.data(), "w+" );
-    // Check for errors in opening the file.
-    // TODO: Pop up an error message instead of printing stuff to the console.
-    if(!fp) {
-        fprintf(stderr, "Failed to open file for writing.");
-        return;
-    }
-
-    while(tmp) {
-        fprintf(fp, "%s = %g\n", tmp->name, tmp->value);
-        tmp = tmp->next;
-    }
-
-    // Close the file.
-    fclose(fp);
-
-    return;
-}
-
-void Solver::saveCSV()
-{
-    QString path;
-    QByteArray ba;
-
-    // Check to see if the user has run the simulation before trying to save
-    // the output. Stops the program from seg faulting.
-    if(!problem) {
-        QMessageBox::warning(this, "Error", "Please run the simulation before saving the results.");
-        return;
-    }
-
-    // Get the filename to save to.
-    path = QFileDialog::getSaveFileName(
-            this,
-            "Save As",
-            QString::null,
-            QString::null);
-
-    // Convert the filename to a char*
-    ba = path.toLocal8Bit();
-
-    if(radioTime->isChecked()) {
-        CSVOutFixedTime(problem, spinPlotTIndex->value(), ba.data());
-    } else {
-        CSVOutFixedNode(problem, spinPlotNode->value(), ba.data());
-    }
-    return;
-}
-
-// Bring up an about dialog.
-void Solver::about()
-{
-    QMessageBox::about(this, "About", genAboutString());
-}
-
-void Solver::aboutQt()
-{
-    QMessageBox::aboutQt(this, "About Qt");
-}
 

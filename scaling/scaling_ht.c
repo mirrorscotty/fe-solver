@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "scaling_ht.h"
 
 scaling_ht SetupScaling(double alpha, double Tc, double Lc, double k, double h)
@@ -48,3 +50,8 @@ double BiotNumber(scaling_ht stuff)
     return stuff.h*stuff.Lc/stuff.k;
 }
 
+void PrintScalingValues(scaling_ht stuff)
+{
+    printf("alpha = %g, Tc = %g, Lc = %g, k = %g, h = %g, Bi = %g\n",
+           stuff.alpha, stuff.Tc, stuff.Lc, stuff.k, stuff.h, BiotNumber(stuff));
+}

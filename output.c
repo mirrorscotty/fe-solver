@@ -50,8 +50,11 @@ void CSVOutFixedTime(struct fe1d *p, int tstep, char *filename)
     solution *T, *c1;
 
     vector *defmesh;
+#ifdef CALC_ICE_FORMATION
     defmesh = deformMesh(p, tstep);
-    //defmesh = p->mesh->nodes;
+#else
+    defmesh = p->mesh->nodes;
+#endif
 
     fp = fopen(filename, "w+");
 

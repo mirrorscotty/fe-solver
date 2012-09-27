@@ -24,7 +24,7 @@ void DestroyBasis(basis*);
 double EvalLin2D(basis*, int, double, double);
 double EvalLin2Dx(basis*, int, double, double);
 double EvalLin2Dy(basis*, int, double, double);
-double EvalBasis(basis*, ... );
+//double EvalBasis(basis*, ... );
 
 double EvalQuad2D(basis*, int, double, double);
 double EvalQuad2Dx(basis*, int, double, double);
@@ -33,30 +33,5 @@ double EvalQuad2Dy(basis*, int, double, double);
 double EvalLinTri2D(basis*, int, double, double);
 double EvalLinTri2Dx(basis*, int, double, double);
 double EvalLinTri2Dy(basis*, int, double, double);
-
-double lin1d1(double);
-double lin1d2(double);
-double dlin1d1(double);
-double dlin1d2(double);
-
-double quad1d1(double);
-double quad1d2(double);
-double quad1d3(double);
-double dquad1d1(double);
-double dquad1d2(double);
-double dquad1d3(double);
-
-double cubic1d1(double);
-double cubic1d2(double);
-double cubic1d3(double);
-double cubic1d4(double);
-double dcubic1d1(double);
-double dcubic1d2(double);
-double dcubic1d3(double);
-double dcubic1d4(double);
-
-double lintri2d1(double, double);
-double lintri2d2(double, double);
-double lintri2d3(double, double);
 
 #endif

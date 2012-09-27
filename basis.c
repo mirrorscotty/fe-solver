@@ -5,6 +5,31 @@
 #include "basis.h"
 #include "integrate.h"
 
+double lin1d1(double);
+double lin1d2(double);
+double dlin1d1(double);
+double dlin1d2(double);
+
+double quad1d1(double);
+double quad1d2(double);
+double quad1d3(double);
+double dquad1d1(double);
+double dquad1d2(double);
+double dquad1d3(double);
+
+double cubic1d1(double);
+double cubic1d2(double);
+double cubic1d3(double);
+double cubic1d4(double);
+double dcubic1d1(double);
+double dcubic1d2(double);
+double dcubic1d3(double);
+double dcubic1d4(double);
+
+double lintri2d1(double, double);
+double lintri2d2(double, double);
+double lintri2d3(double, double);
+
 /* //Test function
 int main(int argc, char *argv[])
 {
@@ -290,6 +315,7 @@ double EvalLinTri2Dy(basis *b, int func, double x, double y)
    example, EvalBasis(b, 0, .5, 0, .2) would evaluate the first 2d bilinear
    basis function at (.5, .2). The dimension of the basis must be equal to the
    number of coordinates supplied. */
+/* Pretty sure this doesn't work.
 double EvalBasis(basis *b, ... )
 {
     va_list arglist;
@@ -322,6 +348,7 @@ double EvalBasis(basis *b, ... )
     free(phi);
     return result;
 }
+*/
 
 /* 1d Linear Basis Functions */
 double lin1d1(double x) { return 1-x; }

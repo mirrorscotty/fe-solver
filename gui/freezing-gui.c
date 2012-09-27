@@ -209,6 +209,8 @@ double react1(double cprev, double T, double dt)
 
 vector *deformMesh(struct fe1d *p, int t)
 {
+    //return CopyVector(p->mesh->nodes);
+
     double x=0, xi, xi1, xnew;
     vector *newcoords;
     vector *oldcoords;

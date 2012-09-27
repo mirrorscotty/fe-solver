@@ -15,6 +15,9 @@ TEMPLATE = app
 TARGET = solver
 OBJECTS_DIR = ./tmp
 
+# Make sure to calculate ice formation
+DEFINES += CALC_ICE_FORMATION
+
 DEPENDPATH += . \
               scaling \
               fem \

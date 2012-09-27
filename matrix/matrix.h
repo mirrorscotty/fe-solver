@@ -45,6 +45,7 @@ typedef struct {
 vector* CreateVector(int);
 void DestroyVector(vector*);
 vector* linspaceV(double, double, int);
+vector* CopyVector(vector*);
 //double valV(vector*, int);
 void setvalV(vector*, int, double);
 int len(vector*);

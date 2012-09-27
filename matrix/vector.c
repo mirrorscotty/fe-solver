@@ -49,6 +49,17 @@ vector* linspaceV(double start, double end, int nelem)
     return x;
 }
 
+vector* CopyVector(vector *v)
+{
+    vector *new;
+    int i;
+    new = CreateVector(len(v));
+    for(i=0; i<len(v); i++) {
+        setvalV(new, i, valV(v, i));
+    }
+    return new;
+}
+
 /* Return the i-th value */
 //double valV(vector *v, int i)
 //{

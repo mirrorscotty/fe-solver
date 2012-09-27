@@ -22,4 +22,6 @@ double uscaleTime(scaling_ht, double);
 
 double BiotNumber(scaling_ht);
 
+void PrintScalingValues(scaling_ht);
+
 #endif

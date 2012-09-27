@@ -1,7 +1,7 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "ui_freezing.h"
+#include "ui_solver.h"
 #include <qwt_plot_curve.h>
 
 class Solver : public QMainWindow, private Ui::SolverWindow
