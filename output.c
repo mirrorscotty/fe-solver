@@ -3,6 +3,7 @@
 #include "output.h"
 
 #include "finite-element.h"
+#include "freezing-gui.h"
 #include "solution.h"
 #include "auxsoln.h"
 #include "scaling_ht.h"

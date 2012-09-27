@@ -3,6 +3,7 @@
 #include "matrix.h"
 #include "finite-element.h"
 #include "finite-element1d.h"
+#include "mtxsolver.h"
 
 /* Check the convergance of the nonlinear solver. Return 0 if not converged,
  * and 1 if we're done iterating. */
