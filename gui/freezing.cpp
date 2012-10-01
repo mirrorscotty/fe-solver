@@ -87,7 +87,7 @@ Solver::Solver(QWidget *parent)
     comboRightBC->setCurrentIndex(1);
     comboRightBC->setEnabled(false);
 
-    buttonPlotProp->hide();
+    //buttonPlotProp->hide();
 }
 
 Solver::~Solver()
@@ -815,8 +815,8 @@ void Solver::plotResultsTime(int nodenum)
         d = (double*) calloc(npts, sizeof(double));
         for(i=0; i<npts; i++) {
             s = FetchSolution(problem, i);
-            tmp = uscaleTime(problem->charvals, val(s->val, nodenum, 0));
-            d[i] = X_ice(tmp);
+            tmp = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
+            d[i] = IceMassFrac(tmp);
         }
 
         ice->attach(qwtPlot);
@@ -931,7 +931,7 @@ void Solver::plotResultsSpace(int t)
         for(i=0; i<npts; i++) {
             tmp = uscaleTemp(problem->charvals, val(s->val, i, 0));
 
-            d[i] = X_ice(tmp);
+            d[i] = IceMassFrac(tmp);
         }
 
         ice->attach(qwtPlot);
