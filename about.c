@@ -6,7 +6,7 @@
 char *genAboutString()
 {
     char *progName = "Finite Element Solver";
-    char *version = "0.04";
+    char *version = "0.06";
     char *sourceURL = "https://github.com/mirrorscotty/fe-solver/";
 
     char *copyrightYear = "2012";

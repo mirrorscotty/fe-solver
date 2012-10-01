@@ -87,7 +87,7 @@ Solver::Solver(QWidget *parent)
     comboRightBC->setCurrentIndex(1);
     comboRightBC->setEnabled(false);
 
-    //buttonPlotProp->hide();
+    buttonPlotProp->hide();
 }
 
 Solver::~Solver()
@@ -104,9 +104,9 @@ Solver::~Solver()
     return;
 }
 
-/******************************************************************************
- * Boring UI functions that do such things as show/hide buttons, set bounds   *
- * on number entry boxes, and show about dialogs.                             *
+/*****************************************************************************
+ * Boring UI functions that do such things as show/hide buttons, set bounds  *
+ * on number entry boxes, and show about dialogs.                            *
  *****************************************************************************/
 
 // Close the window and exit the program.
@@ -255,8 +255,8 @@ void Solver::aboutQt()
 }
 
 
-/******************************************************************************
- * Functions to load/save stuff.                                              *
+/*****************************************************************************
+ * Functions to load/save stuff.                                             *
  *****************************************************************************/
 
 
@@ -478,8 +478,8 @@ void Solver::saveCSV()
     return;
 }
 
-/******************************************************************************
- * Stuff to set up the FE struct so that problems get solved!                 *
+/*****************************************************************************
+ * Stuff to set up the FE struct so that problems get solved!                *
  *****************************************************************************/
 
 // Take the information about the domain from the appropriate fields in the gui
@@ -611,8 +611,8 @@ void Solver::solveProblems()
 
 }
 
-/******************************************************************************
- * Plotting functions.                                                        *
+/*****************************************************************************
+ * Plotting functions.                                                       *
  *****************************************************************************/
 
 void Solver::plotSolution()
