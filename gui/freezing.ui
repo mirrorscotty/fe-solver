@@ -49,8 +49,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>193</width>
-         <height>180</height>
+         <width>340</width>
+         <height>519</height>
         </rect>
        </property>
        <attribute name="label">
@@ -207,7 +207,7 @@ p, li { white-space: pre-wrap; }
          <x>0</x>
          <y>0</y>
          <width>340</width>
-         <height>519</height>
+         <height>383</height>
         </rect>
        </property>
        <attribute name="label">
@@ -244,6 +244,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMPro">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -265,6 +268,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMFat">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -286,6 +292,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMCar">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -307,6 +316,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMFib">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -328,6 +340,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMAsh">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -349,6 +364,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="spinMWat">
+            <property name="decimals">
+             <number>3</number>
+            </property>
             <property name="maximum">
              <double>1.000000000000000</double>
             </property>
@@ -516,8 +534,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>340</width>
-         <height>519</height>
+         <width>323</width>
+         <height>464</height>
         </rect>
        </property>
        <attribute name="label">

@@ -50,6 +50,11 @@ Solver::Solver(QWidget *parent)
     connect(spinDt, SIGNAL( valueChanged(double) ), this, SLOT(setMaxTIndex(double) ));
     connect(spintEnd, SIGNAL( valueChanged(double) ), this, SLOT(setMaxTIndex(double) ));
 
+    //Set the shortcut keys!
+    actionOpen->setShortcut(Qt::CTRL + Qt::Key_O);
+    actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
+    actionSave_Simulation->setShortcut(Qt::CTRL + Qt::Key_S);
+
     // Set the domain and datalist variables to NULL. They're both initialized
     // later in the program.
     problem = NULL;
@@ -82,7 +87,7 @@ Solver::Solver(QWidget *parent)
     comboRightBC->setCurrentIndex(1);
     comboRightBC->setEnabled(false);
 
-    buttonPlotProp->hide();
+    //buttonPlotProp->hide();
 }
 
 Solver::~Solver()
@@ -100,8 +105,8 @@ Solver::~Solver()
 }
 
 /******************************************************************************
- * Boring UI functions that do such things as show/hide buttons, set bounds on*
- * number entry boxes, and show about dialogs.                                *
+ * Boring UI functions that do such things as show/hide buttons, set bounds   *
+ * on number entry boxes, and show about dialogs.                             *
  *****************************************************************************/
 
 // Close the window and exit the program.
@@ -364,6 +369,11 @@ void Solver::loadSimulation()
             "Open",
             QString::null,
             QString::null);
+
+    /* If the user didn't select a file to open, then we're done here. */
+    if(path == "") {
+        return;
+    }
 
     // Convert the filename to a char*
     ba = path.toLocal8Bit();
@@ -731,7 +741,7 @@ void Solver::plotRandomProperty() {
     } else if(item == "Thermal Diffusivity") {
         plotFunction(domain, &alphaFZ, prop);
     } else if(item == "Mass Fraction Ice") {
-        plotFunction(domain, &X_ice, prop);
+        plotFunction(domain, &IceMassFrac, prop);
     }
 
     DestroyVector(domain);
