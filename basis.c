@@ -51,8 +51,16 @@ int main(int argc, char *argv[])
 }
 */
 
+
 /* Make a set of linear basis functions. Includes information on how to
    properly assemble the global matricies. */
+/**
+ * @brief Make a set of linear basis functions.
+ * Make a set of linear basis functions. Includes information on how to
+ * properly assemble the global matricies.
+ * @param dimension Dimension of the domain
+ * @return Data structure with pointers to the basis functions
+ */
 basis* MakeLinBasis(int dimension)
 {
     basis *b;
@@ -98,6 +106,13 @@ basis* MakeLinBasis(int dimension)
     return b;
 }
 
+/**
+ * @brief Make a set of quadratic basis functions.
+ * Make a set of quadratic basis functions. Includes information on how to
+ * properly assemble the global matricies.
+ * @param dimension Dimension of the domain
+ * @return Data structure with pointers to the basis functions
+ */
 basis* MakeQuadBasis(int dimension)
 {
     basis *b;
@@ -144,6 +159,13 @@ basis* MakeQuadBasis(int dimension)
     return b;
 }
 
+/**
+ * @brief Make a set of hermite cubic basis functions.
+ * Make a set of cubic basis functions. Includes information on how to
+ * properly assemble the global matricies.
+ * @param dimension Dimension of the domain
+ * @return Data structure with pointers to the basis functions
+ */
 basis* MakeCubicBasis(int dimension)
 {
     basis *b;
