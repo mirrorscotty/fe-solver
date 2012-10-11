@@ -1,4 +1,5 @@
-/*
+/**
+ * @file test.c
  * Series of test functions for figuring stuff out. Pretty much nothing here is
  * used for actual analysis.
  */

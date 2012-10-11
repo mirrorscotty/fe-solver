@@ -1,7 +1,15 @@
+/**
+ * @file isoparam.c
+ * All sorts of stuff for isoparametric mapping!
+ */
+
 #include <stdio.h>
 #include "isoparam.h"
 
-/* Macro to simplify the function definitions below. Otherwise, it'd be nearly
+/**
+ * @brief Macro to simplify the function definitions below.
+ *
+ * Otherwise, it'd be nearly
  * the same thing copy and pasted 4 times. No one wants that!
  * These functions handle isoparametric mapping for both bilinear and
  * biquad elements.
@@ -36,7 +44,14 @@ IMAP(XEta, y, 0)
 /* dy/deta */
 IMAP(YEta, y, 1)
 
-/* Calculate the Jacobian */
+/**
+ * @brief Calculate the Jacobian
+ * @param p The problem definition
+ * @param elem The element of interest
+ * @param xi The local x-coordinate to evaluate at
+ * @param eta The local y-coordinate
+ * @returns Value of the Jacobian
+ */
 double IMapJ(struct fe *p, Elem2D *elem, double xi, double eta)
 {
     return IMapXXi(p, elem, xi, eta)
@@ -45,6 +60,15 @@ double IMapJ(struct fe *p, Elem2D *elem, double xi, double eta)
         * IMapXEta(p, elem, xi, eta);
 }
 
+/**
+ * @brief Calculate the differential volume for use when integrating in
+ * cylindrical coordinates
+ * @param p Problem structure
+ * @param elem Element where stuff is being calculated
+ * @param xi Local x-coordinate
+ * @param eta Local y-coordinate
+ * @returns Differential volume at that element
+ */
 double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
 {
     double x = 0;
@@ -61,6 +85,10 @@ double IMapCyl(struct fe *p, Elem2D *elem, double xi, double eta)
     return x;
 }
 
+/**
+ * Same thing as the 2D version, only for one dimension.
+ * @see IMapCyl
+ */
 double IMapCyl1D(struct fe1d *p, Elem1D *elem, double xi)
 {
     double x = 0;
@@ -102,7 +130,15 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
     return r;
 }
 
-/* 1D stuff */
+/**
+ * @brief Do isoparametric mapping for 1D problems.
+ *
+ * This function returns the value of the derivative of the global x-coordinate
+ * with respect to the local x-coordinate.
+ * @param p The problem being solved
+ * @param elem The element to calculate stuff for
+ * @param xi Local x-coordinate
+ * */
 double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
 {
     /* Only works for linear elements */
@@ -119,7 +155,8 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
         result += b->phi[i](xi) * valV(elem->points, i);
     }
 
-    /* Cheat and return the right value. */
+    /* Cheat and return the right value. This only works reliably for linear
+     * interpolation functions */
     result = 1/(x2-x1);
 
     return result;

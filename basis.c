@@ -1,3 +1,11 @@
+/**
+ * @file basis.c
+ * Contains all the functions and structures for storing the basis functions
+ * used in the finite element interpolation. Currently has stuff for linear,
+ * quadratic, and hermite cubic functions. It also does 1D and 2D
+ * interpolation.
+ */
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -234,7 +242,10 @@ basis* Make2DTriBasis()
 }
 
     
-/* Delete stuff */
+/**
+ * @brief Delete a basis!
+ * @param b The basis to dispose of.i
+ */
 void DestroyBasis(basis *b)
 {
     if(b->phi)
@@ -246,10 +257,19 @@ void DestroyBasis(basis *b)
     return;
 }
 
-/* Evaluate a linear 2 dimensional basis function. The second argument
-   determines which of the bilinear basis functions to evaluate. The last two
-   arguments are the x and y coordinates in isoparametric space to evaluate the
-   function at. */
+/**
+ * @brief Evaluate a linear 2 dimensional basis function.
+ *
+ * The second argument
+ * determines which of the bilinear basis functions to evaluate. The last two
+ * arguments are the x and y coordinates in isoparametric space to evaluate the
+ * function at.
+ * @param b The (2d) basis containing the functions to evaluate
+ * @param func Which function to evaluate
+ * @param x The x-coordinate inside the element
+ * @param y The y-coordinate
+ * @return The result
+ */
 double EvalLin2D(basis *b, int func, double x, double y)
 {
     //printf("Evaluating function (%d, %d)\n", (func>1)?1:0, func%2);
@@ -261,6 +281,14 @@ double EvalLin2D(basis *b, int func, double x, double y)
     //return EvalBasis(b, (func>1)?1:0, x, func % 2, y);
 }
 
+/**
+ * @brief Evaluates the derivative of the basis functions with respect to x.
+ * @param b The basis struct
+ * @param func The function to evaluate
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ * @return The value at those coordinates
+ */
 double EvalLin2Dx(basis *b, int func, double x, double y)
 {
     int i, j;
@@ -269,6 +297,14 @@ double EvalLin2Dx(basis *b, int func, double x, double y)
     return b->dphi[i](x) * b->phi[j](y);
 }
 
+/**
+ * @brief Evaluates the derivative of the basis functions with respect to x.
+ * @param b The basis struct
+ * @param func The function to evaluate
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ * @return The value at those coordinates
+ */
 double EvalLin2Dy(basis *b, int func, double x, double y)
 {
     int i, j;
@@ -277,6 +313,10 @@ double EvalLin2Dy(basis *b, int func, double x, double y)
     return b->phi[i](x) * b->dphi[j](y);
 }
 
+/**
+ * @brief Evaluate a biquadritic basis
+ * @see EvalLin2D
+ */
 double EvalQuad2D(basis *b, int func, double x, double y)
 {
     int i, j;
@@ -285,6 +325,10 @@ double EvalQuad2D(basis *b, int func, double x, double y)
     return b->phi[i](x) * b->phi[j](y);
 }
 
+/**
+ * @brief Evaluate the x derivative of a set of biquadratic basis functions.
+ * @see EvalLin2Dx
+ */
 double EvalQuad2Dx(basis *b, int func, double x, double y)
 {
     int i, j;
@@ -293,6 +337,9 @@ double EvalQuad2Dx(basis *b, int func, double x, double y)
     return b->dphi[i](x) * b->phi[j](y);
 }
 
+/* @brief Evaluate the y derivative of a set of biquadratic basis functions.
+ * @see EvalLin2Dy
+ */
 double EvalQuad2Dy(basis *b, int func, double x, double y)
 {
     int i, j;
@@ -375,7 +422,7 @@ double EvalBasis(basis *b, ... )
 /* 1d Linear Basis Functions */
 double lin1d1(double x) { return 1-x; }
 double lin1d2(double x) { return x; }
-
+/* First derivatives */
 double dlin1d1(double x) { return -1; }
 double dlin1d2(double x) { return 1; }
 
@@ -383,7 +430,7 @@ double dlin1d2(double x) { return 1; }
 double quad1d1(double x) { return 1-3*x+2*pow(x, 2); }
 double quad1d2(double x) { return 4*(x-pow(x, 2)); }
 double quad1d3(double x) { return -x+2*pow(x, 2); }
-
+/* First derivatives */
 double dquad1d1(double x) { return 4*x-3; }
 double dquad1d2(double x) { return 4-8*x; }
 double dquad1d3(double x) { return 4*x-1; }
@@ -393,7 +440,7 @@ double cubic1d1(double x) { return 1-3*pow(x,2)+2*pow(x,3); }
 double cubic1d2(double x) { return x-2*pow(x,2)+pow(x,3); } 
 double cubic1d3(double x) { return 3*pow(x,2)-2*pow(x,3); } 
 double cubic1d4(double x) { return pow(x,3)-pow(x,2); }
-
+/* First derivatives */
 double dcubic1d1(double x) { return 6*x*x-6*x; }
 double dcubic1d2(double x) { return 1-4*x+3*x*x; }
 double dcubic1d3(double x) { return 6*x-6*x*x; }

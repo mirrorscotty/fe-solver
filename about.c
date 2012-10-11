@@ -1,8 +1,18 @@
+/**
+ * @file about.c
+ * This file just handles stuff with the about dialog for the program.
+ */
+
+
 #include <string.h>
 #include "about.h"
 
 #define LINEBRK strcat(result, "<br/>")
 
+/**
+ * @brief Make the text to in the about dialog.
+ * @return A character pointer to the text.
+ */
 char *genAboutString()
 {
     char *progName = "Finite Element Solver";
@@ -13,7 +23,7 @@ char *genAboutString()
     char *author = "Alex Griessman";
     char *email = "agriessm@purdue.edu";
 
-    char *lisence =
+    char *license =
             "Redistribution and use in source and binary forms, with or without "
             "modification, are permitted provided that the following conditions are met: "
             "<ul>"
@@ -78,7 +88,7 @@ char *genAboutString()
     LINEBRK;
     strcat(result, "<hr/>");
     LINEBRK;
-    strcat(result, lisence);
+    strcat(result, license);
 
     return result;
 }

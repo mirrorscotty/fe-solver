@@ -1,3 +1,8 @@
+/**
+ * @file output.c
+ * Spit out simulation results into a CSV file!
+ */
+
 #include <stdio.h>
 
 #include "output.h"
@@ -10,6 +15,16 @@
 
 #include "material-data/choi-okos/choi-okos.h"
 
+/**
+ * @brief Output bunches of data for a single node
+ *
+ * Spits out the time, temperature, etc. for one node n a CSV file. This needs
+ * to be changed, depending on whether the freezing model or the sterilization
+ * model is built.
+ * @param p The problem with the data in it
+ * @param row The number of the row (node) to output data for
+ * @param filename The name of the file to spit stuff out into
+ */
 void CSVOutFixedNode(struct fe1d *p, int row, char *filename)
 {
     int i;
@@ -44,6 +59,13 @@ void CSVOutFixedNode(struct fe1d *p, int row, char *filename)
     return;
 }
 
+/**
+ * @brief Spits out data for all the nodes in the simulation at a single time
+ * step.
+ * @param p Problem structure
+ * @param tstep The time step to output data for
+ * @param filename Where to save all the data.
+ */
 void CSVOutFixedTime(struct fe1d *p, int tstep, char *filename)
 {
     int i;

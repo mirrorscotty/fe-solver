@@ -1,30 +1,46 @@
+/**
+ * @file integrate.c
+ * Contains all sorts of stuff to integrate the interpolation functions.
+ * Stuff that isn't properly documented is probably crap.
+ */
+
 #include <stdio.h>
 #include <math.h>
 #include "integrate.h"
 #include "isoparam.h"
 #include "basis.h"
 
-double square(double x) {
-	return x*x*x;
-}
-//void main() {
-//	printf("%1.10f", quad300(&square, &square));
-//}
-//
-#define NPTS 3 // Number of Gauss points to use
+/**
+ * The number of Gauss points to use during integration. Change to 5 for
+ * slightly more accurate answers when integrating weird, nonlinear functions.
+ * You'll also need to change x3 and w3 to x5 and w5, respectively.
+ */
+#define NPTS 3 
 
+/**
+ * Coordinates of the Guass points when using 3 point Gaussian quadtrature
+ */
 double x3[] = {-0.774596669241483,
                 0.,
                 0.774596669241483};
+/**
+ * Weights for each point. (3 point)
+ */
 double w3[] = {0.555555555555555,
                0.888888888888888,
                0.555555555555555};
 
+/**
+ * Coordinates of the Gauss points (5 point)
+ */
 double x5[] = {-0.906179845938664,
                -0.538469310105683,
                 0,
                 0.538469310105683,
                 0.906179845938664};
+/**
+ * Weights for each point (5 point)
+ */
 double w5[] = {0.236926885056189,
                0.478628670499366,
                0.568888888888889,
@@ -244,6 +260,24 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
     return result;
 }
 
+/**
+ * @brief Integrate a (1d) weighted residual so that the results can be stuck
+ * into a local element matrix.
+ * @param p The problem definition structure
+ * @param guess A matrix containing the values of the residual at each of the
+ * nodes. Row 1 of the matrix corresponds to node 1, etc. This is really only
+ * used for the nonlinear solver. For the linear solver, this will be a matrix
+ * of zeros.
+ * @param residual A function pointer to the residual to integrate. The first
+ * argument should be the same FE struct that was passed to this function. The
+ * second argument is the guess matrix, the third is the pointer to the element
+ * of interest, the fourth is the x coordinate (in isoparametric coordinates),
+ * and the fifth and sixth are the row and column, respectively, in the element
+ * matrix.
+ * @param f1 The row of the element matrix
+ * @param f2 The column of the element matrix
+ * @return The value of the integrated function.
+ */
 double quad1d3generic(struct fe1d *p, matrix *guess, Elem1D *elem,
                       double (*residual)(struct fe1d*, matrix*, Elem1D*, double, int, int),
                       int f1, int f2)
@@ -261,7 +295,11 @@ double quad1d3generic(struct fe1d *p, matrix *guess, Elem1D *elem,
     return result;
 }
 
-
+/**
+ * The same as the 1D version, except the weighted residual now needs both the x
+ * and y-coordinates.
+ * @see quad1d3generic
+ */
 double quad2d3generic(struct fe *p, matrix *guess, Elem2D *elem,
                       double (*residual)(struct fe*, matrix*, Elem2D*, double, double, int, int),
                       int f1, int f2)

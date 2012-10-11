@@ -1,3 +1,9 @@
+/**
+ * @file matrix.c
+ * This file contains all sorts of nifty matrix functions. All of the matricies
+ * here have indicies that start with 0 instead of 1.
+ */
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -5,6 +11,16 @@
 #include <errno.h>
 #include "matrix.h"
 
+/**
+ * @brief Create a matrix of equally spaced points
+ *
+ * This is the equivalent of the Matlab linspace command.
+ * 
+ * @param start First value
+ * @param end Last value
+ * @param Number of points to put in the matrix
+ * @return Row matrix containing "nelem" points
+ */
 matrix* linspace(double start, double end, int nelem)
 {
     matrix* x;
@@ -18,18 +34,35 @@ matrix* linspace(double start, double end, int nelem)
     return x;
 }
     
-/* Get the length of a 1D matrix of doubles */
+/**
+ * @brief Get the number of columns in a 1D matrix of doubles
+ * @param A The matrix!
+ * @return Number of columns 
+ */
 int nCols(matrix *A)
 {
     return A->cols;
 }
 
-/* Return the number of rows in a two dimensional matrix of doubles */
+/**
+ * @brief Return the number of rows in a two dimensional matrix of doubles
+ *
+ * @param A The matrix of interest
+ * @return Number of rows
+ */
 int nRows(matrix *A)
 {
     return A->rows;
 }
 
+/**
+ * @brief Get the value of a specific element in a matrix
+ *
+ * @param A The matrix containing the values
+ * @param row The row to pull the value from
+ * @param col The column to pull the value from
+ * @return The value stored at row, col in matrix A
+ */
 double val(matrix *A, int row, int col)
 {
     if((row >= nRows(A)) ||  (col >= nCols(A)) || (row < 0) || (col < 0)) {
@@ -39,6 +72,14 @@ double val(matrix *A, int row, int col)
     return A->array[row][col];
 }
 
+/**
+ * Set the value of a particular element of a matrix
+ *
+ * @param A The matrix to set the value in
+ * @param value The value to set
+ * @param row The row
+ * @param col Column
+ */
 void setval(matrix *A, double value, int row, int col)
 {
     if((row >= nRows(A)) ||  (col >= nCols(A)) || (row < 0) || (col < 0)) {
@@ -48,6 +89,10 @@ void setval(matrix *A, double value, int row, int col)
     A->array[row][col] = value;
 }
 
+/**
+ * @brief Print out a matrix
+ * @param A The matrix to print
+ */
 void mtxprnt(matrix *A)
 {
     int i, j;
@@ -68,6 +113,11 @@ void mtxprnt(matrix *A)
     }
 }
 
+/**
+ * @brief Print a matrix out to some random file
+ * @param A The matrix to print
+ * @param filename The filename to print to
+ */
 void mtxprntfile(matrix *A, char *filename)
 {
     int i, j;
@@ -79,12 +129,16 @@ void mtxprntfile(matrix *A, char *filename)
         for(j=0; j<nCols(A); j++) {
             fprintf(file, "%e,", val(A, i, j));
         }
-	fprintf(file, "\n");
+        fprintf(file, "\n");
     }
     fclose(file);
 }
 
-/* Return the transpose of a square matrix */
+/**
+ * @brief Transpose a matrix
+ * @param x The matrix to transpose
+ * @return The transpose of matrix x
+ */
 matrix* mtxtrn(matrix *x)
 {
     matrix *xt;
@@ -111,7 +165,15 @@ matrix* mtxtrn(matrix *x)
     return xt;
 }
 
-/* Multiply matricies using nifty index notation */
+/**
+ * @brief Multiply matricies using nifty index notation!
+ *
+ * Simply calculates A*B
+ *
+ * @param A The first matrix to multiply
+ * @param B The second one!
+ * @return A*B
+ */
 matrix* mtxmul(matrix *A, matrix *B)
 {
     int Ar, Ac, Br, Bc;
@@ -146,6 +208,13 @@ matrix* mtxmul(matrix *A, matrix *B)
     return C;
 }
 
+/**
+ * @brief Multiply a matrix by a constant
+ * This multiplies each element of a matrix by a constant.
+ * @param A The matrix to multiply
+ * @param k The scalar
+ * @return The new matrix
+ */
 matrix* mtxmulconst(matrix *A, double k)
 {
     int Ar, Ac;
@@ -166,8 +235,12 @@ matrix* mtxmulconst(matrix *A, double k)
     return C;
 }
 
-/* Add two matricies.
+/**
+ * @brief Add two matricies.
  * Todo: Add error checking to make sure the dimensions agree.
+ * @param A Some random matrix
+ * @param B Another random matrix with the same dimensions as A
+ * @return A+B
  */
 matrix* mtxadd(matrix *A, matrix *B)
 {
@@ -189,7 +262,10 @@ matrix* mtxadd(matrix *A, matrix *B)
     return C;
 }
 
-/* Multiply a matrix by -1 in place. */
+/**
+ * @brief Multiply a matrix by -1 in place.
+ * @param A The matrix to multiply by -1
+ * @return A pointer to the same matrix A that was passed to this function*/
 matrix* mtxneg(matrix *A)
 {
     int i, j;
@@ -201,7 +277,15 @@ matrix* mtxneg(matrix *A)
     return A;
 }
 
-/* Code here courtesy of http://www.daniweb.com/software-development/c/code/216687 */
+/**
+ * @brief Calculate the minor of the row,col element of a matrix.
+ *
+ * Code here courtesy of http://www.daniweb.com/software-development/c/code/216687
+ * @param A The matrix to calculate stuff for
+ * @param row The row of the element
+ * @param col The column the element is in
+ * @return The value of the minor
+ */
 matrix* CalcMinor(matrix* A, int row, int col) {
     int i, j, a, b;
     int order;
@@ -235,7 +319,14 @@ matrix* CalcMinor(matrix* A, int row, int col) {
     return minor;
 }
 
-/* Borrowed from the same site as CalcMinor */
+/**
+ * @brief Calculate the determinant of a matrix
+ *
+ * Borrowed from the same site as CalcMinor
+ * @param p The matrix to calculate the determiant of. Must be square.
+ * @return The determinant of p
+ * @see CalcMinor
+ */
 double CalcDeterminant(matrix *p)
 {
     int i, order;
@@ -268,6 +359,12 @@ double CalcDeterminant(matrix *p)
     return result;
 }
 
+/**
+ * @brief Calculate the adjugate matrix of A
+ * 
+ * @param A The matrix of interest
+ * @return The adjugate matrix
+ */
 matrix* CalcAdj(matrix* A)
 {
     int i, j;
@@ -291,6 +388,12 @@ matrix* CalcAdj(matrix* A)
     return adjt;
 }
 
+/**
+ * @brief Calculate the inverse of A
+ * This is a pretty slow algorithm and only works well for small matricies
+ * @param A The original matrix
+ * @returns The inverse of A
+ */
 matrix* CalcInv(matrix* A)
 {
     matrix *inv, *adj;
@@ -311,6 +414,15 @@ matrix* CalcInv(matrix* A)
     return inv;
 }
 
+/**
+ * @brief Make an agumented matrix from the two arguments
+ * This is used to set up a matrix for the equation solver. Basically, matrix
+ * B is stuck on the end of A like this: [A | B].
+ * @param A The first matrix
+ * @param B Second matrix
+ * @returns A matrix composed of the first matrix on the left and the second
+ * on the right.
+ */
 matrix* AugmentMatrix(matrix *A, matrix *B)
 {
     int i, j;
@@ -328,7 +440,13 @@ matrix* AugmentMatrix(matrix *A, matrix *B)
     return C;
 }
 
-matrix* ExtractColumn(matrix*A, int col)
+/**
+ * @brief Pull out a column of a matrix.
+ * @param A The matrix to pull the column from
+ * @param col The column to get
+ * @returns A column matrix containing the values from the desired column of A
+ */
+matrix* ExtractColumn(matrix* A, int col)
 {
     matrix *B;
     int i;
@@ -341,6 +459,15 @@ matrix* ExtractColumn(matrix*A, int col)
     return B;
 }
 
+/**
+ * @brief Apply a function to every value in a matrix
+ *
+ * No value is returned because the original matrix is operated on.
+ *
+ * @param A The matrix of values
+ * @param func The function to apply. It should accept a single double as an
+ * argument and return a double.
+ */
 void Map(matrix* A, double (*func)(double))
 {
     int i, j;
@@ -351,8 +478,15 @@ void Map(matrix* A, double (*func)(double))
     }
 }
 
-/* Create a matrix of the specified dimensions and initialize all the values
+/**
+ * @brief Make a matrix!
+ *
+ * Create a matrix of the specified dimensions and initialize all the values
  * and initialize all the values to zero.
+ * 
+ * @param row The number of rows
+ * @param col Number of columns
+ * @returns The new matrix
  */
 matrix* CreateMatrix(int row, int col)
 {
@@ -394,6 +528,16 @@ matrix* CreateMatrix(int row, int col)
     return A;
 }
 
+/**
+ * @brief Make a matrix of ones
+ * 
+ * Basically does the same thing as CreateMatrix, only it initializes each value
+ * to one instead of zero.
+ *
+ * @param row Number of rows
+ * @param col Number of columns
+ * @returns A matrix
+ */
 matrix* CreateOnesMatrix(int rows, int cols)
 {
     int i, j;
@@ -407,9 +551,21 @@ matrix* CreateOnesMatrix(int rows, int cols)
     return A;
 }
 
+///Maximum number of rows to allow
 #define MAXROWS 100
+///Maximum number of columns
 #define MAXCOLS 100
+///The length of each line of text that is parsed
 #define LINELENGTH 80
+/**
+ * @brief Create a matrix from a line of text.
+ *
+ * This takes a random string of characters of the format [4,5,2;5,1,4] and
+ * turns it into a nifty matrix.
+ *
+ * @param raw The character pointer to the string of characters
+ * @returns A matrix created from the input
+ */
 matrix* ParseMatrix(char* raw)
 {
     char *processed, *tmp;
@@ -487,7 +643,10 @@ matrix* ParseMatrix(char* raw)
 }
 
 
-/* Free the memory allocated by CreateMatrix */
+/**
+ * @brief Free the memory allocated by CreateMatrix
+ * @param A The matrix to destroy
+ */
 void DestroyMatrix(matrix *A)
 {
     int i;
