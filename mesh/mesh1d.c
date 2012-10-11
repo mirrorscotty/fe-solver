@@ -5,6 +5,10 @@
 #include "matrix.h"
 #include "mesh1d.h"
 
+/**
+ * @brief Print out all of the points in a 1D mesh
+ * @param mesh The mesh to print
+ */
 void meshprnt1d(Mesh1D* mesh)
 {
     int i;

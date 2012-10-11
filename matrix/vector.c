@@ -1,10 +1,19 @@
+/**
+ * @file vector.c
+ * Define lots of functions for manipulating vectors of arbitrary length
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "matrix.h"
 
-/* Create a 1d vector of length n */
+/**
+ * @brief Create a 1d vector of length n
+ * @param n Number of elements in the vector
+ * @return The newly created vector
+ */
 vector* CreateVector(int n)
 {
     vector *v;
@@ -16,7 +25,10 @@ vector* CreateVector(int n)
     return v;
 }
 
-/* Free the memory allocated for the vector. */
+/**
+ * @brief Free the memory allocated for the vector.
+ * @param The pointer to the vector to deallocate memory for
+ */
 void DestroyVector(vector *v)
 {
     free(v->v);
@@ -24,7 +36,10 @@ void DestroyVector(vector *v)
     return;
 }
 
-/* Print the vector to stdout */
+/**
+ * @brief Print the vector to stdout
+ * @param A pointer to the vector to print
+ */
 void PrintVector(vector *v)
 {
     int i;
@@ -36,6 +51,15 @@ void PrintVector(vector *v)
     printf(" %g ]\n", valV(v, len(v)-1));
 }
 
+/**
+ * @brief Make a vector of equally spaced points.
+ * @param start The value of the first comonent of the vector
+ * @param end The value of the last
+ * @param nelem The total number of comonents
+ * @returns The vector of points
+ *
+ * @see linspace
+ */
 vector* linspaceV(double start, double end, int nelem)
 {
     vector *x;
@@ -49,6 +73,11 @@ vector* linspaceV(double start, double end, int nelem)
     return x;
 }
 
+/**
+ * @brief Copy a vector
+ * @param v A pointer to the original vector
+ * @returns A pointer to a new vector with the same components as v
+ */
 vector* CopyVector(vector *v)
 {
     vector *new;
@@ -72,7 +101,12 @@ vector* CopyVector(vector *v)
 //}
 /* Replaced by a macro for efficiency */
 
-/* Set the i-th value to "val" */
+/**
+ * @brief Set the i-th value to "val"
+ * @param v The vector to set the value in
+ * @param i The index of the component to change
+ * @param val The new value the component should have
+ */
 void setvalV(vector *v, int i, double val)
 {
     if(i<0 || i>=v->length) {
@@ -84,13 +118,25 @@ void setvalV(vector *v, int i, double val)
     return;
 }
 
-/* Return the length of the vector */
+/**
+ * @brief Return the length of the vector
+ * @param v The vector to get the length for
+ * @returns The length of the vector
+ */
 int len(vector* v)
 {
     return v->length;
 }
 
-/* Add two vectors together */
+/**
+ * Add two vectors together, element by element
+ *
+ * The two vectors should be of equal length
+ *
+ * @param a The first vector
+ * @param b Second vector
+ * @returns a+b
+ */
 vector* addV(vector *a, vector *b)
 {
     int i;
@@ -103,7 +149,13 @@ vector* addV(vector *a, vector *b)
     return c;
 }
 
-/* Subtract vector b from vector a */
+/**
+ * Subtract vector b from vector a 
+ *
+ * @param a The first vector
+ * @param b The vector subtracted from a
+ * @returns a-b
+ */
 vector* subtractV(vector *a, vector *b)
 {
     int i;
@@ -116,7 +168,12 @@ vector* subtractV(vector *a, vector *b)
     return c;
 }
 
-/* Return the dot product of two vectors */
+/**
+ * @brief Calculate the dot product of two vectors
+ * @param a A vector of arbitrary length
+ * @param b A vector of the same length
+ * @returns a dot b
+ */
 double dotV(vector *a, vector *b)
 {
     int i;
@@ -128,7 +185,12 @@ double dotV(vector *a, vector *b)
     return result;
 }
 
-/* Multiply a vector by a scalar */
+/**
+ * @brief Multiply a vector by a scalar
+ * @param k The constant to multiply each component by
+ * @param v The vector to multiply
+ * @returns k*v
+ */
 vector* scalarmultV(double k, vector *v)
 {
     int i;
@@ -143,6 +205,15 @@ vector* scalarmultV(double k, vector *v)
     return c;
 }
 
+/**
+ * @brief Determine if vectors are equal
+ * 
+ * Compare two vectors element by element to determine equality
+ *
+ * @param a The first vector
+ * @param b Second vector
+ * @returns 1 if equal, 0 if not equal
+ */
 int equalV(vector *a, vector *b)
 {
     int i;

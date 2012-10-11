@@ -44,8 +44,16 @@ void ReverseElimination(matrix *a) {
     }
 }
 
-/* Solve an matrix equation of the form Ax=B, where x is the vector of
- * unknowns. */
+/**
+ * @brief Gaussian Elimination
+ *
+ * Solve an matrix equation of the form Ax=B, where x is the vector of
+ * unknowns.
+ *
+ * @param A An nxm matrix that represents the coefficients on the x vector
+ * @param B An nx1 matrix
+ * @returns An nx1 matrix representing the solution to the equation
+ */
 matrix* SolveMatrixEquation(matrix *A, matrix *B)
 {
     matrix *C, *u;
@@ -56,3 +64,4 @@ matrix* SolveMatrixEquation(matrix *A, matrix *B)
     DestroyMatrix(C);
     return u;
 }
+
