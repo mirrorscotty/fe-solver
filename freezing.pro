@@ -22,7 +22,7 @@ DEFINES += CALC_ICE_FORMATION
 DEPENDPATH += . \
               scaling \
               fem \
-              gui \
+              gui/freezing \
               matrix \
               mesh \
               problems \
@@ -33,7 +33,7 @@ INCLUDEPATH += . \
                scaling \
                fem \
                mesh \
-               gui \
+               gui/freezing \
                material-data/choi-okos
 
 # Input
@@ -48,8 +48,8 @@ HEADERS += arclength.h \
            fem/finite-element.h \
            fem/finite-element1d.h \
            fem/solution.h \
-           gui/freezing.h \
-           gui/freezing-gui.h \
+           gui/freezing/freezing.h \
+           gui/freezing/freezing-gui.h \
            matrix/matrix.h \
            mesh/mesh1d.h \
            mesh/mesh2d.h \
@@ -57,8 +57,8 @@ HEADERS += arclength.h \
            material-data/choi-okos/datafile.h \
            matrix/mtxsolver.h \
            matrix/bandmatrix.h \
-    about.h
-FORMS += gui/freezing.ui
+           about.h
+FORMS += gui/freezing/freezing.ui
 SOURCES += basis.c \
            integrate.c \
            isoparam.c \
@@ -69,9 +69,9 @@ SOURCES += basis.c \
            fem/finite-element.c \
            fem/finite-element1d.c \
            fem/solution.c \
-           gui/mainFreezing.cpp \
-           gui/freezing.cpp \
-           gui/freezing-gui.c \
+           gui/freezing/mainFreezing.cpp \
+           gui/freezing/freezing.cpp \
+           gui/freezing/freezing-gui.c \
            matrix/matrix.c \
            matrix/vector.c \
            mesh/mesh1d.c \
@@ -80,4 +80,4 @@ SOURCES += basis.c \
            material-data/choi-okos/datafile.c \
            matrix/mtxsolver.c \
            matrix/bandmatrix.c \
-    about.c
+           about.c

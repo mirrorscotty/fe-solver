@@ -57,7 +57,7 @@ char *genAboutString()
             +strlen(copyrightYear)
             +strlen(author)
             +strlen(email)
-            +strlen(lisence)
+            +strlen(license)
             +400; /* Extra wiggle room */
 
     result = (char*) calloc(length, sizeof(char));

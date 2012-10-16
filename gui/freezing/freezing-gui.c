@@ -12,8 +12,6 @@
 
 #include "material-data/choi-okos/choi-okos.h"
 
-#include "heat-gui.h"
-
 extern double EaA, EaB, AA, AB;
 extern double To;
 double h = 5;

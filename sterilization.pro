@@ -18,7 +18,7 @@ OBJECTS_DIR = ./tmp
 DEPENDPATH += . \
               scaling \
               fem \
-              gui \
+              gui/heating \
               matrix \
               mesh \
               problems \
@@ -44,8 +44,8 @@ HEADERS += arclength.h \
            fem/finite-element.h \
            fem/finite-element1d.h \
            fem/solution.h \
-           gui/solver.h \
-           gui/heat-gui.h \
+           gui/heating/solver.h \
+           gui/heating/heat-gui.h \
            matrix/matrix.h \
            mesh/mesh1d.h \
            mesh/mesh2d.h \
@@ -53,8 +53,8 @@ HEADERS += arclength.h \
            material-data/choi-okos/datafile.h \
            matrix/mtxsolver.h \
            matrix/bandmatrix.h \
-    about.h
-FORMS += gui/solver.ui
+           about.h
+FORMS += gui/heating/solver.ui
 SOURCES += basis.c \
            integrate.c \
            isoparam.c \
@@ -65,9 +65,9 @@ SOURCES += basis.c \
            fem/finite-element.c \
            fem/finite-element1d.c \
            fem/solution.c \
-           gui/main.cpp \
-           gui/solver.cpp \
-           gui/heat-gui.c \
+           gui/heating/main.cpp \
+           gui/heating/solver.cpp \
+           gui/heating/heat-gui.c \
            matrix/matrix.c \
            matrix/vector.c \
            mesh/mesh1d.c \
@@ -76,4 +76,4 @@ SOURCES += basis.c \
            material-data/choi-okos/datafile.c \
            matrix/mtxsolver.c \
            matrix/bandmatrix.c \
-    about.c
+           about.c
