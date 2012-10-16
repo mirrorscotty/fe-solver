@@ -1,10 +1,29 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-/* Macro to shorten code where a number is added to the current value of an
- * element in a matrix. */
+/**
+ * @brief Add a value to an element in a matrix
+ *
+ * Macro to shorten code where a number is added to the current value of an
+ * element in a matrix.
+ *
+ * @param A The matrix to add the value in
+ * @param VAL The value to add
+ * @param I The row of the matrix the component is located in
+ * @param J The column of the matrix
+ */
 #define addval(A, VAL, I, J) setval((A), (VAL) + val((A), (I), (J)), (I), (J))
 
+/**
+ * @struct matrix
+ * @brief A data structure for holding two-dimensional matricies
+ * @var matrix::array
+ * A pointer to the raw data
+ * @var matrix::rows
+ * Number of rows in the matrix
+ * @var matrix::cols
+ * Number of columns
+ */
 typedef struct {
     double **array;
     int rows;
@@ -37,6 +56,14 @@ void Map(matrix*, double (*func)(double));
 void mtxprnt(matrix*);
 void mtxprntfile(matrix*, char*);
 
+/**
+ * @struct vector
+ * @brief A data structure for a vector of abitrary length
+ * @var vector::v
+ * A pointer to the raw data
+ * @var vector::length
+ * The number of components in the vector
+ */
 typedef struct {
     double *v;
     int length;
@@ -57,6 +84,11 @@ double dotV(vector*, vector*);
 vector* scalarmultV(double, vector*);
 int equalV(vector*, vector*);
 
+/**
+ * @brief macro to retrieve the value of a particular component of a vector
+ * @param VECTOR The vector to pull the value from
+ * @param INDEX The index of the component
+ */
 #define valV(VECTOR, INDEX) (VECTOR)->v[(INDEX)]
 
 #endif

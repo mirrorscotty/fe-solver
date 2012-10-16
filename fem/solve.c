@@ -5,8 +5,13 @@
 #include "finite-element1d.h"
 #include "mtxsolver.h"
 
-/* Check the convergance of the nonlinear solver. Return 0 if not converged,
- * and 1 if we're done iterating. */
+/**
+ * @brief Check the convergance of the nonlinear solver.
+ *
+ * @param problem A pointer to the problem struct
+ * @param dt A matrix containing the change in the x vector
+ * @returns 0 if not converged, and 1 if we're done iterating.
+ */
 int CheckConverg(struct fe *problem, matrix *dx)
 {
     int rows = nRows(dx);
@@ -19,9 +24,13 @@ int CheckConverg(struct fe *problem, matrix *dx)
     return 1;
 }
     
-/* Linear finite element solver. It assembles the global jacobian and load
- * vectors, then solves the whole system. It returns a matrix with the
- * solution. */
+/**
+ * @brief Linear finite element solver.
+ * It assembles the global jacobian and load vectors, then solves the whole
+ * system. It returns a matrix with the solution.
+ * @param problem The struct representing the problem to solve
+ * @returns A matrix with the solution at each node
+ */
 matrix* LinSolve(struct fe *problem)
 {
     matrix *guess;
@@ -41,8 +50,11 @@ matrix* LinSolve(struct fe *problem)
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
-/* 1D version of the above function. */
 /* Todo: replace this function and the above one by a macro for simplicity. */
+/**
+ * @brief 1D version of LinSolve.
+ * @see LinSolve
+ */
 matrix* LinSolve1D(struct fe1d *problem)
 {
     matrix *guess;
@@ -61,9 +73,15 @@ matrix* LinSolve1D(struct fe1d *problem)
     return SolveMatrixEquation(problem->J, problem->F);
 }
 
-/* Explicit time integration algorithm (Forward Euler)
+/**
+ * @brief Explicit time integration algorithm (Forward Euler)
+ * 
  * This solver fails horribly if a Neumann boundary condition is imposed. Also,
- * it may not be entirely stable anyway. */
+ * it may not be entirely stable anyway.
+ *
+ * @param problem The struct containing the problem to solve
+ * @returns A matrix with the solutions at each node
+ */
 matrix* LinSolve1DTrans(struct fe1d *problem)
 {
     matrix *du, *u;
