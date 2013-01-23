@@ -8,7 +8,12 @@
 #include "output.h"
 
 #include "finite-element.h"
+
+#ifdef CALC_ICE_FORMATION
 #include "freezing-gui.h"
+#else
+#include "heat-gui.h"
+#endif
 #include "solution.h"
 #include "auxsoln.h"
 #include "scaling_ht.h"
@@ -49,7 +54,7 @@ void CSVOutFixedNode(struct fe1d *p, int row, char *filename)
         fprintf(fp, "%g,%g,", uscaleTime(p->charvals, i*p->dt), T);
         s = FetchAuxSoln(p, 0, i);
         fprintf(fp, "%g,", val(s->val, row, 0));
-        fprintf(fp, "%g,",  IceMassFrac(T));
+       // fprintf(fp, "%g,",  IceMassFrac(T));
         fprintf(fp, "%g,%g,%g\n", rho(T), Cp(T), k(T));
     }
     fprintf(fp, "\n");
@@ -95,7 +100,7 @@ void CSVOutFixedTime(struct fe1d *p, int tstep, char *filename)
                 uscaleLength(p->charvals, valV(defmesh, i)),
                 uscaleTemp(p->charvals, val(T->val, i, 0)),
                 val(c1->val, i, 0),
-                IceMassFrac(uscaleTemp(p->charvals, val(T->val, i, 0))),
+               // IceMassFrac(uscaleTemp(p->charvals, val(T->val, i, 0))),
                 rho(uscaleTemp(p->charvals, val(T->val, i, 0))),
                 Cp(uscaleTemp(p->charvals, val(T->val, i, 0))),
                 k(uscaleTemp(p->charvals, val(T->val, i, 0))));

@@ -29,7 +29,7 @@ INCLUDEPATH += . \
                scaling \
                fem \
                mesh \
-               gui \
+               gui/heating \
                material-data/choi-okos
 
 # Input

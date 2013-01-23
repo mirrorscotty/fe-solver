@@ -19,6 +19,8 @@ struct fe1d {
     matrix *R;
     matrix *F;
 
+    matrix *guess;
+
     solution **soln; /* Stored solutions for each time step. */
     int t; /* Current time index. */
     int maxsteps; /* Maximum number of time steps to be allowed. */
@@ -55,6 +57,8 @@ void DestroyFE1D(struct fe1d*);
 matrix* AssembleJ1D(struct fe1d*, matrix*);
 matrix* AssembledJ1D(struct fe1d*, matrix*);
 matrix* AssembleF1D(struct fe1d*, matrix*);
+
+matrix* CalcResidual1D(struct fe1d*, matrix*);
 
 void FE1DTransInit(struct fe1d*, matrix*);
 matrix* AssembleF1DTrans(struct fe1d*, matrix*);

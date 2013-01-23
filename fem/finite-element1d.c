@@ -40,6 +40,8 @@ struct fe1d* CreateFE1D(basis *b,
     problem->F = NULL;
     problem->R = NULL;
 
+    problem->guess = NULL;
+
     problem->J = NULL;
     problem->dJ = NULL;
 
@@ -120,7 +122,7 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
 
     problem->J = J;
 
-    DestroyMatrix(guess);
+    //DestroyMatrix(guess);
 
     return J;
 }
@@ -160,7 +162,7 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
 
     problem->dJ = dJ;
 
-    DestroyMatrix(guess);
+    //DestroyMatrix(guess);
 
     return dJ;
 }
@@ -193,6 +195,15 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     return F;
 }
 
+matrix* CalcResidual1D(struct fe1d *problem, matrix* guess)
+{
+    matrix *tmp;
+    tmp = mtxmul(problem->J, guess);
+    problem->R = mtxadd(mtxneg(tmp), problem->F);
+
+    return problem->R;
+}
+
 /* Initialize the problem for the transient solver. This function assumes the
  * equations to be solved are linear.
  */
@@ -206,14 +217,14 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
      * conditions get applied to it. */
     //problem->F = InitSoln;
 
-    AssembleJ1D(problem, NULL);
-    AssembledJ1D(problem, NULL);
+    AssembleJ1D(problem, InitSoln);
+    AssembledJ1D(problem, InitSoln);
 
     /* Apply the boundary conditions */
     //problem->applybcs(problem);
 
     /* Generate the appropriate load vector */
-    AssembleF1D(problem, NULL);
+    AssembleF1D(problem, InitSoln);
 
     /* Apply the boundary conditions again to make sure the load vector is
      * properly initialized */

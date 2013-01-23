@@ -411,7 +411,7 @@ void Solver::solveProblems()
     // Solve
     progress.setValue(0);
     while(problem->t<problem->maxsteps) {
-        LinSolve1DTransImp(problem);
+        NLinSolve1DTransImp(problem, NULL);
         progress.setValue(problem->t);
 
         if(progress.wasCanceled()) {

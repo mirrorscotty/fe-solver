@@ -28,8 +28,10 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     /* This is just to fetch the value of T */
     double T;
     solution *s;
-    s = FetchSolution(p, p->t-1);
-    if(!s)
+    //s = FetchSolution(p, p->t-1);
+    s = CreateSolution(p->t, p->dt, guess);
+    //if(!s)
+    if(p->t==0)
         T = p->charvals.Tc;
     else
         T = EvalSoln1D(p, 0, elem, s, x);
@@ -164,10 +166,12 @@ double ConvBC(struct fe1d *p, int row)
 
     /* Fetch the value of T from the previous solution. If this is being
      * applied at the initial condition, then simply return 0.*/
-    solution *s;
-    s = FetchSolution(p, p->t-1);
-    if(s) {
-        T = val(s->val, row, 0);
+    //solution *s;
+    //s = FetchSolution(p, p->t-1);
+    //if(s) {
+    if(p->guess) {
+        //T = val(s->val, row, 0);
+        T = val(p->guess, row, 0);
         if(T==0)
             return 0;
         return -Bi*(T-Tinf);

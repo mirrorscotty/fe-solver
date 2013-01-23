@@ -66,7 +66,7 @@ int nRows(matrix *A)
 double val(matrix *A, int row, int col)
 {
     if((row >= nRows(A)) ||  (col >= nCols(A)) || (row < 0) || (col < 0)) {
-        fprintf(stderr, "Error: index out of bounds. (%d, %d)\n", row, col);
+        //fprintf(stderr, "Error: index out of bounds. (%d, %d)\n", row, col);
         return NAN;
     }
     return A->array[row][col];
@@ -549,6 +549,24 @@ matrix* CreateOnesMatrix(int rows, int cols)
         }
     }
     return A;
+}
+
+/**
+ * @brief Make a copy of a matrix in a new memory location.
+ * @param source The matrix to copy
+ * @return A pointer to the newly created copy.
+ */
+matrix* CopyMatrix(matrix *source)
+{
+    int i, j;
+    matrix *dest;
+    dest = CreateMatrix(nRows(source), nCols(source));
+    for(i=0; i<nRows(source); i++) {
+        for(j=0; j<nCols(source); j++) {
+            setval(dest, val(source, i, j), i, j);
+        }
+    }
+    return dest;
 }
 
 ///Maximum number of rows to allow

@@ -39,7 +39,7 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 
     for(i=0; i<n; i++) {
         result += p->b->phi[i](xi)
-                  * val(s->val, valV(elem->map, i)*nvars, 0);
+                  * val(s->val, valV(elem->map, i)*nvars+var, 0);
     }
     
     return result;

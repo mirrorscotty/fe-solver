@@ -54,6 +54,7 @@ matrix* CreateElementLoad(struct fe *p, Elem2D *elem, matrix *guess) {
  * imposed on both ends of the domain. In this case, "leftbc" is imposed at
  * c = 0, and rightbc is imposed at c = 1.
  */
+/*
 void ApplyBC(matrix* J, matrix* F, basis *b, int node, double value)
 {
     int rows = nRows(J);
@@ -69,7 +70,8 @@ void ApplyBC(matrix* J, matrix* F, basis *b, int node, double value)
 
     setval(F, value, node, 0);
 }
-
+*/
+/*
 void ApplyAllBCs(struct fe *p)
 {
     matrix *J, *F;
@@ -98,7 +100,7 @@ void ApplyAllBCs(struct fe *p)
         DestroyVector(v);
     }
 }
-
+*/
 int IsOnXAxis(struct fe* p, int node)
 {
     double tol = 1e-10;
