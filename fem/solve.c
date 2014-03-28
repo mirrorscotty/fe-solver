@@ -171,7 +171,8 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
      * the backward difference method is being used. For the trapazoid rule,
      * a=2, and b=-1. */
     int a, b;
-    matrix *du, *u;
+    matrix *u, /* Used to store the solution at the previous time step */
+           *du; /* Derivative of u at the previous time step */
     /* Used to store intermediate calculations */
     matrix *tmp1, *tmp2, *tmp3, *tmp4;
     matrix *dresult, *result;

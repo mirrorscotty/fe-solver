@@ -11,13 +11,14 @@
 struct fe1d;
 
 struct fe1d {
-    basis *b;
-    Mesh1D *mesh;
+    basis *b; /* Set of interpolation functions to use when solving */
+    Mesh1D *mesh; /* Mesh that discretizes the domain */
 
-    matrix *J;
-    matrix *dJ;
-    matrix *R;
-    matrix *F;
+    matrix *J; /* Jacobian */
+    matrix *dJ; /* Portion of Jacobian multiplying time-dependent part of
+                   the residual */
+    matrix *R; /* Residual */
+    matrix *F; /* Load vector */
 
     matrix *guess;
 
@@ -45,6 +46,7 @@ struct fe1d {
 
     /* Scaling stuff */
     scaling_ht charvals;
+    scaling_ht chardiff;
 };
 
 struct fe1d* CreateFE1D(basis*, Mesh1D*,
