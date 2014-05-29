@@ -1,6 +1,6 @@
 scaling_pasta SetupScaling()
 {
-    sialing_pastai s;
+    scaling_pasta s;
 
     choi_okos = CreateChoiOkos(WATERCOMP);
     s.Tc = 60+273.15; /* 60 C */
@@ -92,6 +92,24 @@ double uscaleTime(scaling_pasta s, double XFo)
     double alpha = s.Kc/(s.rhoc*s.Cpc);
     return XFo*s.Lc*s.Lc/alpha;
 }
+
+double scaleConc(scaling_pasta s, double c)
+{
+    return c/s.rhoc;
+}
+
+double uscaleConc(scaling_pasta s, double xi)
+{
+    return xi*s.rhoc;
+}
+
+double scaleDiff(scaling_pasta s, double D)
+{
+}
+double uscaleDiff(scaling_pasta s, double D) {}
+
+double scalePerm(scaling_pasta s, double k) {}
+double uscalePerm(scaling_pasta s, double K) {}
 
 /**
  * @brief Print out everything in the data structure

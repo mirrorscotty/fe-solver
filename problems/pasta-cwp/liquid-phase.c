@@ -46,8 +46,8 @@ double DRwDcw(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int
 
     /* Calculate derivatives of Kw and D with respect to cw */
     /* TODO: Make this work with dimensionless numbers */
-    DKwDcw = (Kw(cw+h, phi, T) - Kw(cw-h, phi, T)) / 2*h;
-    DDDcw = (Dliq(cw+h, T) - Dliq(cw-h, T)) / 2*h;
+    DKwDcw = (K_WAT(cw+h, phi, T) - K_WAT(cw-h, phi, T)) / 2*h;
+    DDDcw = (D_LIQ(cw+h, T) - D_LIQ(cw-h, T)) / 2*h;
 
     /* The actual equation */
     value = -Da*DKwDcw*P * pow(b->dphi[f1](x), 2) * b->phi[f2](x);
@@ -118,8 +118,8 @@ double DRwDP(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
 
     /* Calculate derivatives of Kw and D with respect to cw */
     /* TODO: Make this work with dimensionless numbers */
-    Kw = Kw(cw, phi, T);
-    DKwDcw = (Kw(cw+h, phi, T) - Kw(cw-h, phi, T)) / 2*h;
+    Kw = K_WAT(cw, phi, T);
+    DKwDcw = (K_WAT(cw+h, phi, T) - K_WAT(cw-h, phi, T)) / 2*h;
 
     /* The actual equation */
     value = -Da*DKwDcw*cw * pow(b->dphi[f1](x), 2) * b->phi[f2](x);

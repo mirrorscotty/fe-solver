@@ -33,7 +33,7 @@ double DIDcw(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
     phi0 = phic;
 
     /* Equation */
-    Idot = (evap(cw0+h, wv0, phi0, T0, P0)-evap(cw0-h, wv0, phi0, T0, P0))/2*h;
+    Idot = (evap(cw0+h, wv0, phi0, T0, P0)-evap(cw0-h, wv0, phi0, T0, P0))/(2*h);
     Idot *= b->dphi[f1](x) * b->dphi[f2](x);
 
     /* Clean up */
@@ -75,7 +75,7 @@ double DIDwv(struct fe1d *p,
     phi0 = phic;
 
     /* Equation */
-    Idot = (evap(cw0, wv0+h, phi0, T0, P0)-evap(cw0, wv0-h, phi0, T0, P0))/2*h;
+    Idot = (evap(cw0, wv0+h, phi0, T0, P0)-evap(cw0, wv0-h, phi0, T0, P0))/(2*h);
     Idot *= b->dphi[f1](x) * b->dphi[f2](x);
 
     /* Clean up */
@@ -117,7 +117,7 @@ double DIDP(struct fe1d *p,
     phi0 = phic;
 
     /* Equation */
-    Idot = (evap(cw0, wv0, phi0, T0, P0+h)-evap(cw0, wv0, phi0, T0, P0-h))/2*h;
+    Idot = (evap(cw0, wv0, phi0, T0, P0+h)-evap(cw0, wv0, phi0, T0, P0-h))/(2*h);
     Idot *= b->dphi[f1](x) * b->dphi[f2](x);
 
     /* Clean up */
@@ -158,11 +158,11 @@ double IdotLoad(struct fe1d *p,
 
     /* Actual equation */
     Idot = evap(cw0, wv0, phi0, T0, P0);
-    Idot -= (evap(cw0+h, wv0, phi0, T0, P0)-evap(cw0-h, wv0, phi0, T0, P0))/2*h
+    Idot -= (evap(cw0+h, wv0, phi0, T0, P0)-evap(cw0-h, wv0, phi0, T0, P0))/(2*h)
         * cw0;
-    Idot -= (evap(cw0, wv0+h, phi0, T0, P0)-evap(cw0, wv0+h, phi0, T0, P0))/2*h
+    Idot -= (evap(cw0, wv0+h, phi0, T0, P0)-evap(cw0, wv0+h, phi0, T0, P0))/(2*h)
         * wv0;
-    Idot -= (evap(cw0, wv0, phi0, T0, P0+h)-evap(cw0, wv0, phi0, T0, P0-h))/2*h
+    Idot -= (evap(cw0, wv0, phi0, T0, P0+h)-evap(cw0, wv0, phi0, T0, P0-h))/(2*h)
         * P0;
 
     Idot *= p->b->phi[f1](x);
