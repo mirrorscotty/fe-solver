@@ -23,6 +23,14 @@ void meshprnt1d(Mesh1D* mesh)
     return;
 }
 
+/**
+ * Create a one-dimensional mesh with uniformly spaced nodes.
+ * @param b Set of basis functions to use
+ * @param x1 Coordinate of the left-most node
+ * @param x2 Coordinate of the right-most node
+ * @param nx Number of nodes to put into the mesh
+ * @returns 1D mesh structure
+ */
 Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 {
     int i, j, k;
@@ -57,6 +65,73 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
     return mesh;
 }
 
+/**
+ * Copy a mesh and all of the elements in it. This is useful for stuff like
+ * remeshing or allowing the mesh to move/shrink.
+ * @param orig Pointer to the original mesh
+ * @returns A pointer to a copy of the original
+ */
+Mesh1D* CopyMesh1D(Mesh1D* orig)
+{
+    int i;
+
+    Mesh1D *copy;
+    copy = (Mesh1D*) calloc(1, sizeof(Mesh1D));
+    copy->elem = (Elem1D**) calloc(orig->nelem, sizeof(Elem1D));
+    copy->nodes = CopyVector(orig->nodes);
+
+    copy->x1 = orig->x1;
+    copy->x2 = orig->x2;
+    copy->nelem = orig->nelem;
+    /* Don't copy nnodes because nothing uses it */
+    copy->t = orig->t;
+    copy->next = NULL; /* Set the next node to NULL */
+
+    for(i=0; i<orig->nelem; i++) {
+        copy->elem[i] = (Elem1D*) calloc(1, sizeof(Elem1D));
+        copy->elem[i]->points = CopyVector(orig->elem[i]->points);
+        copy->elem[i]->map = CopyVector(orig->elem[i]->map);
+    }
+
+    return copy;
+}
+
+/**
+ * Make a new mesh where the nodes have moved from their locations in the 
+ * original mesh to the locations supplied.
+ * @param orig Mesh to get the element information, etc. from
+ * @param nodes Vector of new node locations
+ * @returns A mesh with the same number of points as the original with new
+ *      coordinates.
+ */
+Mesh1D* Remesh1D(Mesh1D* orig, vector* nodes)
+{
+    Mesh1D *new;
+    int i, j, k;
+
+    new = CopyMesh1D(orig);
+    DestroyVector(new->nodes);
+    new->nodes = nodes;
+
+    for(i=0; i<nelem; i++) {
+        for(j=0; j<len(new->elem[i]->points); j++) {
+            setvalV(new->elem[i]->points,
+                    j,
+                    valV(new->nodes, valV(new->elem[i]->map, j)));
+        }
+    }
+
+    return new;
+}
+
+/**
+ * Create a single element to insert into a mesh. These get passed to the
+ * integration functions so that they know the points they should be using to
+ * integrate over. This structure holds all of the points for a single element
+ * in a vector.
+ * @param b Set of basis functions to use when making the node.
+ * @returns 1D element structure
+ */
 Elem1D* CreateElem1D(basis *b)
 {
     Elem1D *elem;
@@ -68,6 +143,10 @@ Elem1D* CreateElem1D(basis *b)
     return elem;
 }
 
+/**
+ * Delete a single mesh element
+ * @param elem Pointer to the element to delete
+ */
 void DestroyElem1D(Elem1D *elem)
 {
     DestroyVector(elem->points);
@@ -75,6 +154,10 @@ void DestroyElem1D(Elem1D *elem)
     free(elem);
 }
 
+/**
+ * Delete a mesh and all associated elements.
+ * @param mesh Pointer to the mesh to delete
+ */
 void DestroyMesh1D(Mesh1D *mesh)
 {
     int i;

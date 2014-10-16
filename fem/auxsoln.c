@@ -4,6 +4,12 @@
 #include "finite-element1d.h"
 #include "matrix.h"
 
+/**
+ * Set up the finite element problem structure to accomodate solving ODEs based
+ * on the PDE solutions.
+ * @param p Finite element problem structure
+ * @param nvars Number of variables (equations) to solve.
+ */
 void FE1DInitAuxSolns(struct fe1d *p, int nvars)
 {
     int i;

@@ -319,6 +319,8 @@ double quad2d3generic(struct fe *p, matrix *guess, Elem2D *elem,
     return result;
 }
 
+/* Attempt at imposing arc length constraints on the nonlinear iteration
+ * scheme. */
 double quad2d3arc(struct fe *p, matrix *guess, matrix *prevguess, Elem2D *elem,
                   double (*residual)(struct fe*, matrix*, matrix*, Elem2D*, double, double))
 {
@@ -337,6 +339,7 @@ double quad2d3arc(struct fe *p, matrix *guess, matrix *prevguess, Elem2D *elem,
     return result;
 }
 
+/* Attempt at integrating 2d triangular elements. */
 double quad2d3tri(struct fe *p, matrix *guess, Elem2D *elem,
                       double (*residual)(struct fe*, matrix*, Elem2D*, double, double, int, int),
                       int f1, int f2)
@@ -355,14 +358,31 @@ double quad2d3tri(struct fe *p, matrix *guess, Elem2D *elem,
     return result;
 }
 
+/**
+ * Derivative of a 2d basis function with respect to x 
+ * @param b Set of basis functions to use
+ * @param func Basis function number
+ * @param x x-coordinate (between 0 and 1)
+ * @param y y-coordinate (between 0 and 1)
+ * @returns DphiDx
+ */
 double diff2dx(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
     return (b->Eval2D(b, func, x+h, y) - b->Eval2D(b, func, x-h, y))/(2*h);
 }
 
+/**
+ * Derivative of a 2d basis function with respect to y
+ * @param b Set of basis functions to use
+ * @param func Basis function number
+ * @param x x-coordinate (between 0 and 1)
+ * @param y y-coordinate (between 0 and 1)
+ * @returns DphiDy
+ */
 double diff2dy(basis *b, int func, double x, double y)
 {
     double h = 1e-14;
     return (b->Eval2D(b, func, x, y+h) - b->Eval2D(b, func, x, y-h))/(2*h);
 }
+
