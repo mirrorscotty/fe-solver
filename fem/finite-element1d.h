@@ -73,8 +73,12 @@ void ApplyNaturalBC1D(struct fe1d*, int, int (*)(struct fe1d*, int),
 matrix* GenerateInitialCondition(struct fe1d*, int, double (*)(double));
 matrix* GenerateInitCondConst(struct fe1d*, int, double);
 
+Mesh1D* MoveMeshF(struct fe1d *, Mesh1D *, double,
+        double (*F)(struct fe1d *, double, double));
+
 int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);
+double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 void PrintSolution(struct fe1d*, int);
 
 #endif

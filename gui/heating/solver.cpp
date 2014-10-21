@@ -1,7 +1,10 @@
+// ToDo: The composition data is now stored in a choi-okos structure instead of
+// in a linked list; however, the code hasn't been tested yet. Make sure that
+// it's not horribly broken.
+
 #include <QtGui>
 
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
+#include <qwt_plot.h> #include <qwt_plot_curve.h>
 #include <qwt_math.h>
 
 #include <stdio.h>
@@ -25,6 +28,7 @@ extern "C" {
 #include "choi-okos.h"
 
 extern double R;
+choi_okos *comp_global;
 
 Solver::Solver(QWidget *parent)
 {
@@ -52,6 +56,12 @@ Solver::Solver(QWidget *parent)
     // later in the program.
     problem = NULL;
     datalist = NULL;
+
+    // Create a structure to hold all the composition data
+    composition = CreateChoiOkos();
+    // Copy the address to a global variable so that it can be accessed from
+    // the finite element solver.
+    comp_global = composition;
 
     // Since the default boundary condition in the program is "insulation,"
     // none of the options need to be shown initially.
@@ -86,6 +96,9 @@ Solver::~Solver()
     delete Prod;
     delete Bact;
     delete alpha;
+
+    DestroyChoiOkos(composition);
+    comp_global = NULL;
 
     if(datalist)
         destroy_list(datalist);
@@ -239,13 +252,13 @@ void Solver::storeVariables()
     datalist = new_var();
     tmp = datalist;
 
-    GETVARIABLE(Mpro, spinMPro)
-    GETVARIABLE(Mfat, spinMFat)
-    GETVARIABLE(Mcar, spinMCar)
-    GETVARIABLE(Mfib, spinMFib)
-    GETVARIABLE(Mash, spinMAsh)
-    GETVARIABLE(Mwat, spinMWat)
-    GETVARIABLE(Mice, spinMIce)
+    //GETVARIABLE(Mpro, spinMPro)
+    //GETVARIABLE(Mfat, spinMFat)
+    //GETVARIABLE(Mcar, spinMCar)
+    //GETVARIABLE(Mfib, spinMFib)
+    //GETVARIABLE(Mash, spinMAsh)
+    //GETVARIABLE(Mwat, spinMWat)
+    //GETVARIABLE(Mice, spinMIce)
     GETVARIABLE(AA, spinA1)
     GETVARIABLE(EaA, spinEa1)
     GETVARIABLE(AB, spinA2)
@@ -260,6 +273,16 @@ void Solver::storeVariables()
     GETVARIABLE(HConv, spinHRight)
     GETVARIABLE(CAinit, spinC1Init)
     GETVARIABLE(CBinit, spinC2Init)
+
+    // Set the material composition here instead of in the linked list with the
+    // rest of the values.
+    composition->Mpro = spinMPro->value();
+    composition->Mfat = spinMFat->value();
+    composition->Mcar = spinMCar->value();
+    composition->Mfib = spinMFib->value();
+    composition->Mash = spinMAsh->value();
+    composition->Mwat = spinMWat->value();
+    composition->Mice = spinMIce->value();
 
     strcpy(tmp->name, "EndTime");
     tmp->value = spintEnd->value();
@@ -276,13 +299,13 @@ void Solver::loadVars()
     struct var *tmp;
     tmp = datalist;
     while(tmp) {
-        RESTOREVAR(Mpro, spinMPro)
-        RESTOREVAR(Mfat, spinMFat)
-        RESTOREVAR(Mcar, spinMCar)
-        RESTOREVAR(Mfib, spinMFib)
-        RESTOREVAR(Mash, spinMAsh)
-        RESTOREVAR(Mwat, spinMWat)
-        RESTOREVAR(Mice, spinMIce)
+        //RESTOREVAR(Mpro, spinMPro)
+        //RESTOREVAR(Mfat, spinMFat)
+        //RESTOREVAR(Mcar, spinMCar)
+        //RESTOREVAR(Mfib, spinMFib)
+        //RESTOREVAR(Mash, spinMAsh)
+        //RESTOREVAR(Mwat, spinMWat)
+        //RESTOREVAR(Mice, spinMIce)
         RESTOREVAR(AA, spinA1)
         RESTOREVAR(EaA, spinEa1)
         RESTOREVAR(AB, spinA2)
@@ -305,6 +328,15 @@ void Solver::loadVars()
 
         tmp = tmp->next;
     }
+
+    spinMPro->setValue(composition->Mpro);
+    spinMFat->setValue(composition->Mfat);
+    spinMCar->setValue(composition->Mcar);
+    spinMFib->setValue(composition->Mfib);
+    spinMAsh->setValue(composition->Mash);
+    spinMWat->setValue(composition->Mwat);
+    spinMIce->setValue(composition->Mice);
+
     return;
 }
 
@@ -407,7 +439,7 @@ void Solver::solveProblems()
     progress.setMaximum(problem->maxsteps);
 
     print_global_vars();
-    printf("rho = %g, k = %g, Cp = %g\n", rho(290), k(290), Cp(290));
+    printf("rho = %g, k = %g, Cp = %g\n", rho(composition, 290), k(composition, 290), Cp(composition, 290));
     // Solve
     progress.setValue(0);
     while(problem->t<problem->maxsteps) {
@@ -555,7 +587,7 @@ void Solver::plotResultsTime(int nodenum)
         for(i=0; i<npts; i++) {
             s = FetchSolution(problem, i);
             tmp = uscaleTemp(problem->charvals, val(s->val, nodenum, 0));
-            a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
+            a[i] = k(composition, tmp)/(rho(composition, tmp)*Cp(composition, tmp));
         }
 
         alpha->attach(qwtPlot);
@@ -658,7 +690,7 @@ void Solver::plotResultsSpace(int t)
         for(i=0; i<npts; i++) {
             tmp = uscaleTemp(problem->charvals, val(s->val, i, 0));
 
-            a[i] = k(tmp)/(rho(tmp)*Cp(tmp));
+            a[i] = k(composition, tmp)/(rho(composition, tmp)*Cp(composition, tmp));
         }
 
         alpha->attach(qwtPlot);

@@ -24,11 +24,15 @@ typedef struct mesh1dstruct {
     vector *nodes; /* Vector of node coordinates */
 } Mesh1D;
 
+#include "finite-element1d.h"
+
 Mesh1D* GenerateUniformMesh1D(basis*, double, double, int);
 void DestroyMesh1D(Mesh1D*);
 Elem1D* CreateElem1D(basis*);
 void DestroyElem1D(Elem1D*);
 void meshprnt1d(Mesh1D*);
+
+Mesh1D* Remesh1D(Mesh1D*, vector*);
 
 #endif
 

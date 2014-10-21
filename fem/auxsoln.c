@@ -20,6 +20,14 @@ void FE1DInitAuxSolns(struct fe1d *p, int nvars)
     return;
 }
 
+/**
+ * Integrate a time-dependent ODE whose solution is based on the PDE solution.
+ * @param p Finite element problem structure
+ * @param var Number of the variable to use as an input for the ODE
+ * @param extravar Output variable for the ODE solution
+ * @param eqn Equation solved for DuDt, where u is the dependent variable of
+ *       the ODE.
+ */
 void SolveODE(struct fe1d *p, int var, int extravar,
               double (*eqn)(double, double, double), double IC)
 {
@@ -58,6 +66,12 @@ void SolveODE(struct fe1d *p, int var, int extravar,
     return;
 }
 
+/**
+ * Print out an ODE solution.
+ * @param p Finite element problem structure
+ * @param var Number of the ODE to print the solution for.
+ * @param t Print out the solution at this time step for all values of x.
+ */
 void PrintAuxSoln(struct fe1d *p, int var, int t)
 {
     solution *s;
@@ -65,6 +79,12 @@ void PrintAuxSoln(struct fe1d *p, int var, int t)
     mtxprnt(s->val);
 }
 
+/**
+ * Return an ODE solution structure
+ * @param p Finite element problem structure
+ * @param var Number of the ODE to return the solution for
+ * @param t Return the solution at all values of x for time t
+ */
 solution* FetchAuxSoln(struct fe1d *p, int var, int t)
 {
     return p->auxsolns[var][t];

@@ -113,36 +113,16 @@ Mesh1D* Remesh1D(Mesh1D* orig, vector* nodes)
     DestroyVector(new->nodes);
     new->nodes = nodes;
 
-    for(i=0; i<nelem; i++) {
+    for(i=0; i<orig->nelem; i++) {
         for(j=0; j<len(new->elem[i]->points); j++) {
+            k = valV(new->elem[i]->map, j);
             setvalV(new->elem[i]->points,
                     j,
-                    valV(new->nodes, valV(new->elem[i]->map, j)));
+                    valV(new->nodes, k));
         }
     }
 
     return new;
-}
-
-Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t
-                  double (*F)(struct fe1d *p, double x, double t))
-{
-    int i;
-    double dx;
-    vector *new;
-
-    new = CreateVector(len(orig->nodes));
-
-    setvalV(new, 0, valV(orig->nodes, 0)); /* The first node doesn't change */
-
-    for(i=1; i<len(orig->nodes); i++) {
-        dx = valV(orig->nodes, i) - valV(orig->nodes, i-1);
-        x = valV(orig->nodes, i);
-        F = F(p, x, t);
-        setvalV(new, i, F*dx+valV(new, i-1));
-    }
-
-    return Remesh(orig, new);
 }
 
 /**

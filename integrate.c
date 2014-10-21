@@ -48,6 +48,7 @@ double w5[] = {0.236926885056189,
                0.236926885056189};
 
 
+/* Depreciated. Use quad1d3generic instead. */
 /* Integrate a function f from 0 to 1 using 3 point Gaussian Quadrature */
 double quad3( double (*f)(double) )
 {
@@ -65,6 +66,7 @@ double quad3( double (*f)(double) )
     return result;
 }
 
+/* Depreciated. Use quad1d3generic instead. */
 /* Integrate a function f from 0 to 1 using 3 point Gaussian Quadrature */
 double quad300(double (*f)(double), double (*g)(double))
 {
@@ -81,63 +83,7 @@ double quad300(double (*f)(double), double (*g)(double))
     return result;
 }
 
-/* Integrate a function f from 0 to 1 using 3 point Gaussian Quadrature */
-double quad311(double (*f)(double), double (*g)(double))
-{
-    int i;
-    double result = 0;
-
-    double *x, *w;
-    x = x5;
-    w = w5;
-
-    for(i=0; i<NPTS; i++) {
-        result += w[i]/2 * diff(f, .5*(x[i]+1)) * diff(g, .5*(x[i]+1));
-    }
-
-    return result;
-}
-
-/* Integrate a function f from 0 to 1 using 3 point Gaussian Quadrature */
-double quad301(double (*f)(double), double (*g)(double))
-{
-    int i;
-    double result = 0;
-
-    double *x, *w;
-    x = x5;
-    w = w5;
-
-    for(i=0; i<NPTS; i++) {
-        result += w[i]/2 * (*f)( .5*(x[i]+1)) * diff(g, .5*(x[i]+1));
-    }
-
-    return result;
-}
-/* Calculate the derivative of a function at point x using a centered
- * difference formula */
-double diff(double (*f)(double), double x)
-{
-    double h = 1e-14;
-    return (f(x+h)-f(x-h))/(2*h);
-}
-
-//double quad2d3(double (*f)(basis*,double,double))
-//{
-//    int i, j;
-//    double result = 0;
-//    double *x, *w;
-//    x = x5;
-//    w = w5;
-
-//  for(i=0; i<NPTS; i++) {
-//        for(j=0; j<NPTS; j++) {
-//            result += w[i]/2 * w[j]/2 * (*f)( (x[i]+1)/2 , (x[j]+1)/2 );
-// }
-//    }
-//    return result;
-//}
-
+/* Depreciated. Use quad2d3generic instead. */
 /* Numerically integrate the desired basis function using Gaussian Quadrature.
  * This function only integrates 2D basis functions, and requires that the
  * element where the integration is being performed be passed as an argument
@@ -192,7 +138,7 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
     return result;
 }
 
-/* TODO: Make this function call more consise */
+/* Depreciated. Use quad2d3generic instead. */
 double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int dy)
 {
     int i, j;
@@ -356,33 +302,5 @@ double quad2d3tri(struct fe *p, matrix *guess, Elem2D *elem,
         }
     }
     return result;
-}
-
-/**
- * Derivative of a 2d basis function with respect to x 
- * @param b Set of basis functions to use
- * @param func Basis function number
- * @param x x-coordinate (between 0 and 1)
- * @param y y-coordinate (between 0 and 1)
- * @returns DphiDx
- */
-double diff2dx(basis *b, int func, double x, double y)
-{
-    double h = 1e-14;
-    return (b->Eval2D(b, func, x+h, y) - b->Eval2D(b, func, x-h, y))/(2*h);
-}
-
-/**
- * Derivative of a 2d basis function with respect to y
- * @param b Set of basis functions to use
- * @param func Basis function number
- * @param x x-coordinate (between 0 and 1)
- * @param y y-coordinate (between 0 and 1)
- * @returns DphiDy
- */
-double diff2dy(basis *b, int func, double x, double y)
-{
-    double h = 1e-14;
-    return (b->Eval2D(b, func, x, y+h) - b->Eval2D(b, func, x, y-h))/(2*h);
 }
 

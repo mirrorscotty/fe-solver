@@ -3,7 +3,6 @@
 #include <math.h>
 #include "matrix.h"
 #include "basis.h"
-#include "mtxsolver.h"
 #include "integrate.h"
 #include "mesh1d.h"
 #include "isoparam.h"

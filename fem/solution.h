@@ -2,9 +2,6 @@
 #define SOLUTION_H
 
 #include "matrix.h"
-#include "mesh1d.h"
-
-struct fe1d;
 
 typedef struct {
     int t;
@@ -17,7 +14,6 @@ solution* CreateSolution(int, double, matrix*);
 void DestroySolution(solution*);
 void DeleteTimeDeriv(solution*);
 
-double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 
 #endif
 

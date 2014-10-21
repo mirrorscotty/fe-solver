@@ -5,7 +5,6 @@
 #include "matrix.h"
 #include "finite-element1d.h"
 #include "solution.h"
-#include "mtxsolver.h"
 
 struct fe1d* CreateFE1D(basis *b,
         Mesh1D* mesh,
@@ -324,6 +323,26 @@ matrix* GenerateInitCondConst(struct fe1d *p, int var, double value)
     return InitSoln;
 }
 
+Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
+                  double (*F)(struct fe1d *, double, double))
+{
+    int i;
+    double x, dx, Fval;
+    vector *new;
+
+    new = CreateVector(len(orig->nodes));
+
+    setvalV(new, 0, valV(orig->nodes, 0)); /* The first node doesn't change */
+
+    for(i=1; i<len(orig->nodes); i++) {
+        dx = valV(orig->nodes, i) - valV(orig->nodes, i-1);
+        x = valV(orig->nodes, i);
+        Fval = F(p, x, t);
+        setvalV(new, i, Fval*dx+valV(new, i-1));
+    }
+
+    return Remesh1D(orig, new);
+}
 
 /* Store the solution and advance the current time index. Returns 0 on failure.
  * The first arguement is the problem to store the solutions in.
@@ -353,6 +372,23 @@ solution* FetchSolution(struct fe1d *p, int t)
         return p->soln[t];
     else
         return NULL;
+}
+
+/* This function needs to be modified to support hermite cubic basis functions.
+ */
+double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
+{   
+    int i;
+    double result = 0;
+    int n = p->b->n;
+    int nvars = p->nvars;
+
+    for(i=0; i<n; i++) {
+        result += p->b->phi[i](xi)
+                  * val(s->val, valV(elem->map, i)*nvars+var, 0);
+    }
+    
+    return result;
 }
 
 void PrintSolution(struct fe1d *p, int t)

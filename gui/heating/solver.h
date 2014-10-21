@@ -33,6 +33,7 @@ class Solver : public QMainWindow, private Ui::SolverWindow
     private:
         struct fe1d *problem;
         struct var *datalist;
+        choi_okos *composition;
         QwtPlotCurve *Temp, *Prod, *Bact, *alpha;
 
         void leftBCHideAll();

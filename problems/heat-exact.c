@@ -1,3 +1,9 @@
+/**
+ * @file heat-exact.c
+ * Exact solution to the heat equation. For use as a comparison against the FEM
+ * solution to validate the numerical model.
+ */
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>

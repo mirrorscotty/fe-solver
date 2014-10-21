@@ -1,18 +1,33 @@
+/**
+ * @file heat-cyl.c
+ * Console-only front end to the can sterilization model. The rest of the code
+ * is in gui/heating
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "matrix.h"
 #include "basis.h"
-#include "mtxsolver.h"
 #include "integrate.h"
 #include "mesh1d.h"
 #include "isoparam.h"
 #include "finite-element1d.h"
 #include "auxsoln.h"
 
-#include "material-data/freezing/freezing.h"
+#include "material-data/choi-okos/choi-okos.h"
 
 #include "heat-gui.h"
+
+double EaA = 10000,
+       EaB = 20000,
+       AA = 0.9,
+       AB = 0.8,
+       Text_hot = 500,
+       Text_cold = 290,
+       t_heat = 500;
+
+choi_okos *comp_global;
 
 int main(int argc, char *argv[])
 {
@@ -22,8 +37,9 @@ int main(int argc, char *argv[])
     struct fe1d* problem;
 
     /* Load a data file if one is supplied. */
-    if(argc == 2)
-        init(argv[1]);
+    //if(argc == 2)
+    //    init(argv[1]);
+    comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);

@@ -14,8 +14,21 @@
 
 #include "heat-gui.h"
 
-extern double EaA, EaB, AA, AB;
+extern double EaA, EaB, AA, AB,
+       Text_hot, Text_cold, t_heat;
+extern choi_okos *comp_global;
 double h = 5;
+
+/* Take the values stored in global variables for heating time and temperatures
+ * and construct a function for the external temperature as a function of time.
+ */
+double T_ext(double time)
+{
+    if(time > t_heat)
+        return Text_cold;
+    else
+        return Text_hot;
+}
 
 /* The following two functions are for heat conduction. */
 /* Creates the Jacobian and helps solve for the current time step */
@@ -41,7 +54,7 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    value *= (alpha(T)/p->charvals.alpha);
+    value *= (alpha(comp_global, T)/p->charvals.alpha);
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));

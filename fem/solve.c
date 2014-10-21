@@ -3,7 +3,6 @@
 #include "matrix.h"
 #include "finite-element.h"
 #include "finite-element1d.h"
-#include "mtxsolver.h"
 #include "solve.h"
 
 /**
@@ -25,6 +24,15 @@ int CheckConverg(struct fe *problem, matrix *dx)
     return 1;
 }
 
+/**
+ * Check the convergence of the nonlinear solver for a 1D problem.
+ *
+ * @param problem A pointer to the problem struct
+ * @param dt A matrix containing the change in the x vector
+ * @returns 0 if not converged, and 1 if we're done iterating.
+ *
+ * @see CheckConverg
+ */
 int CheckConverg1D(struct fe1d *problem, matrix *dx)
 {
     int rows = nRows(dx);
@@ -526,3 +534,4 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
 
     return guess;
 }
+
