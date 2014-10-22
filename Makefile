@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-lm -I. -Imatrix -Isolver -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0
-VPATH=problems gui solver/mesh solver/ode solver/integration matrix material-data scaling solver
+CFLAGS=-lm -I. -Imatrix -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0
+VPATH=problems gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
 
-OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o solve.o material-data.a matrix.a
+OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o solve.o output.o material-data.a matrix.a
 
 all: heat-cyl
 

@@ -246,9 +246,6 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
     /* Delete the time derivative of the pervious solution to save memory. */
     DeleteTimeDeriv(prev);
 
-    if(problem->t == 2)
-    mtxprnt(result);
-
     return result;
 }
 
@@ -500,7 +497,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         /* Solve for dx */
         //mtxneg(R);
         dx = SolveMatrixEquation(J, R);
-        mtxprnt(guess);
+        //mtxprnt(guess);
 
         /* Add the change in the unknowns to the guess from the previous
          * iteration */
@@ -508,10 +505,13 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         DestroyMatrix(guess);
         guess = tmp1;
 
+#ifdev VERBOSE_OUTPUT
         printf("\rIteration %d", iter); // Print the current iteration number to the console.
         fflush(stdout); // Flush the output buffer.
+#endif
     } while(!CheckConverg1D(problem, dx));
 
+#ifdef VERBOSE_OUTPUT
     if(iter == -1)
         /* If we've determined the matrix to be singular by calculating the
          * determinant, then output the appropriate error message. */
@@ -524,6 +524,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         /* Print out the number of iterations it took to converge
          * successfully. */
         printf("\rNonlinear solver converged after %d iterations.\n", iter);
+#endif
 
     /* Solve for the time derivative of the result. */
     dguess = CalcTimeDerivative(problem, guess);

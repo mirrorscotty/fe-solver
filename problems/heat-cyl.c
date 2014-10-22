@@ -16,6 +16,7 @@
 #include "auxsoln.h"
 #include "solve.h"
 
+#include "output.h"
 #include "material-data/choi-okos/choi-okos.h"
 
 #include "heat-gui.h"
@@ -26,7 +27,11 @@ double EaA = 10000,
        AB = 0.8,
        Text_hot = 500,
        Text_cold = 290,
-       t_heat = 500;
+       t_heat = 500000;
+
+#define TREF 500 // K
+#define THICKNESS 2.0
+#define HCONV 50 
 
 choi_okos *comp_global;
 
@@ -46,41 +51,45 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, 2.0, 6);
+    mesh = GenerateUniformMesh1D(b, 0.0, THICKNESS, 20);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         600);
+                         50000);
     problem->nvars = 1;
     problem->dt = .001;
+    problem->charvals = SetupScaling(alpha(comp_global, TREF), TREF, THICKNESS, k(comp_global, TREF), HCONV);
 
-    IC = GenerateInitCondConst(problem, 0, 273.0); /* Initial temperature */
+    IC = GenerateInitCondConst(problem, 0, scaleTemp(problem->charvals, 273.0)); /* Initial temperature */
     //ApplyInitialCondition(problem, 1, &InitC); /* Initial concentration */
     //
     FE1DTransInit(problem, IC);
 
     while(problem->t<problem->maxsteps) {
-        LinSolve1DTransImp(problem);
+        NLinSolve1DTransImp(problem, NULL);
     }
     printf("t = %g\n", (problem->maxsteps-1) * problem->dt);
+    PrintScalingValues(problem->charvals);
 
     puts("Solutions:");
-    //PrintSolution(problem, 0);
-    //puts("");
-    //PrintSolution(problem, 1);
-    //puts("");
+    PrintSolution(problem, 0);
+    puts("");
+    PrintSolution(problem, 1);
+    puts("");
     PrintSolution(problem, problem->t-1);
 
-    FE1DInitAuxSolns(problem, 2);
-    SolveODE(problem, 0, 0, &react1, 1);
-    SolveODE(problem, 0, 1, &react2, 2);
-    puts("");
-    PrintAuxSoln(problem, 0, 1);
-    puts("");
-    PrintAuxSoln(problem, 1, 1);
+    CSVOutFixedNode(problem, 4, "output.csv");
+
+    //FE1DInitAuxSolns(problem, 2);
+    //SolveODE(problem, 0, 0, &react1, 1);
+    //SolveODE(problem, 0, 1, &react2, 2);
+    //puts("");
+    //PrintAuxSoln(problem, 0, 1);
+    //puts("");
+    //PrintAuxSoln(problem, 1, 1);
 
     /* Clean up */
     DestroyFE1D(problem);

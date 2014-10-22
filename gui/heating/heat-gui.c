@@ -17,7 +17,7 @@
 extern double EaA, EaB, AA, AB,
        Text_hot, Text_cold, t_heat;
 extern choi_okos *comp_global;
-double h = 5;
+//double h = 5; // Not actually used.
 
 /* Take the values stored in global variables for heating time and temperatures
  * and construct a function for the external temperature as a function of time.
@@ -54,7 +54,7 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    value *= (alpha(comp_global, T)/p->charvals.alpha);
+    //value *= (alpha(comp_global, T)/p->charvals.alpha);
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));
@@ -187,7 +187,8 @@ double ConvBC(struct fe1d *p, int row)
         T = val(p->guess, row, 0);
         if(T==0)
             return 0;
-        return -Bi*(T-Tinf);
+        else
+            return -Bi*(T-Tinf);
     } else {
         return 0;
     }
