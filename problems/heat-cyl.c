@@ -14,6 +14,7 @@
 #include "isoparam.h"
 #include "finite-element1d.h"
 #include "auxsoln.h"
+#include "solve.h"
 
 #include "material-data/choi-okos/choi-okos.h"
 

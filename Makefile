@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-lm -I. -Imatrix -Ifem -Imesh -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0
-VPATH=problems gui mesh matrix material-data scaling fem
+CFLAGS=-lm -I. -Imatrix -Isolver -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0
+VPATH=problems gui solver/mesh solver/ode solver/integration matrix material-data scaling solver
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o solve.o material-data.a matrix.a
 
@@ -51,10 +51,10 @@ mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h
 mesh1d.o: mesh/mesh1d.h mesh/mesh1d.c
 
 # Finite element-specific files
-finite-element.o: fem/finite-element.c fem/finite-element.h
-finite-element1d.o: fem/finite-element1d.c fem/finite-element1d.h
-solution.o: fem/solution.c fem/solution.h
-auxsoln.o: fem/auxsoln.c fem/auxsoln.h
+finite-element.o: finite-element.c finite-element.h
+finite-element1d.o: finite-element1d.c finite-element1d.h
+solution.o: solution.c solution.h
+auxsoln.o: auxsoln.c auxsoln.h
 
 # Scaling stuff
 scaling_ht.o: scaling_ht.h

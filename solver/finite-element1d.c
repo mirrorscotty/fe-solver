@@ -306,17 +306,26 @@ matrix* GenerateInitialCondition(struct fe1d *p,
     return InitSoln;
 }
 
+/**
+ * Create a matrix of values to use as the initial condition when solving a
+ * transient problem.
+ * TODO: Modify this function to allow setting initial conditions for more than
+ *      one variable.
+ * @param p Finite element structure
+ * @param var Number of the variable to set
+ * @param value Value to set the variable to at t=0
+ */
 matrix* GenerateInitCondConst(struct fe1d *p, int var, double value)
 {
     int i;
-    double x; /* The x value at the current mesh node. */
+    //double x; /* The x value at the current mesh node. */
     int n = p->nvars; /* The total number of dependant variables */
 
     matrix *InitSoln;
     InitSoln = CreateMatrix(p->nrows*p->nvars, 1);
 
     for(i=var; i<p->nrows*n; i+=n) {
-        x = valV(p->mesh->nodes, i/n);
+        //x = valV(p->mesh->nodes, i/n);
         setval(InitSoln, value, i, 0);
     }
 
