@@ -48,13 +48,15 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
         T = p->charvals.Tc;
     else
         T = EvalSoln1D(p, 0, elem, s, x);
-   
+    /* Now that we've calculated T, we no longer need this */
+    free(s);
+
     /* Normally, this should be multiplied by the thermal diffusivity. However,
      * we will assume that alpha is constant and, because of dimensionless
      * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    //value *= (alpha(comp_global, T)/p->charvals.alpha);
+    //value *= (alpha(comp_global, T)/p->charvals.alpha) * b->phi[f1](x)*IMap1D(p, elem, x);
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));

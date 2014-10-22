@@ -448,6 +448,8 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     if(!guess)
         guess = CopyMatrix(u);
 
+    dx = NULL;
+
     do {
         iter++;
 
@@ -461,6 +463,9 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         DestroyMatrix(problem->J);
         DestroyMatrix(problem->dJ);
         DestroyMatrix(problem->F);
+        /* Delete the dx matrix from the previous iteration. */
+        if(dx)
+            DestroyMatrix(dx); 
         AssembleJ1D(problem, guess);
         AssembledJ1D(problem, guess);
         AssembleF1D(problem, guess);
@@ -497,7 +502,9 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         /* Solve for dx */
         //mtxneg(R);
         dx = SolveMatrixEquation(J, R);
-        //mtxprnt(guess);
+        /* Delete the residual matrix and the Jacobian matrix*/
+        DestroyMatrix(R);
+        DestroyMatrix(J);
 
         /* Add the change in the unknowns to the guess from the previous
          * iteration */
@@ -505,11 +512,13 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         DestroyMatrix(guess);
         guess = tmp1;
 
-#ifdev VERBOSE_OUTPUT
+#ifdef VERBOSE_OUTPUT
         printf("\rIteration %d", iter); // Print the current iteration number to the console.
         fflush(stdout); // Flush the output buffer.
 #endif
     } while(!CheckConverg1D(problem, dx));
+    /* Delete the final dx matrix */
+    DestroyMatrix(dx);
 
 #ifdef VERBOSE_OUTPUT
     if(iter == -1)
