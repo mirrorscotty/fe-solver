@@ -1,3 +1,27 @@
+/**
+ * @file heat-gui.c
+ * Set of functions to solve the following differential equations:
+ * \f[
+ * \frac{\partial T}{\partial t} = \alpha(T)\frac{\partial^2 T}{\partial t^2}
+ * \f]
+ * \f[
+ * c_1 = A_1 \exp{-\frac{E_{a,1}}{R T}}
+ * \f]
+ * \f[
+ * c_2 = A_2 \exp{-\frac{E_{a,2}}{R T}}
+ * \f]
+ * where \f$\alpha(T)\f$ is the temperature-dependent thermal diffusivity, and
+ * \f$c_1\f$ and \f$c_2\f$ are the concentrations of two components that whose
+ * rate of reaction depends on temperature.
+ *
+ * The heat conduction equation in this file is not correct. The appropriate
+ * nonlinear heat conduction equation is:
+ * \f[
+ * \rho C_p\frac{\partial T}{\partial t} = \nabla\cdot\left(k\nabla T\right)
+ * \f]
+ * However, the form presented here should be somewhat accurate.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -51,12 +75,10 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     /* Now that we've calculated T, we no longer need this */
     free(s);
 
-    /* Normally, this should be multiplied by the thermal diffusivity. However,
-     * we will assume that alpha is constant and, because of dimensionless
-     * groups, this is all done later. */
     value  = b->dphi[f1](x) * b->dphi[f2](x);
     value *= IMap1D(p, elem, x);
-    //value *= (alpha(comp_global, T)/p->charvals.alpha) * b->phi[f1](x)*IMap1D(p, elem, x);
+    value *= (alpha(comp_global, uscaleTemp(p->charvals, T))/p->charvals.alpha)
+                * b->phi[f1](x) * IMap1D(p, elem, x);
     value *= IMapCyl1D(p, elem, x);
 
     //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));

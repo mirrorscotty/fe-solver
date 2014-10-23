@@ -58,14 +58,15 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         500);
+                         5000);
     problem->nvars = 1;
-    problem->dt = .001;
+    problem->dt = 0.001;
     problem->charvals = SetupScaling(alpha(comp_global, TREF), TREF, THICKNESS, k(comp_global, TREF), HCONV);
 
-    IC = GenerateInitCondConst(problem, 0, scaleTemp(problem->charvals, 273.0)); /* Initial temperature */
-    //ApplyInitialCondition(problem, 1, &InitC); /* Initial concentration */
-    //
+    /* Set the initial temperature */
+    IC = GenerateInitCondConst(problem, 0, scaleTemp(problem->charvals, 273.0));
+    /* Apply the initial condition to the problem and set up the transient
+     * solver. */
     FE1DTransInit(problem, IC);
 
     while(problem->t<problem->maxsteps) {
@@ -77,11 +78,9 @@ int main(int argc, char *argv[])
     puts("Solutions:");
     PrintSolution(problem, 0);
     puts("");
-    PrintSolution(problem, 1);
-    puts("");
     PrintSolution(problem, problem->t-1);
 
-    CSVOutFixedNode(problem, 4, "output.csv");
+    CSVOutFixedNode(problem, 19, "output.csv");
 
     //FE1DInitAuxSolns(problem, 2);
     //SolveODE(problem, 0, 0, &react1, 1);

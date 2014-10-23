@@ -15,4 +15,9 @@ matrix* NLinSolve1D(struct fe1d*, matrix*);
 
 matrix* CalcTimeDerivative(struct fe1d*, matrix*);
 
+matrix* PredictSolnO0(struct fe1d*);
+matrix* PredictSolnO1(struct fe1d*);
+matrix* PredictSolnO2(struct fe1d*);
+
 #endif
+

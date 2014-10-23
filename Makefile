@@ -6,6 +6,9 @@ OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-elem
 
 all: heat-cyl
 
+doc:
+	doxygen DoxyFile
+
 2dlaplace: 2dlaplace.o $(OBJECTFILES)
 	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
 

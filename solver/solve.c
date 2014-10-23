@@ -1,3 +1,9 @@
+/**
+ * @file solve.c
+ * Finite element solvers for both one and two-dimensional problems. For 1D
+ * problems, this includes a linear and nonlinear static solver, as well as a
+ * linear and nonlinear transient solver.
+ */
 #include <math.h>
 #include <stdio.h>
 #include "matrix.h"
@@ -443,10 +449,9 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     du = prev->dval;
     u = prev->val;
 
-    /* Set the initial guess to the solution from the previous time step if it
-     * isn't supplied. */
+    /* Predict the next solution if an initial guess isn't supplied. */
     if(!guess)
-        guess = CopyMatrix(u);
+        guess = PredictSolnO2(problem);
 
     dx = NULL;
 
@@ -520,6 +525,11 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     /* Delete the final dx matrix */
     DestroyMatrix(dx);
 
+    if(iter==maxiter) {
+        printf("Nonlinear solver failed to converge. Maximum number of iterations reached.\nExiting.\n");
+        exit(0);
+    }
+
 #ifdef VERBOSE_OUTPUT
     if(iter == -1)
         /* If we've determined the matrix to be singular by calculating the
@@ -540,8 +550,104 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
 
     StoreSolution(problem, guess, dguess);
     /* Delete the time derivative of the pervious solution to save memory. */
-    DeleteTimeDeriv(prev);
+    //DeleteTimeDeriv(prev);
 
     return guess;
+}
+
+/**
+ * Predict the solution at the next time step by assuming that it's equal to the
+ * solution at the previous time step.
+ * @param p Finite element structure
+ * @returns Predicted solution at t+dt
+ */
+matrix* PredictSolnO0(struct fe1d *p)
+{
+    solution *s;
+    s = FetchSolution(p, p->t-1);
+    return CopyMatrix(s->val);
+}
+
+/**
+ * Predict the solution at the next time step using a simple first order
+ * formula. This requires the solution at the previous time step and the time
+ * derivative of the solution at the previous time step.
+ * \f[
+ * \underline{u}_{n+1}^p = \underline{u}_n + \Delta t \underline{\dot{u}}_n
+ * \f]
+ * @param p Finite element structure
+ * @returns Predicted solution at t+dt
+ */
+matrix* PredictSolnO1(struct fe1d *p)
+{
+    solution *s;
+    matrix *u, *du;
+    matrix *tmp1, *tmp2;
+    double dt;
+
+    /* Get the previous solution */
+    s = FetchSolution(p, p->t-1);
+
+    u = s->val;
+    du = s->dval;
+    dt = s->dt;
+
+    /* If we can't use this method, use a less accurate one. */
+    if(!du)
+        return PredictSolnO0(p);
+    
+    tmp1 = mtxmulconst(du, dt);
+    tmp2 = mtxadd(u, tmp1);
+    DestroyMatrix(tmp1);
+
+    return tmp2;
+}
+
+/**
+ * Predict the solution at the next time step using the second-order accurate
+ * Adams-Bashforth formula. This method requires the solution at the previous
+ * time step, and the time derivatives at the previous two time steps.
+ * \f[
+ * \underline{u}_{n+1}^p = \underline{u}_n
+ * + \frac{\Delta t_n}{2}\left[\left(2+\frac{\Delta t_n}{\Delta t_{n-1}}\right)
+ *      \underline{\dot{u}}_n
+ * - \frac{\Delta t_n}{\Delta t_{n-1}}\underline{\dot{u}}_{n-1}\right]
+ * \f]
+ * @param p Finite element structure
+ * @returns Predicted solution at t+dt
+ */
+matrix* PredictSolnO2(struct fe1d *p)
+{
+    solution *sn, *sn_1;
+    matrix *un, *dun, *dun_1;
+    matrix *tmp1, *tmp2, *tmp3, *tmp4;
+    double dtn, dtn_1;
+
+    sn = FetchSolution(p, p->t-1);
+    sn_1 = FetchSolution(p, p->t-2);
+
+    /* Check to make sure we can use this method. */
+    if(!sn_1)
+        return PredictSolnO1(p); /* Use a first order method if we can't */
+
+    un = sn->val;
+    dun = sn->dval;
+    dun_1 = sn_1->dval;
+
+    dtn = sn->dt;
+    dtn_1 = sn_1->dt;
+
+    tmp1 = mtxmulconst(dun, (dtn/2)*(2+dtn/dtn_1));
+    tmp2 = mtxmulconst(dun_1, (dtn/2)*(dtn/dtn_1));
+    mtxneg(tmp2);
+
+    tmp3 = mtxadd(tmp1, tmp2);
+    tmp4 = mtxadd(un, tmp3);
+
+    DestroyMatrix(tmp1);
+    DestroyMatrix(tmp2);
+    DestroyMatrix(tmp3);
+
+    return tmp4;
 }
 
