@@ -32,33 +32,19 @@
 #include "mesh1d.h"
 #include "isoparam.h"
 #include "finite-element1d.h"
-#include "auxsoln.h"
 
 #include "material-data/choi-okos/choi-okos.h"
 
-#include "heat-gui.h"
+#include "heat-transfer.h"
 
-extern double EaA, EaB, AA, AB,
-       Text_hot, Text_cold, t_heat;
 extern choi_okos *comp_global;
-//double h = 5; // Not actually used.
-
-/* Take the values stored in global variables for heating time and temperatures
- * and construct a function for the external temperature as a function of time.
- */
-double T_ext(double time)
-{
-    if(time > t_heat)
-        return Text_cold;
-    else
-        return Text_hot;
-}
 
 /* The following two functions are for heat conduction. */
 /* Creates the Jacobian and helps solve for the current time step */
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
-    double value = 0;
+    double term1 = 0, term2 = 0;
+    double h = 1e-7;
     basis *b;
     b = p->b;
 
@@ -69,35 +55,46 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     s = CreateSolution(p->t, p->dt, guess);
     //if(!s)
     if(p->t==0)
-        T = p->charvals.Tc;
+        T = scaleTemp(p->charvals, 273);
     else
         T = EvalSoln1D(p, 0, elem, s, x);
     /* Now that we've calculated T, we no longer need this */
     free(s);
 
-    value  = b->dphi[f1](x) * b->dphi[f2](x);
-    value *= IMap1D(p, elem, x);
-    value *= (alpha(comp_global, uscaleTemp(p->charvals, T))/p->charvals.alpha)
-                * b->phi[f1](x) * IMap1D(p, elem, x);
-    value *= (alpha(comp_global, uscaleTemp(p->charvals, T))/p->charvals.alpha);
-    value *= IMapCyl1D(p, elem, x);
+    term1  = b->dphi[f1](x) * b->dphi[f2](x);
+    term1 *= IMap1D(p, elem, x);
+    //term1 *= (alpha(comp_global, uscaleTemp(p->charvals, T))/p->charvals.alpha)
+    //            * b->phi[f1](x) * IMap1D(p, elem, x);
+    term1 *= k(comp_global, uscaleTemp(p->charvals, T))/p->charvals.k;
 
-    //printf("alpha_c = %g, alpha = %g, ", p->charvals.alpha, alpha(T));
-    //printf("alpha_c/alpha = %g\n", p->charvals.alpha/alpha(T));
+    term2 = (k(comp_global, T+h)-k(comp_global, T-h))/(2*h);
+    term2 *= 1/p->charvals.k;
+    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x);
+    term2 *= pow(IMap1D(p, elem, x), 2);
 
-    return value;
+    return term1+term2;
 }
 
 /* Calculate the coefficient matrix for the time derivative unknowns */
 double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
+    double T;
+    solution *s;
+
     double value;
     basis *b;
     b = p->b;
 
+    s = CreateSolution(p->t, p->dt, guess);
+    T = EvalSoln1D(p, 0, elem, s, x);
+    /* Now that we've calculated T, we no longer need this */
+    free(s);
+
     value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
+    value *= rho(comp_global, uscaleTemp(p->charvals, T))
+            * Cp(comp_global, uscaleTemp(p->charvals, T))
+            * p->charvals.alpha/p->charvals.k;
     value *= IMapCyl1D(p, elem, x);
-//    value *= -1;
 
     return value;
 }
@@ -188,9 +185,8 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
 
 double ExternalTemp(struct fe1d *p, int row)
 {
-    return scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->t*p->dt)));
+    return scaleTemp(p->charvals, p->charvals.Tc);
 }
-
 
 /* The way this function is implemented is probably not mathematically accurate.
  * Strictly speaking, for the implicit solver, the temperature fetched should be
@@ -198,7 +194,7 @@ double ExternalTemp(struct fe1d *p, int row)
  * solution for. The way it is now should be good enough (tm).*/
 double ConvBC(struct fe1d *p, int row)
 {
-    double Tinf = scaleTemp(p->charvals, T_ext(uscaleTime(p->charvals, p->dt*p->t)));
+    double Tinf = ExternalTemp(p, row);
     double T;
     double Bi = BiotNumber(p->charvals);
 
@@ -207,8 +203,8 @@ double ConvBC(struct fe1d *p, int row)
     //solution *s;
     //s = FetchSolution(p, p->t-1);
     //if(s) {
-    if(p->guess) {
         //T = val(s->val, row, 0);
+    if(p->guess) {
         T = val(p->guess, row, 0);
         if(T==0)
             return 0;
@@ -233,30 +229,5 @@ void ApplyAllBCs(struct fe1d *p)
         ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &ExternalTemp);
 
     return;
-}
-
-/* ODEs */
-double react1(double cprev, double T, double dt)
-{
-    //double AA, EaA, R;
-    double R = 8.314;
-    //AA = 1;
-    //EaA = 1;
-
-    T = fabs(T);
-    
-    return cprev*(1 - dt*AA*exp(-EaA/(R*T)));
-}
-
-double react2(double cprev, double T, double dt)
-{
-    //double AB, EaB, R;
-    double R = 8.314;
-    //AB = 2;
-    //EaB = 2;
-
-    T = fabs(T);
-    
-    return cprev*(1 - dt*AB*exp(-EaB/(R*T)));
 }
 

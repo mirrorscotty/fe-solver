@@ -5,6 +5,7 @@
  */
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "matrix.h"
 #include "finite-element1d.h"
 #include "solve.h"
@@ -231,7 +232,8 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     DestroyMatrix(dx);
 
     if(iter==maxiter) {
-        printf("Nonlinear solver failed to converge. Maximum number of iterations reached.\nExiting.\n");
+        printf("Nonlinear solver failed to converge. Maximum number of iterations reached.\nFailed to calculate solution at time step %d of %d\nExiting.\n",
+                problem->t, problem->maxsteps);
         exit(0);
     }
 
