@@ -1,3 +1,7 @@
+/**
+ * @file finite-element1d.h
+ */
+
 #ifndef FINITE_ELEMENT1D_H
 #define FINITE_ELEMENT1D_H
 
@@ -10,42 +14,51 @@
 
 struct fe1d;
 
+/**
+ * Structure used to define a 1-dimensional finite element problem.
+ */
 struct fe1d {
-    basis *b; /* Set of interpolation functions to use when solving */
-    Mesh1D *mesh; /* Mesh that discretizes the domain */
+    basis *b; /**< Set of interpolation functions to use when solving */
+    Mesh1D *mesh; /**< Mesh that is used to discretize the domain */
 
-    matrix *J; /* Jacobian */
-    matrix *dJ; /* Portion of Jacobian multiplying time-dependent part of
-                   the residual */
-    matrix *R; /* Residual */
-    matrix *F; /* Load vector */
+    matrix *J; /**< Jacobian matrix*/
+    matrix *dJ; /**< Portion of Jacobian multiplying time-dependent part of
+                    the residual */
+    matrix *R; /**< Residual matrix */
+    matrix *F; /**< Load vector */
 
     matrix *guess;
 
-    solution **soln; /* Stored solutions for each time step. */
-    int t; /* Current time index. */
-    int maxsteps; /* Maximum number of time steps to be allowed. */
-    double dt; /* The time step for the initial step. */
+    solution **soln; /**< Stored solutions for each time step. */
+    int t; /**< Current time index. */
+    int maxsteps; /**< Maximum number of time steps to be allowed. */
+    double dt; /**< The time step for the initial step. */
 
-    int nvars; /* Number of dependant variables. */
-    int nrows; /* Number of rows (nodes) in the final solution. */
+    int nvars; /**< Number of dependant variables. */
+    int nrows; /**< Number of rows (nodes) in the final solution. */
 
-    double tol; /* Tolerance for the nonlinear solver */
+    double tol; /**< Tolerance for the nonlinear solver */
 
-    /* Functions to make the element mass/stiffness matrix and the load vector */
+    /* Functions to make the element mass/stiffness matrix and the load
+     * vector */
     matrix* (*makedj)(struct fe1d*, Elem1D*, matrix*);
     matrix* (*makej)(struct fe1d*, Elem1D*, matrix*);
     matrix* (*makef)(struct fe1d*, Elem1D*, matrix*);
 
-    /* Function to apply all the relevant boundary conditions for the problem. */
-    void (*applybcs)(struct fe1d*);
+    void (*applybcs)(struct fe1d*); /**< Function to apply all the relevant
+                                     *   boundary conditions for the problem. */
 
     /* Stuff for ODEs */
     solution ***auxsolns;
-    int extravars;
+    int extravars; /**< Number of ODE variables to solve for */
 
     /* Scaling stuff */
-    scaling_ht charvals;
+    scaling_ht charvals; /**< Scaling values for heat transfer. This structure
+                          *   holds the characteristic length, temperature,
+                          *   thermal diffusivity, etc. used to make the
+                          *   heat transfer portion of the problem
+                          *   dimensionless.
+                          */
     scaling_ht chardiff;
 };
 
@@ -80,6 +93,8 @@ int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);
 double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 void PrintSolution(struct fe1d*, int);
+
+matrix* CalcTimeDerivative(struct fe1d*, matrix*);
 
 #endif
 

@@ -407,3 +407,25 @@ void PrintSolution(struct fe1d *p, int t)
     mtxprnt(s->val);
 }
 
+/**
+ * @brief Calculate the time derivative of the solution to a problem
+ * @param problem The FE problem to use
+ * @param x The calculated solution
+ * @return The time derivative of the solution
+ */
+matrix* CalcTimeDerivative(struct fe1d *problem, matrix *x)
+{
+    matrix *tmp1, *tmp2, *dxdt;
+    tmp1 = mtxmul(problem->J, x);
+    mtxneg(tmp1);
+    tmp2 = mtxadd(problem->F, tmp1);
+
+    dxdt = SolveMatrixEquation(problem->dJ, tmp2);
+
+    DestroyMatrix(tmp1);
+    DestroyMatrix(tmp2);
+
+    return dxdt;
+}
+
+
