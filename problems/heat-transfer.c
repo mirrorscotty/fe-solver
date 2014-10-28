@@ -44,35 +44,32 @@ extern choi_okos *comp_global;
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
     double term1 = 0, term2 = 0;
-    double h = 1e-7;
+    double h = 1e-5;
     basis *b;
     b = p->b;
 
     /* This is just to fetch the value of T */
-    double T;
+    double T, Tu;
+
     solution *s;
-    //s = FetchSolution(p, p->t-1);
     s = CreateSolution(p->t, p->dt, guess);
-    //if(!s)
-    if(p->t==0)
-        T = scaleTemp(p->charvals, 273);
-    else
-        T = EvalSoln1D(p, 0, elem, s, x);
+    T = EvalSoln1D(p, 0, elem, s, x);
     /* Now that we've calculated T, we no longer need this */
     free(s);
 
-    term1  = b->dphi[f1](x) * b->dphi[f2](x);
+    Tu = uscaleTemp(p->charvals, T);
+
+    term1 = k(comp_global, Tu)/p->charvals.k;
+    term1 *= b->dphi[f1](x) * b->dphi[f2](x);
     term1 *= IMap1D(p, elem, x);
-    //term1 *= (alpha(comp_global, uscaleTemp(p->charvals, T))/p->charvals.alpha)
-    //            * b->phi[f1](x) * IMap1D(p, elem, x);
-    term1 *= k(comp_global, uscaleTemp(p->charvals, T))/p->charvals.k;
 
-    term2 = (k(comp_global, T+h)-k(comp_global, T-h))/(2*h);
+    term2 = (k(comp_global, Tu+h)-k(comp_global, Tu-h))/(2*h);
     term2 *= 1/p->charvals.k;
-    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x);
-    term2 *= pow(IMap1D(p, elem, x), 2);
-
-    return term1+term2;
+    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x) * T;
+    term2 *= IMap1D(p, elem, x);
+    
+    return term2-term1;
+    //return -1*term1;
 }
 
 /* Calculate the coefficient matrix for the time derivative unknowns */
@@ -93,10 +90,11 @@ double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
     value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
     value *= rho(comp_global, uscaleTemp(p->charvals, T))
             * Cp(comp_global, uscaleTemp(p->charvals, T))
-            * p->charvals.alpha/p->charvals.k;
-    value *= IMapCyl1D(p, elem, x);
+            //* (p->charvals.alpha/p->charvals.k);
+            / p->charvals.alpha;
+    value *= 1/IMap1D(p, elem, x);
 
-    return value;
+    return -1*value;
 }
 
 matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
@@ -166,7 +164,7 @@ int IsOnRightBoundary(struct fe1d *p, int row)
     double width = p->mesh->x2 - p->mesh->x1;
     double x = valV(p->mesh->nodes, row/p->nvars);
     
-    if(fabs(x - width) < 1e-5)
+    if(fabs(x - width) < 1e-7)
         return 1;
     else
         return 0;
@@ -177,7 +175,7 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
 {
     double x = valV(p->mesh->nodes, row/p->nvars);
   
-    if(fabs(x) < 1e-5)
+    if(fabs(x) < 1e-7)
         return 1;
     else
         return 0;
@@ -206,10 +204,10 @@ double ConvBC(struct fe1d *p, int row)
         //T = val(s->val, row, 0);
     if(p->guess) {
         T = val(p->guess, row, 0);
-        if(T==0)
-            return 0;
-        else
-            return -Bi*(T-Tinf);
+        //if(T==0)
+        //    return 0;
+        //else
+            return Bi*(T-Tinf);
     } else {
         return 0;
     }

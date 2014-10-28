@@ -10,18 +10,19 @@ typedef struct {
 } Elem1D;
 
 typedef struct mesh1dstruct {
-    int nelem; /* Number of elements in the mesh */
+    int nelem; /**< Number of elements in the mesh */
 
-    int nnodes; /* Number of nodes */
+    int nnodes; /**< Number of nodes */
 
-    double x1; /* Left-most node coordinate */
-    double x2; /* Right-most node coordinate */
+    double x1; /**< Left-most node coordinate */
+    double x2; /**< Right-most node coordinate */
 
-    int t; /* Earliest time index the mesh is valid for */
-    struct mesh1dstruct *next; /* Previous meshes for the domain */
+    int t; /**< Earliest time index the mesh is valid for */
+    struct mesh1dstruct *next; /**< Previous meshes for the domain */
+    //struct mesh1dstruct *orig; /**< Originally define mesh for the problem */
 
-    Elem1D **elem; /* Set of all of the elements in the mesh */
-    vector *nodes; /* Vector of node coordinates */
+    Elem1D **elem; /**< Set of all of the elements in the mesh */
+    vector *nodes; /**< Vector of node coordinates */
 } Mesh1D;
 
 #include "finite-element1d.h"

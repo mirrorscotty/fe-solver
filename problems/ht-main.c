@@ -22,8 +22,8 @@
 #include "heat-transfer.h"
 
 #define TREF 500 // K
-#define THICKNESS 2.0
-#define HCONV 50 
+#define THICKNESS .05 
+#define HCONV 500
 
 choi_okos *comp_global;
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, THICKNESS, 20);
+    mesh = GenerateUniformMesh1D(b, 0.0, THICKNESS, 10);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
                          &ApplyAllBCs,
                          5000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = 0.001; /* Dimensionless time step size */
+    problem->dt = 0.01; /* Dimensionless time step size */
     problem->charvals = SetupScaling(alpha(comp_global, TREF), TREF, THICKNESS, k(comp_global, TREF), HCONV);
 
     /* Set the initial temperature */
@@ -71,7 +71,16 @@ int main(int argc, char *argv[])
     printf("Solution at t = %g:\n", uscaleTime(problem->charvals, problem->t*problem->dt));
     PrintSolution(problem, problem->t-1);
 
-    CSVOutFixedNode(problem, 19, "output.csv");
+    CSVOutFixedNode(problem, 0, "output0.csv");
+    CSVOutFixedNode(problem, 1, "output1.csv");
+    CSVOutFixedNode(problem, 2, "output2.csv");
+    CSVOutFixedNode(problem, 3, "output3.csv");
+    CSVOutFixedNode(problem, 4, "output4.csv");
+    CSVOutFixedNode(problem, 5, "output5.csv");
+    CSVOutFixedNode(problem, 6, "output6.csv");
+    CSVOutFixedNode(problem, 7, "output7.csv");
+    CSVOutFixedNode(problem, 8, "output8.csv");
+    CSVOutFixedNode(problem, 9, "output9.csv");
 
     /* Clean up */
     DestroyFE1D(problem);
