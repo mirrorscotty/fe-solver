@@ -229,3 +229,20 @@ void ApplyAllBCs(struct fe1d *p)
     return;
 }
 
+/* Calculate the deformation gradient of the sample at (x,t) based on density
+ */
+double DeformationGrad(struct fe1d *p, double x, double t)
+{
+    double T0, Tn, rho0, rhon;
+    solution *s0, *sn;
+    
+    s0 = FetchSolution(p, 0);
+    sn = FetchSolution(p, t);
+    Tn = EvalSoln1DG(p, 0, sn, x);
+    T0 = EvalSoln1DG(p, 0, s0, x);
+    rho0 = rho(comp_global, T0);
+    rhon = rho(comp_global, Tn);
+
+    return rho0/rhon;
+}
+

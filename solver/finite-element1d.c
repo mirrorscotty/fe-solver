@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "basis.h"
 #include "mesh1d.h"
@@ -383,6 +384,21 @@ solution* FetchSolution(struct fe1d *p, int t)
         return NULL;
 }
 
+/**
+ * Evaluate a one-dimensional solution at a particular local coordinate within
+ * a specific element. This interpolates the already calculated solution using
+ * the finite element basis functions. For problems with multiple dependent
+ * variables, "var" specifies which one to interpolate. If the value supplied is
+ * equal to -1, then the global x coordinate for that value of xi is returned
+ * instead.
+ * @param p Finite element problem structure
+ * @param var Number corresponding to the dependent variable to interpolate
+ * @param elem Mesh element to use when interpolating
+ * @param s Set of dependent variable values at each node
+ * @param xi Local coordinate value. Must be between 0 and 1.
+ *
+ * @returns Variable value at xi in the desired element.
+ */
 /* This function needs to be modified to support hermite cubic basis functions.
  */
 double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
@@ -392,6 +408,13 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
     int n = p->b->n;
     int nvars = p->nvars;
 
+    /* Return the x (global) coordinate the corresponds to the xi (local)
+     * coordinate when -1 is supplied for "var". */
+    if(var == -1)
+        for(i=0; i<n; i++)
+            result += p->b->phi[i](xi) * valV(elem->points, i);
+
+    /* Find the value of the desired variable at xi */
     for(i=0; i<n; i++) {
         result += p->b->phi[i](xi)
                   * val(s->val, valV(elem->map, i)*nvars+var, 0);
@@ -400,6 +423,72 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
     return result;
 }
 
+/**
+ * Evaluate a one-dimensional solution at a given value of the global
+ * independent variable, x.
+ * @param p Finite element problem structure
+ * @param var Number of the variable to interpolate
+ * @param s Solution values
+ * @param x Global x coordinate
+ * @returns Interpolated solution at x
+ * @see EvalSoln1D
+ */
+double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x)
+{
+    int i;
+    double x1, x2, xi, F, Fp, dx, h;
+    Elem1D *e;
+    e = NULL;
+    /* Figure out which element the desired x value is in */
+    /* If x is equal to the left endpoint of the mesh, return the first
+     * element. */
+    if(x == p->mesh->x1)
+        e = p->mesh->elem[0];
+    /* If it's equal to the right endpoint, return the last element. */
+    else if(x == p->mesh->x2)
+        e = p->mesh->elem[p->mesh->nelem-1];
+    /* Otherwise, go through each element of the remaining elements one by one
+     * until a match is found. Doing the previous two steps is likely
+     * retundant. */
+    else
+            for(i=0; i<p->mesh->nelem; i++) {
+                x1 = valV(p->mesh->elem[i]->points, 0);
+                x2 = valV(p->mesh->elem[i]->points,
+                                len(p->mesh->elem[i]->points));
+
+                if(x >= x1 && x <= x2)
+                    e = p->mesh->elem[i];
+            }
+    /* If we haven't found the element, quit the program. Something is likely
+     * very wrong with the code. */
+    if(!e) {
+        printf("Failure to locate the element for point x = %g.\n", x);
+        printf("Exiting.\n");
+        exit(0);
+    }
+    
+    /* Find the local coordinate, given the global coordinate using Newton's
+     * method. */
+    xi = .5; /* Since the range for xi is 0 to 1, just use 0.5 as the initial
+              * guess */
+    h = 1e-5; /* Tolerance for taking derivatives and Newton's method
+               * convergence */
+    do {
+        F = EvalSoln1D(p, -1, e, s, xi);
+        Fp= (EvalSoln1D(p, -1, e, s, xi+h)-EvalSoln1D(p, -1, e, s, xi-h))/(2*h);
+        dx = -F/Fp;
+        xi = xi + dx;
+    } while(fabs(dx) > h);
+    
+    /* Return the desired value. */
+    return EvalSoln1D(p, var, e, s, xi);
+}
+
+/**
+ * Print out the nodal values at a given time step.
+ * @param p Finite element problem structure
+ * @param t Time step number
+ */
 void PrintSolution(struct fe1d *p, int t)
 {
     solution *s;

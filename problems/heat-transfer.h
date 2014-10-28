@@ -20,6 +20,7 @@ double ConvBC(struct fe1d *, int);
 void ApplyAllBCs(struct fe1d *);
 double InitTemp(double);
 double InitC(double);
+double DeformationGradient(struct fe1d *, double, double);
 
 
 void seth(double);
