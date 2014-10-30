@@ -43,7 +43,7 @@ extern choi_okos *comp_global;
 /* Creates the Jacobian and helps solve for the current time step */
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
 {
-    double term1 = 0, term2 = 0;
+    double term1 = 0, term2 = 0, term3 = 0;
     double h = 1e-5;
     double DkDx = 0, Ti, ki;
     int i;
@@ -78,12 +78,18 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
 //    term2 *= 1/p->charvals.k;
 //    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x) * T;
     term2 = DkDx/p->charvals.k * b->dphi[f1](x) * b->phi[f2](x);
-    term2 /= IMap1D(p, elem, x);
+    term2 *= 1/IMap1D(p, elem, x);
     /* Hopefully the above term is correct. It appears to yield accurate
      * results, at least. */
+
+    term3 = (rho(comp_global, Tu) * Cp(comp_global, Tu)) / p->charvals.alpha;
+    term3 *= b->dphi[f1](x) * IMapDt1D(p, elem, x);
+    term3 *= b->phi[f2](x);
+    term3 *= 1/IMap1D(p, elem, x);
     
-    return term2-term1;
-    //return -1*term1;
+    return term1 - term2 + term3;
+    //return term1-term2;//-term3;
+    //return term1;
 }
 
 /* Calculate the coefficient matrix for the time derivative unknowns */
@@ -108,7 +114,7 @@ double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int 
             / p->charvals.alpha;
     value *= 1/IMap1D(p, elem, x);
 
-    return -1*value;
+    return value;
 }
 
 matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
@@ -233,7 +239,7 @@ double ConvBC(struct fe1d *p, int row)
         //if(T==0)
         //    return 0;
         //else
-            return Bi*(T-Tinf);
+            return -Bi*(T-Tinf);
     } else {
         return 0;
     }
@@ -269,6 +275,6 @@ double DeformationGrad(struct fe1d *p, double x, double t)
     rho0 = rho(comp_global, T0);
     rhon = rho(comp_global, Tn);
 
-    return rhon/rho0;
+    return rho0/rhon;
 }
 

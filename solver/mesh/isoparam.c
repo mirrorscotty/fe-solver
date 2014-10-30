@@ -162,3 +162,26 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
     return result;
 }
 
+/**
+ * Calculate mesh velocity. (At least that's kinda what this is...)
+ * \f[
+ * v = \frac{\partial}{\partial t}\left[\frac{\partial \xi}{\partial x}\right]
+ * \f]
+ */
+double IMapDt1D(struct fe1d *p, Elem1D *elem, double xi)
+{
+    double DxiDx0, DxiDx1;
+
+    if(!(elem->prev))
+        return 0;
+
+    DxiDx0 = 1/IMap1D(p, elem, xi); /* DxiDx(t=n) */
+    DxiDx1 = 1/IMap1D(p, elem->prev, xi); /* DxiDx(t=n-1) */
+
+    /* Just dividing by dt is a lazy way to do this. The correct way would be to
+     * find the time step size for the current step and divide by that. Since
+     * the solver currently doesn't change time steps, this isn't important, and
+     * the formula here works fine. */
+    return (DxiDx0-DxiDx1)/p->dt;
+}
+

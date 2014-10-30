@@ -4,9 +4,10 @@
 #include "matrix.h"
 #include "basis.h"
 
-typedef struct {
+typedef struct elem1dstruct {
     vector *points;
     vector *map;
+    struct elem1dstruct *prev;
 } Elem1D;
 
 typedef struct mesh1dstruct {
@@ -18,7 +19,7 @@ typedef struct mesh1dstruct {
     double x2; /**< Right-most node coordinate */
 
     int t; /**< Earliest time index the mesh is valid for */
-    struct mesh1dstruct *next; /**< Previous meshes for the domain */
+    struct mesh1dstruct *prev; /**< Previous meshes for the domain */
     struct mesh1dstruct *orig; /**< Originally define mesh for the problem */
 
     Elem1D **elem; /**< Set of all of the elements in the mesh */
@@ -34,6 +35,7 @@ void DestroyElem1D(Elem1D*);
 void meshprnt1d(Mesh1D*);
 
 Mesh1D* Remesh1D(Mesh1D*, vector*);
+int MeshIsOrig(Mesh1D*);
 
 #endif
 

@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         10000);
+                         1000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
     problem->dt = 0.01; /* Dimensionless time step size */
     problem->charvals = SetupScaling(alpha(comp_global, TREF), TREF, THICKNESS, k(comp_global, TREF), HCONV);
@@ -66,10 +66,11 @@ int main(int argc, char *argv[])
     while(problem->t<problem->maxsteps) {
         //printf("\rTime: %d/%d", problem->t, problem->maxsteps);
         NLinSolve1DTransImp(problem, NULL);
+        PrintSolution(problem, problem->t-1);
         if(problem->t-1 > 1)
-        problem->mesh = 
-            MoveMeshF(problem, problem->mesh->orig,
-                      problem->t-1, &DeformationGrad);
+            problem->mesh = 
+                MoveMeshF(problem, problem->mesh->orig,
+                          problem->t-1, &DeformationGrad);
     }
 
     PrintScalingValues(problem->charvals);
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
     CSVOutFixedNode(problem, 8, "output8.csv");
     CSVOutFixedNode(problem, 9, "output9.csv");
 
+    PrintVector(problem->mesh->orig->nodes);
     PrintVector(problem->mesh->nodes);
 
     /* Clean up */

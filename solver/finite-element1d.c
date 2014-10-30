@@ -351,7 +351,12 @@ Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
         setvalV(new, i, Fval*dx+valV(new, i-1));
     }
 
-    return Remesh1D(orig, new);
+    /* Instead of using the supplied mesh "orig" as the original mesh when
+     * remeshing, use the current mesh for the problem. The "orig" is still
+     * needed for calculating the new node positions, but the current mesh
+     * needs to be set as the previous mesh, not the mesh at time t=0. */
+    //return Remesh1D(orig, new);
+    return Remesh1D(p->mesh, new);
 }
 
 /* Store the solution and advance the current time index. Returns 0 on failure.
@@ -442,12 +447,14 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
     Elem1D *e;
     Mesh1D *mesh;
 
+    /* Determine whether we should use material or spatial coordinate */
     if(coord) 
         mesh = p->mesh;
     else
         mesh = p->mesh->orig;
 
     e = NULL;
+    /* Try finding the element corresponding to the supplied x coordinate */
     for(i=0; i<p->mesh->nelem; i++) {
         x1 = valV(mesh->elem[i]->points, 0);
         x2 = valV(mesh->elem[i]->points,
@@ -467,7 +474,8 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
     }
     
     /* Find the local coordinate, given the global coordinate using Newton's
-     * method. */
+     * method. This is necessary in case we're using nonlinear basis
+     * functions. */
     xi = .5; /* Since the range for xi is 0 to 1, just use 0.5 as the initial
               * guess */
     h = 1e-5; /* Tolerance for taking derivatives and Newton's method

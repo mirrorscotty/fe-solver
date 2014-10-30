@@ -61,7 +61,7 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
                     valV(mesh->elem[i]->points, j));
         }
     }
-    mesh->next = NULL;
+    mesh->prev = NULL;
     mesh->orig = mesh;
 
     return mesh;
@@ -87,16 +87,25 @@ Mesh1D* CopyMesh1D(Mesh1D* orig)
     copy->nelem = orig->nelem;
     /* Don't copy nnodes because nothing uses it */
     copy->t = orig->t;
-    copy->next = NULL; /* Set the next node to NULL */
-    copy->orig = orig; /* Keep a pointer to the original mesh around */
+    copy->prev = orig; /* Set the next node to NULL */
+    copy->orig = orig->orig; /* Keep a pointer to the original mesh around */
 
     for(i=0; i<orig->nelem; i++) {
         copy->elem[i] = (Elem1D*) calloc(1, sizeof(Elem1D));
         copy->elem[i]->points = CopyVector(orig->elem[i]->points);
         copy->elem[i]->map = CopyVector(orig->elem[i]->map);
+        copy->elem[i]->prev = orig->elem[i];
     }
 
     return copy;
+}
+
+int MeshIsOrig(Mesh1D* mesh)
+{
+    if(mesh == mesh->orig)
+        return 1;
+    else
+        return 0;
 }
 
 /**
@@ -143,9 +152,12 @@ Elem1D* CreateElem1D(basis *b)
 {
     Elem1D *elem;
     int nnodes = b->n;
+
     elem = (Elem1D*) calloc(1, sizeof(Elem1D));
     elem->points = CreateVector(nnodes);
     elem->map = CreateVector(nnodes);
+
+    elem->prev = NULL;
 
     return elem;
 }

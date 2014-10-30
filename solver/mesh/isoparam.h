@@ -10,6 +10,7 @@ double IMapYXi(struct fe*, Elem2D*, double, double);
 double IMapXEta(struct fe*, Elem2D*, double, double);
 double IMapYEta(struct fe*, Elem2D*, double, double);
 double IMap1D(struct fe1d*, Elem1D*, double);
+double IMapDt1D(struct fe1d*, Elem1D*, double);
 
 double IMapJ(struct fe*, Elem2D*, double, double);
 double IMapCyl(struct fe*, Elem2D*, double, double);
