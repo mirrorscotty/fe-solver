@@ -21,7 +21,7 @@
 
 #include "heat-transfer.h"
 
-#define TREF 500 // K
+#define TREF 300 // K
 #define THICKNESS .05 
 #define HCONV 500
 
@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
     basis *b;
     matrix *IC;
     struct fe1d* problem;
+    solution *s;
 
     /* Load a data file if one is supplied. */
     //if(argc == 2)
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         5000);
+                         10000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
     problem->dt = 0.01; /* Dimensionless time step size */
     problem->charvals = SetupScaling(alpha(comp_global, TREF), TREF, THICKNESS, k(comp_global, TREF), HCONV);
@@ -63,13 +64,19 @@ int main(int argc, char *argv[])
     FE1DTransInit(problem, IC);
 
     while(problem->t<problem->maxsteps) {
+        //printf("\rTime: %d/%d", problem->t, problem->maxsteps);
         NLinSolve1DTransImp(problem, NULL);
+        if(problem->t-1 > 1)
+        problem->mesh = 
+            MoveMeshF(problem, problem->mesh->orig,
+                      problem->t-1, &DeformationGrad);
     }
 
     PrintScalingValues(problem->charvals);
 
     printf("Solution at t = %g:\n", uscaleTime(problem->charvals, problem->t*problem->dt));
     PrintSolution(problem, problem->t-1);
+    s = FetchSolution(problem, problem->t-1);
 
     CSVOutFixedNode(problem, 0, "output0.csv");
     CSVOutFixedNode(problem, 1, "output1.csv");
@@ -81,6 +88,8 @@ int main(int argc, char *argv[])
     CSVOutFixedNode(problem, 7, "output7.csv");
     CSVOutFixedNode(problem, 8, "output8.csv");
     CSVOutFixedNode(problem, 9, "output9.csv");
+
+    PrintVector(problem->mesh->nodes);
 
     /* Clean up */
     DestroyFE1D(problem);

@@ -61,6 +61,8 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
                     valV(mesh->elem[i]->points, j));
         }
     }
+    mesh->next = NULL;
+    mesh->orig = mesh;
 
     return mesh;
 }
@@ -86,6 +88,7 @@ Mesh1D* CopyMesh1D(Mesh1D* orig)
     /* Don't copy nnodes because nothing uses it */
     copy->t = orig->t;
     copy->next = NULL; /* Set the next node to NULL */
+    copy->orig = orig; /* Keep a pointer to the original mesh around */
 
     for(i=0; i<orig->nelem; i++) {
         copy->elem[i] = (Elem1D*) calloc(1, sizeof(Elem1D));
@@ -121,6 +124,9 @@ Mesh1D* Remesh1D(Mesh1D* orig, vector* nodes)
                     valV(new->nodes, k));
         }
     }
+
+    new->x1 = valV(nodes, 0);
+    new->x2 = valV(nodes, new->nnodes-1);
 
     return new;
 }

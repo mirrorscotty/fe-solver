@@ -45,6 +45,8 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
 {
     double term1 = 0, term2 = 0;
     double h = 1e-5;
+    double DkDx = 0, Ti, ki;
+    int i;
     basis *b;
     b = p->b;
 
@@ -54,19 +56,31 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, i
     solution *s;
     s = CreateSolution(p->t, p->dt, guess);
     T = EvalSoln1D(p, 0, elem, s, x);
-    /* Now that we've calculated T, we no longer need this */
-    free(s);
 
+    /* Get the real value of T, not the dimensionless temperature. */
     Tu = uscaleTemp(p->charvals, T);
 
-    term1 = k(comp_global, Tu)/p->charvals.k;
+    term1 = k(comp_global, Tu)/p->charvals.k;// * b->phi[f1](x);
     term1 *= b->dphi[f1](x) * b->dphi[f2](x);
     term1 *= IMap1D(p, elem, x);
 
-    term2 = (k(comp_global, Tu+h)-k(comp_global, Tu-h))/(2*h);
-    term2 *= 1/p->charvals.k;
-    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x) * T;
-    term2 *= IMap1D(p, elem, x);
+    /* Calculate gradient of thermal conductivity. Hopefully this is the
+     * mathematically correct way to handle this. */
+    for(i=0; i<b->n; i++) {
+        Ti = EvalSoln1D(p, 0, elem, s, valV(elem->points, i));
+        ki = k(comp_global, uscaleTemp(p->charvals, Ti));
+        DkDx += ki * b->dphi[f1](x);
+    }
+    /* Now that we've calculated T, we no longer need this */
+    free(s);
+
+//    term2 = (k(comp_global, Tu+h)-k(comp_global, Tu-h))/(2*h);
+//    term2 *= 1/p->charvals.k;
+//    term2 *= pow(b->dphi[f1](x), 2) * b->phi[f2](x) * T;
+    term2 = DkDx/p->charvals.k * b->dphi[f1](x) * b->phi[f2](x);
+    term2 /= IMap1D(p, elem, x);
+    /* Hopefully the above term is correct. It appears to yield accurate
+     * results, at least. */
     
     return term2-term1;
     //return -1*term1;
@@ -161,10 +175,16 @@ matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
  * domain. */
 int IsOnRightBoundary(struct fe1d *p, int row)
 {
+    /*
     double width = p->mesh->x2 - p->mesh->x1;
     double x = valV(p->mesh->nodes, row/p->nvars);
     
     if(fabs(x - width) < 1e-7)
+        return 1;
+    else
+        return 0;
+    */
+    if(row == len(p->mesh->nodes)-1)
         return 1;
     else
         return 0;
@@ -173,9 +193,15 @@ int IsOnRightBoundary(struct fe1d *p, int row)
 /* Same as above, only for the left boundary */
 int IsOnLeftBoundary(struct fe1d *p, int row)
 {
+    /*
     double x = valV(p->mesh->nodes, row/p->nvars);
   
     if(fabs(x) < 1e-7)
+        return 1;
+    else
+        return 0;
+    */
+    if(row == 0)
         return 1;
     else
         return 0;
@@ -238,11 +264,11 @@ double DeformationGrad(struct fe1d *p, double x, double t)
     
     s0 = FetchSolution(p, 0);
     sn = FetchSolution(p, t);
-    Tn = EvalSoln1DG(p, 0, sn, x);
-    T0 = EvalSoln1DG(p, 0, s0, x);
+    Tn = uscaleTemp(p->charvals, EvalSoln1DG(p, 0, sn, x, 0));
+    T0 = uscaleTemp(p->charvals, EvalSoln1DG(p, 0, s0, x, 0));
     rho0 = rho(comp_global, T0);
     rhon = rho(comp_global, Tn);
 
-    return rho0/rhon;
+    return rhon/rho0;
 }
 

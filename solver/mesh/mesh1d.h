@@ -19,7 +19,7 @@ typedef struct mesh1dstruct {
 
     int t; /**< Earliest time index the mesh is valid for */
     struct mesh1dstruct *next; /**< Previous meshes for the domain */
-    //struct mesh1dstruct *orig; /**< Originally define mesh for the problem */
+    struct mesh1dstruct *orig; /**< Originally define mesh for the problem */
 
     Elem1D **elem; /**< Set of all of the elements in the mesh */
     vector *nodes; /**< Vector of node coordinates */

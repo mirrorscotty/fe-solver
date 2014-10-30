@@ -410,14 +410,15 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 
     /* Return the x (global) coordinate the corresponds to the xi (local)
      * coordinate when -1 is supplied for "var". */
-    if(var == -1)
+    if(var == -1) {
         for(i=0; i<n; i++)
             result += p->b->phi[i](xi) * valV(elem->points, i);
-
-    /* Find the value of the desired variable at xi */
-    for(i=0; i<n; i++) {
-        result += p->b->phi[i](xi)
-                  * val(s->val, valV(elem->map, i)*nvars+var, 0);
+    } else {
+        /* Find the value of the desired variable at xi */
+        for(i=0; i<n; i++) {
+            result += p->b->phi[i](xi)
+                      * val(s->val, valV(elem->map, i)*nvars+var, 0);
+        }
     }
     
     return result;
@@ -430,39 +431,37 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
  * @param var Number of the variable to interpolate
  * @param s Solution values
  * @param x Global x coordinate
+ * @param coord 0 for spatial coordinates, 1 for material coordinates
  * @returns Interpolated solution at x
  * @see EvalSoln1D
  */
-double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x)
+double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
 {
     int i;
     double x1, x2, xi, F, Fp, dx, h;
     Elem1D *e;
-    e = NULL;
-    /* Figure out which element the desired x value is in */
-    /* If x is equal to the left endpoint of the mesh, return the first
-     * element. */
-    if(x == p->mesh->x1)
-        e = p->mesh->elem[0];
-    /* If it's equal to the right endpoint, return the last element. */
-    else if(x == p->mesh->x2)
-        e = p->mesh->elem[p->mesh->nelem-1];
-    /* Otherwise, go through each element of the remaining elements one by one
-     * until a match is found. Doing the previous two steps is likely
-     * retundant. */
-    else
-            for(i=0; i<p->mesh->nelem; i++) {
-                x1 = valV(p->mesh->elem[i]->points, 0);
-                x2 = valV(p->mesh->elem[i]->points,
-                                len(p->mesh->elem[i]->points));
+    Mesh1D *mesh;
 
-                if(x >= x1 && x <= x2)
-                    e = p->mesh->elem[i];
-            }
+    if(coord) 
+        mesh = p->mesh;
+    else
+        mesh = p->mesh->orig;
+
+    e = NULL;
+    for(i=0; i<p->mesh->nelem; i++) {
+        x1 = valV(mesh->elem[i]->points, 0);
+        x2 = valV(mesh->elem[i]->points,
+                        len(mesh->elem[i]->points)-1);
+
+        if((x >= x1) && (x <= x2)) {
+            e = mesh->elem[i];
+        }
+    }
     /* If we haven't found the element, quit the program. Something is likely
      * very wrong with the code. */
     if(!e) {
         printf("Failure to locate the element for point x = %g.\n", x);
+        PrintVector(mesh->nodes);
         printf("Exiting.\n");
         exit(0);
     }
@@ -474,12 +473,12 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x)
     h = 1e-5; /* Tolerance for taking derivatives and Newton's method
                * convergence */
     do {
-        F = EvalSoln1D(p, -1, e, s, xi);
+        F = EvalSoln1D(p, -1, e, s, xi)-x;
         Fp= (EvalSoln1D(p, -1, e, s, xi+h)-EvalSoln1D(p, -1, e, s, xi-h))/(2*h);
         dx = -F/Fp;
         xi = xi + dx;
     } while(fabs(dx) > h);
-    
+
     /* Return the desired value. */
     return EvalSoln1D(p, var, e, s, xi);
 }

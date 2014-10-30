@@ -92,7 +92,7 @@ Mesh1D* MoveMeshF(struct fe1d *, Mesh1D *, double,
 int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);
 double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
-double EvalSoln1DG(struct fe1d *, int, solution *, double);
+double EvalSoln1DG(struct fe1d *, int, solution *, double, int);
 void PrintSolution(struct fe1d*, int);
 
 matrix* CalcTimeDerivative(struct fe1d*, matrix*);
