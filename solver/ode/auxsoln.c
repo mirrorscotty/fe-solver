@@ -1,3 +1,9 @@
+/**
+ * @file auxsoln.c
+ * Functions to allow for the solving of ODEs based on the solution to a PDE
+ * that was calculated using finite element method.
+ */
+
 #include <stdlib.h>
 
 #include "auxsoln.h"
@@ -22,6 +28,7 @@ void FE1DInitAuxSolns(struct fe1d *p, int nvars)
 
 /**
  * Integrate a time-dependent ODE whose solution is based on the PDE solution.
+ * This function uses Euler's method to perform time integration.
  * @param p Finite element problem structure
  * @param var Number of the variable to use as an input for the ODE
  * @param extravar Output variable for the ODE solution

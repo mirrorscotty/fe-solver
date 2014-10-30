@@ -1,15 +1,31 @@
+/**
+ * @mesh1d.h
+ * Defines the mesh and element structures for a one-dimensional finite element
+ * problem
+ */
+
 #ifndef MESH1D_H
 #define MESH1D_H
 
 #include "matrix.h"
 #include "basis.h"
 
+/**
+ * Defines a single element in the mesh
+ */
 typedef struct elem1dstruct {
-    vector *points;
-    vector *map;
-    struct elem1dstruct *prev;
+    vector *points; /**< Vector of the x-values of the nodes in the element. */
+    vector *map; /**< Vector of the mesh node numbers for each node in the
+                  *   element. These show where each point in the element is in
+                  *   the mesh. */
+    struct elem1dstruct *prev; /**< If this mesh has been deformed, this will
+                                *   point to the element at the previous time
+                                *   step. */
 } Elem1D;
 
+/**
+ * One-dimensional finite element mesh structure.
+ */
 typedef struct mesh1dstruct {
     int nelem; /**< Number of elements in the mesh */
 

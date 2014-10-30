@@ -1,6 +1,9 @@
 /**
  * @file scaling_ht.c
- * All the stuff for making the heat equation dimensionless
+ * All the stuff for making the heat equation dimensionless. This file can also
+ * be used to make the diffusion equation dimensionless. Just let alpha be the
+ * diffusion coefficient, h be the convective mass transfer coefficient, and Tc
+ * be the characteristic concentration.
  */
 
 #include <stdio.h>

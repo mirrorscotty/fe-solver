@@ -1,3 +1,8 @@
+/**
+ * @file solve.h
+ * Header file for all of the FEM solvers (both 1D and 2D)
+ */
+
 #ifndef SOLVE_H
 #define SOLVE_H
 

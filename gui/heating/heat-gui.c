@@ -1,6 +1,6 @@
 /**
  * @file heat-gui.c
- * Set of functions to solve the following differential equations:
+ * Set of functions to solve the heat equation with reactions occuring.
  * \f[
  * \frac{\partial T}{\partial t} = \alpha(T)\frac{\partial^2 T}{\partial t^2}
  * \f]

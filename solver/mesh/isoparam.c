@@ -135,6 +135,7 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
  *
  * This function returns the value of the derivative of the global x-coordinate
  * with respect to the local x-coordinate.
+ * \f[\frac{\partial x}{\partial \xi}\f]
  * @param p The problem being solved
  * @param elem The element to calculate stuff for
  * @param xi Local x-coordinate
@@ -167,6 +168,10 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
  * \f[
  * v = \frac{\partial}{\partial t}\left[\frac{\partial \xi}{\partial x}\right]
  * \f]
+ * @param p Finite element problem structure
+ * @param elem Element to operate on
+ * @param xi Local x-coordinate
+ * @returns Value of the derivative above.
  */
 double IMapDt1D(struct fe1d *p, Elem1D *elem, double xi)
 {

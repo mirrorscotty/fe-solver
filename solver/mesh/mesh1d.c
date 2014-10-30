@@ -1,3 +1,8 @@
+/**
+ * @file mesh1d.c
+ * Set of functions for manipulating one-dimensional finite element meshes.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -100,6 +105,13 @@ Mesh1D* CopyMesh1D(Mesh1D* orig)
     return copy;
 }
 
+/**
+ * Determine if the mesh has been deformed. This is for use only with moving
+ * mesh problems. It checks to see if the mesh is the same as the original mesh
+ * and returns TRUE if it is.
+ * @param mesh The mesh structure to check
+ * @returns TRUE if the mesh has not been deformed and FLASE otherwise
+ */
 int MeshIsOrig(Mesh1D* mesh)
 {
     if(mesh == mesh->orig)

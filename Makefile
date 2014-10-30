@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-lm -I. -Imatrix -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0 
-VPATH=problems gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
+VPATH=problems problems/slab-drying gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o material-data.a matrix.a
 
@@ -8,6 +8,8 @@ all: heat-transfer
 
 doc:
 	doxygen DoxyFile
+	make -C doc/latex
+	cp doc/latex/refman.pdf doc/Reference.pdf
 
 2dlaplace: 2dlaplace.o $(OBJECTFILES)
 	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
