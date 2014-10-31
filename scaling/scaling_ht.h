@@ -13,13 +13,14 @@
  */
 typedef struct {
     double alpha; /**< Thermal Diffusivity */
-    double Tc; /**< Characteristic Temperature */
+    double Tc; /**< Initial Temperature */
+    double Te; /**< Equilibrium Temperature */
     double Lc; /**< Characteristic Length */
     double k; /**< Thermal Conductivity */
     double h; /**< Convective heat transfer coefficient */
 } scaling_ht;
 
-scaling_ht SetupScaling(double, double, double, double, double);
+scaling_ht SetupScaling(double, double, double, double, double, double);
 
 double scaleTemp(scaling_ht, double);
 double uscaleTemp(scaling_ht, double);

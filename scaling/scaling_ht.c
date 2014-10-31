@@ -20,12 +20,13 @@
  * @param h Heat transfer coefficient at the surface
  * @returns A data structure containing all of the supplied values
  */
-scaling_ht SetupScaling(double alpha, double Tc, double Lc, double k, double h)
+scaling_ht SetupScaling(double alpha, double T0, double Te, double Lc, double k, double h)
 {
     scaling_ht stuff;
 
     stuff.alpha = alpha;
-    stuff.Tc = Tc;
+    stuff.Tc = T0; 
+    stuff.Te = Te;
     stuff.Lc = Lc;
     stuff.k = k;
     stuff.h = h;
@@ -44,7 +45,8 @@ scaling_ht SetupScaling(double alpha, double Tc, double Lc, double k, double h)
  */
 double scaleTemp(scaling_ht stuff, double T)
 {
-    return T/stuff.Tc;
+    return (T-stuff.Te)/(stuff.Tc-stuff.Te);
+    //return T/stuff.Te;
 }
 /**
  * @brief Convert dimensionless temperature back to normal units
@@ -55,7 +57,8 @@ double scaleTemp(scaling_ht stuff, double T)
  */
 double uscaleTemp(scaling_ht stuff, double theta)
 {
-    return theta*stuff.Tc;
+    return theta*(stuff.Tc-stuff.Te)+stuff.Te;
+    //return theta*stuff.Te;
 }
 
 /**
@@ -120,7 +123,7 @@ double BiotNumber(scaling_ht stuff)
  */
 void PrintScalingValues(scaling_ht stuff)
 {
-    printf("alpha = %g, Tc = %g, Lc = %g, k = %g, h = %g, Bi = %g\n",
-           stuff.alpha, stuff.Tc, stuff.Lc, stuff.k, stuff.h, BiotNumber(stuff));
+    printf("alpha = %g, T0 = %g, Te = %g, Lc = %g, k = %g, h = %g, Bi = %g\n",
+           stuff.alpha, stuff.Tc, stuff.Te, stuff.Lc, stuff.k, stuff.h, BiotNumber(stuff));
 }
 

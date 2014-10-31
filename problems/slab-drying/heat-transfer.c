@@ -122,9 +122,9 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem,
     term3 *= 1/IMap1D(p, elem, x);
     
     /* Combine all the terms and return the result */
-    return term1 - term2 + term3;
+    //return term1 - term2 + term3;
     //return term1-term2;//-term3;
-    //return term1;
+    return term1;
 }
 
 /* Calculate the coefficient matrix for the time derivative unknowns. This does
@@ -302,7 +302,7 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
  */
 double ExternalTemp(struct fe1d *p, int row)
 {
-    return scaleTemp(p->charvals, p->charvals.Tc);
+    return scaleTemp(p->charvals, p->charvals.Te);
 }
 
 /**
@@ -374,6 +374,8 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     rho0 = rho(comp_global, T0);
     rhon = rho(comp_global, Tn);
 
-    return rho0/rhon;
+    /* Add in more expansionf for testing purposes. */
+    return 1.1*rho0/rhon;
+    //return rho0/rhon;
 }
 
