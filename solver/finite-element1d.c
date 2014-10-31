@@ -324,6 +324,7 @@ void ApplyEssentialBC1D(struct fe1d* p,
             for(j=0; j<p->nrows*p->nvars; j++) {
                 setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
                 setval(p->dJ, (i==j)?1:0, i, j); /* Use the Chroniker delta */
+                //setval(p->dJ, 0, i, j);
             }
             /* Set the appropriate value in the load vector */
             setval(p->F, BC(p, i), i, 0);

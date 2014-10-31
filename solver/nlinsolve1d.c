@@ -141,13 +141,16 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
      * a=2, and b=-1. */
     int a, b;
     solution *prev; /* Solution at the previous time step */
-    matrix *J, *R; /* Jacobian matrix and the residuals matrix */
-    matrix *tmp1, *tmp2, *tmp3, *tmp4, *tmp5, *tmp6; /* Temporary matricies */
+    matrix *J, *F, *R; /* Jacobian matrix and the residuals matrix */
+    matrix *tmp1, *tmp2; /* Temporary matricies */
     matrix *u, *du, *dx;
     matrix *dguess; /* Time derivative of the guess */
 
     /* Use BD */
     a = 1; b = 0;
+    /* Note: This solver doesn't work at all with anything but backward
+     * difference for time integration. The linear one doesn't either, but it
+     * at least contains some code for it. */
 
     /* Get the previous solution */
     prev = FetchSolution(problem, problem->t-1);
@@ -180,42 +183,39 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         AssembleJ1D(problem, guess);
         AssembledJ1D(problem, guess);
         AssembleF1D(problem, guess);
-        problem->applybcs(problem);
 
         problem->guess = NULL;
 
         /* Calculate the Jacobian matrix */
         tmp1 = mtxmulconst(problem->dJ, a/problem->dt);
         J = mtxadd(tmp1, problem->J);
-
         DestroyMatrix(tmp1);
 
-        /* Calculate the residual matrix */
-        tmp1 = mtxmul(J, guess);
-        mtxneg(tmp1);
-        tmp2 = mtxadd(tmp1, problem->F);
-        tmp3 = mtxmul(problem->dJ, u);
-        tmp4 = mtxmulconst(tmp3, a/problem->dt);
-        tmp5 = mtxadd(tmp2, tmp4);
-        if(b) {
-            tmp6 = mtxmulconst(du, b);
-            R = mtxadd(tmp5, tmp6);
-            DestroyMatrix(tmp6);
-        } else {
-            R = CopyMatrix(tmp5);
-        }
+        /* Calculate the load vector */
+        tmp1 = mtxmulconst(problem->dJ, a/problem->dt);
+        tmp2 = mtxmul(tmp1, u);
+        F = mtxadd(problem->F, tmp2);
         DestroyMatrix(tmp1);
         DestroyMatrix(tmp2);
-        DestroyMatrix(tmp3);
-        DestroyMatrix(tmp4);
-        DestroyMatrix(tmp5);
+
+        /* Apply boundary conditions. */
+        DestroyMatrix(problem->J);
+        DestroyMatrix(problem->F);
+        problem->J = J;
+        problem->F = F;
+        problem->applybcs(problem);
+
+        /* Calculate the residual vector */
+        tmp1 = mtxmul(problem->J, guess);
+        mtxneg(tmp1);
+        R = mtxadd(problem->F, tmp1);
+        DestroyMatrix(tmp1);
 
         /* Solve for dx */
         dx = SolveMatrixEquation(J, R);
 
         /* Delete the residual matrix and the Jacobian matrix*/
         DestroyMatrix(R);
-        DestroyMatrix(J);
 
         /* Add the change in the unknowns to the guess from the previous
          * iteration */

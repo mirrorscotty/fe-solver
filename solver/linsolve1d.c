@@ -133,7 +133,6 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
     AssembleJ1D(problem, NULL);
     AssembledJ1D(problem, NULL);
     AssembleF1D(problem, NULL);
-    problem->applybcs(problem);
 
     /* Get the previous solution */
     prev = FetchSolution(problem, problem->t-1);
@@ -170,11 +169,18 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
     tmp3 = mtxadd(tmp1, problem->F);
     DestroyMatrix(tmp1);
 
-    result = SolveMatrixEquation(tmp2, tmp3);
+    /* Apply boundary conditions here so that any Dirchlet boundary conditions
+     * are imposed properly for the transient solver. Doing it here, rather than
+     * above guarantees that the specified value on the boundaries doesn't
+     * change randomly. */
+    DestroyMatrix(problem->J);
+    DestroyMatrix(problem->F);
+    problem->J = tmp2;
+    problem->F = tmp3;
+    problem->applybcs(problem);
 
-    DestroyMatrix(tmp2);
-    DestroyMatrix(tmp3);
-
+    /* Solve the matrix equation to find the nodal values */
+    result = SolveMatrixEquation(problem->J, problem->F);
 
     /* Solve for the time derivative of the result. */
     dresult = CalcTimeDerivative(problem, result);
