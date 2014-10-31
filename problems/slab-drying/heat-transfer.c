@@ -71,60 +71,62 @@ extern choi_okos *comp_global;
 double Residual(struct fe1d *p, matrix *guess, Elem1D *elem,
 		double x, int f1, int f2)
 {
-    double term1 = 0,
-           term2 = 0,
-           term3 = 0;
-    double DkDx = 0, Ti, ki;
+           /* Used to store the values of the three terms of the PDE calculated
+            * by this function */
+    double term1 = 0, term2 = 0, term3 = 0,
+           /* These hold the values of the thermal properties once they've been
+            * calculated */
+           DkDx = 0, kval = 0, Cpval = 0, rhoval = 0,
+           /* Values of the thermal properties on the nodes */
+           Cpi, rhoi, Ti, ki,
+           /* Final value of the function */
+           value = 0;
     int i;
     basis *b;
     b = p->b;
-
-    /* This is just to fetch the value of T */
-    double T, Tu;
 
     /* Create a solution structure for the current guess so that the temperature
      * at any given point can be calculated. */
     solution *s;
     s = CreateSolution(p->t, p->dt, guess);
-    T = EvalSoln1D(p, 0, elem, s, x);
 
-    /* Get the real value of T, not the dimensionless temperature. */
-    Tu = uscaleTemp(p->charvals, T);
-
-    /* Calculate the value of the term involving the second derivative of
-     * temperature */
-    term1 = k(comp_global, Tu)/p->charvals.k;// * b->phi[f1](x);
-    term1 *= b->dphi[f1](x) * b->dphi[f2](x);
-    term1 *= IMap1D(p, elem, x);
-
-    /* Calculate gradient of thermal conductivity. Hopefully this is the
-     * mathematically correct way to handle this. */
+    /* Calculate thermal conductivity, density, heat capacity, and thermal
+     * conductivity gradient at x */
     for(i=0; i<b->n; i++) {
         Ti = EvalSoln1D(p, 0, elem, s, valV(elem->points, i));
         ki = k(comp_global, uscaleTemp(p->charvals, Ti));
-        DkDx += ki * b->dphi[f1](x);
+        kval += ki * b->phi[i](x);
+        DkDx += ki * b->dphi[i](x);
+        rhoi = rho(comp_global, uscaleTemp(p->charvals, Ti));
+        rhoval += rhoi * b->phi[i](x);
+        Cpi = Cp(comp_global, uscaleTemp(p->charvals, Ti));
+        Cpval += Cpi * b->phi[i](x);
     }
-    /* Now that we've calculated T, we no longer need this */
+    /* Then delete the temporary solution we made earlier. */
     free(s);
+
+    /* Calculate the value of the term involving the second derivative of
+     * temperature */
+    term1 = kval;
+    term1 *= b->dphi[f1](x) * b->dphi[f2](x);
+    term1 *= IMap1D(p, elem, x);
 
     /* Now that we have the gradient of thermal conductivity, we can calculate
      * the value of the term containing it. */
-    term2 = DkDx/p->charvals.k * b->dphi[f1](x) * b->phi[f2](x);
+    term2 = DkDx * b->dphi[f1](x) * b->phi[f2](x);
     term2 *= 1/IMap1D(p, elem, x);
     /* Hopefully the above term is correct. It appears to yield accurate
      * results, at least. */
 
     /* This determines the value of the term that arises due to the moving
      * mesh. */
-    term3 = (rho(comp_global, Tu) * Cp(comp_global, Tu)) / p->charvals.alpha;
-    term3 *= b->dphi[f1](x) * IMapDt1D(p, elem, x);
+    term3 = b->dphi[f1](x) * IMapDt1D(p, elem, x);
     term3 *= b->phi[f2](x);
     term3 *= 1/IMap1D(p, elem, x);
     
     /* Combine all the terms and return the result */
-    //return term1 - term2 + term3;
-    //return term1-term2;//-term3;
-    return term1;
+    value = (term1 - term2)/(rhoval*Cpval)/p->charvals.alpha + term3;
+    return value;
 }
 
 /* Calculate the coefficient matrix for the time derivative unknowns. This does
@@ -147,23 +149,11 @@ double Residual(struct fe1d *p, matrix *guess, Elem1D *elem,
 double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem,
              double x, int f1, int f2)
 {
-    double T;
-    solution *s;
-
     double value;
     basis *b;
     b = p->b;
 
-    s = CreateSolution(p->t, p->dt, guess);
-    T = EvalSoln1D(p, 0, elem, s, x);
-    /* Now that we've calculated T, we no longer need this */
-    free(s);
-
-    value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
-    value *= rho(comp_global, uscaleTemp(p->charvals, T))
-            * Cp(comp_global, uscaleTemp(p->charvals, T))
-            / p->charvals.alpha;
-    value *= 1/IMap1D(p, elem, x);
+    value = b->phi[f1](x) * b->phi[f2](x) / IMap1D(p, elem, x);
 
     return value;
 }
@@ -303,6 +293,7 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
 double ExternalTemp(struct fe1d *p, int row)
 {
     return scaleTemp(p->charvals, p->charvals.Te);
+    return 0;
 }
 
 /**
@@ -374,8 +365,6 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     rho0 = rho(comp_global, T0);
     rhon = rho(comp_global, Tn);
 
-    /* Add in more expansionf for testing purposes. */
-    return 1.1*rho0/rhon;
-    //return rho0/rhon;
+    return rho0/rhon;
 }
 

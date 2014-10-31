@@ -21,7 +21,7 @@
 
 #include "heat-transfer.h"
 
-#define TAMB 300 // K
+#define TAMB 500 // K
 #define TINIT 273 //K
 #define THICKNESS .05 
 #define HCONV 500
@@ -34,27 +34,27 @@ int main(int argc, char *argv[])
     basis *b;
     matrix *IC;
     struct fe1d* problem;
+    scaling_ht scale;
 
-    /* Load a data file if one is supplied. */
-    //if(argc == 2)
-    //    init(argv[1]);
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
+    scale = SetupScaling(alpha(comp_global, TINIT), TINIT, TAMB, THICKNESS, k(comp_global, TINIT), HCONV);
+
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, THICKNESS, 10);
+    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale, THICKNESS), 10);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         1000);
+                         100);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
     problem->dt = 0.01; /* Dimensionless time step size */
-    problem->charvals = SetupScaling(alpha(comp_global, TINIT), TINIT, TAMB, THICKNESS, k(comp_global, TINIT), HCONV);
+    problem->charvals = scale;
 
     /* Set the initial temperature */
     IC = GenerateInitCondConst(problem, 0, scaleTemp(problem->charvals, 273.0));
@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     FE1DTransInit(problem, IC);
 
     while(problem->t<problem->maxsteps) {
-        //printf("\rTime: %d/%d", problem->t, problem->maxsteps);
         NLinSolve1DTransImp(problem, NULL);
         if(problem->t-1 > 0)
             problem->mesh = 
