@@ -76,16 +76,17 @@ int main(int argc, char *argv[])
     printf("Solution at t = %g:\n", uscaleTime(problem->charvals, problem->t*problem->dt));
     PrintSolution(problem, problem->t-1);
 
-    CSVOutFixedNode(problem, 0, "output0.csv");
-    CSVOutFixedNode(problem, 1, "output1.csv");
-    CSVOutFixedNode(problem, 2, "output2.csv");
-    CSVOutFixedNode(problem, 3, "output3.csv");
-    CSVOutFixedNode(problem, 4, "output4.csv");
-    CSVOutFixedNode(problem, 5, "output5.csv");
-    CSVOutFixedNode(problem, 6, "output6.csv");
-    CSVOutFixedNode(problem, 7, "output7.csv");
-    CSVOutFixedNode(problem, 8, "output8.csv");
-    CSVOutFixedNode(problem, 9, "output9.csv");
+    CSVOutFixedNode2(problem, 0, "output00.csv");
+    CSVOutFixedNode2(problem, 1, "output01.csv");
+    CSVOutFixedNode2(problem, 2, "output02.csv");
+    CSVOutFixedNode2(problem, 3, "output03.csv");
+    CSVOutFixedNode2(problem, 4, "output04.csv");
+    CSVOutFixedNode2(problem, 5, "output05.csv");
+    CSVOutFixedNode2(problem, 6, "output06.csv");
+    CSVOutFixedNode2(problem, 7, "output07.csv");
+    CSVOutFixedNode2(problem, 8, "output08.csv");
+    CSVOutFixedNode2(problem, 9, "output09.csv");
+    CSVOutFixedNode2(problem, 10, "output10.csv");
 
     PrintVector(problem->mesh->orig->nodes);
     PrintVector(problem->mesh->nodes);
