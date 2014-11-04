@@ -1,25 +1,24 @@
 /**
- * @file heat-gui.c
- * Set of functions to solve the following differential equations:
+ * @file diffusion.c
+ * Solves the nonlinear diffusion equation.
  * \f[
- * \frac{\partial T}{\partial t} = \alpha(T)\frac{\partial^2 T}{\partial t^2}
+ * \frac{\partial C}{\partial t} = \nabla\cdot\left(D\nabla C\right)
  * \f]
- * \f[
- * c_1 = A_1 \exp{-\frac{E_{a,1}}{R T}}
- * \f]
- * \f[
- * c_2 = A_2 \exp{-\frac{E_{a,2}}{R T}}
- * \f]
- * where \f$\alpha(T)\f$ is the temperature-dependent thermal diffusivity, and
- * \f$c_1\f$ and \f$c_2\f$ are the concentrations of two components that whose
- * rate of reaction depends on temperature.
  *
- * The heat conduction equation in this file is not correct. The appropriate
- * nonlinear heat conduction equation is:
  * \f[
- * \rho C_p\frac{\partial T}{\partial t} = \nabla\cdot\left(k\nabla T\right)
+ * \underline{\underline{F}}(\underline{X}, t) = \frac{\rho(0)}{\rho(t)}
  * \f]
- * However, the form presented here should be somewhat accurate.
+ *
+ * Finite Element Formulation (Global Coordinates):
+ * \f[
+ * R_C^i = \int_0^L \left\{
+ *      \frac{\partial C_i}{\partial t}\phi_i\phi_j
+ *      + C_i \frac{\partial\phi_i}{\partial t}\phi_j
+ *      -C_i\frac{\partial D}{\partial x}\frac{\partial\phi_i}{\partial x}\phi_j
+ *      +C_i D\frac{\partial\phi_i}{\partial x}\frac{\partial\phi_j}{\partial x}
+ * \right\} dx
+ * - \left[ D \frac{\partial C}{\partial x}\right]_0^L = 0
+ * \f]
  */
 
 #include <stdio.h>
@@ -36,222 +35,148 @@
 #include "material-data/choi-okos/choi-okos.h"
 
 #include "heat-transfer.h"
+#include "common.c"
 
 #define DIFF(X, T) DiffCh10((X), (T))
 extern choi_okos *comp_global;
-double T = 60+273;
 
-/* The following two functions are for heat conduction. */
-/* Creates the Jacobian and helps solve for the current time step */
-double Residual(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
+/**
+ * Function used to recalculate the Jacobian matrix at each time step. This
+ * function is supplied to the FEM solver and integrated to give the J matrix.
+ * It represents every term in the FEM equation being solved except for the
+ * source term, the boundary conditions, and the time-dependent portion (those
+ * terms containing \f$\frac{\partial T_i}{\partial t}\f$).
+ * @param p Finite element structure
+ * @param guess Estimated values for the solution at the current time step
+ * @param elem Element to integrate over. Since nearly everything in this
+ *      function is in terms of local coordinates, the specific element is
+ *      required.
+ * @param x Current local coordinate \f$\xi\f$ to calculate the residual at.
+ *      This value is chosen by the integration function.
+ * @param f1 Value for \f$i\f$ in \f$\phi_i\f$
+ * @param f2 Value for \f$j\f$ in \f$\phi_j\f$
+ * 
+ * @returns Calculated value for the residual (not integrated)
+ */
+double ResMass(struct fe1d *p, matrix *guess, Elem1D *elem,
+               double x, int f1, int f2)
 {
-    double term1 = 0, term2 = 0, term3 = 0;
-    double DDDx = 0, Ci, Di;
+           /* Used to store the values of the three terms of the PDE calculated
+            * by this function */
+    double term1 = 0, term2 = 0, term3 = 0,
+           /* These hold the values for diffusivity and gradient of diffusivity
+            * once they've been calculated */
+           DDDx = 0, D = 0,
+           /* D and grad(D) on the nodes */
+           DDDxi, Di, Ci, Ti,
+           /* Final value of the function */
+           value = 0;
     int i;
     basis *b;
     b = p->b;
 
-    /* This is just to fetch the value of T */
-    double C, Cu;
-
+    /* Create a solution structure for the current guess so that the temperature
+     * at any given point can be calculated. */
     solution *s;
     s = CreateSolution(p->t, p->dt, guess);
-    C = EvalSoln1D(p, 0, elem, s, x);
 
-    /* Get the real value of T, not the dimensionless temperature. */
-    Cu = uscaleTemp(p->chardiff, C);
+    /* Calculate thermal conductivity, density, heat capacity, and thermal
+     * conductivity gradient at x */
+    for(i=0; i<b->n; i++) {
+        Ti = EvalSoln1D(p, TVAR, elem, s, valV(elem->points, i));
+        Ci = EvalSoln1D(p, CVAR, elem, s, valV(elem->points, i));
+        Di = DIFF(uscaleTemp(p->chardiff, Ci), uscaleTemp(p->charvals, Ti));
+        D += Di * b->phi[i](x);
+        DDDx += Di * b->dphi[i](x);
+    }
+    /* Then delete the temporary solution we made earlier. */
+    free(s);
 
-    term1 = DIFF(Cu, T)/p->chardiff.alpha// * b->phi[f1](x);
+    /* Calculate the value of the term involving the second derivative of
+     * temperature */
+    term1 = D;
     term1 *= b->dphi[f1](x) * b->dphi[f2](x);
     term1 *= IMap1D(p, elem, x);
 
-    /* Calculate gradient of thermal conductivity. Hopefully this is the
-     * mathematically correct way to handle this. */
-    for(i=0; i<b->n; i++) {
-        Ci = EvalSoln1D(p, 0, elem, s, valV(elem->points, i));
-        Di = DIFF(uscaleTemp(p->chardiff, Ci), T);
-        DDDx += Di * b->dphi[f1](x);
-    }
-    /* Now that we've calculated T, we no longer need this */
-    free(s);
-
-    term2 = DDDx/p->charvals.alpha * b->dphi[f1](x) * b->phi[f2](x);
+    /* Now that we have the gradient of thermal conductivity, we can calculate
+     * the value of the term containing it. */
+    term2 = DDDx * b->dphi[f1](x) * b->phi[f2](x);
     term2 *= 1/IMap1D(p, elem, x);
     /* Hopefully the above term is correct. It appears to yield accurate
      * results, at least. */
 
+    /* This determines the value of the term that arises due to the moving
+     * mesh. */
     term3 = b->dphi[f1](x) * IMapDt1D(p, elem, x);
     term3 *= b->phi[f2](x);
     term3 *= 1/IMap1D(p, elem, x);
     
-    return term1 - term2 + term3;
-    //return term1-term2;//-term3;
-    //return term1;
+    /* Combine all the terms and return the result */
+    value = (term1 - term2)/p->chardiff.alpha + term3;
+    return value;
 }
 
-/* Calculate the coefficient matrix for the time derivative unknowns */
-double ResDt(struct fe1d *p, matrix *guess, Elem1D *elem, double x, int f1, int f2)
+/* Calculate the coefficient matrix for the time derivative unknowns. This does
+ * the same thing as the "Residual" function, only it calculates the matrix
+ * multiplying \f$\frac{\partial T_i}{\partial t}\f$.
+ * @param p Finite element structure
+ * @param guess Estimated values for the solution at the current time step
+ * @param elem Element to integrate over. Since nearly everything in this
+ *      function is in terms of local coordinates, the specific element is
+ *      required.
+ * @param x Current local coordinate \f$\xi\f$ to calculate the residual at.
+ *      This value is chosen by the integration function.
+ * @param f1 Value for \f$i\f$ in \f$\phi_i\f$
+ * @param f2 Value for \f$j\f$ in \f$\phi_j\f$
+ * 
+ * @returns Calculated value for the residual (not integrated)
+ * 
+ * @see ResMass
+ */
+double ResDtMass(struct fe1d *p, matrix *guess, Elem1D *elem,
+                 double x, int f1, int f2)
 {
-    double C;
-    solution *s;
-
     double value;
     basis *b;
     b = p->b;
 
-    s = CreateSolution(p->t, p->dt, guess);
-    C = EvalSoln1D(p, 0, elem, s, x);
-    /* Now that we've calculated T, we no longer need this */
-    free(s);
-
-    value = b->phi[f1](x) * b->phi[f2](x) * 1/IMap1D(p, elem, x);
-    value *= 1/IMap1D(p, elem, x);
+    value = b->phi[f1](x) * b->phi[f2](x) / IMap1D(p, elem, x);
 
     return value;
 }
 
-matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
-{
-    basis *b;
-    b = p->b;
-    
-    int v = p->nvars;
-    
-    int i, j;
-    double value = 0;
-    matrix *m;
-    
-    m = CreateMatrix(b->n*v, b->n*v);
-    
-    for(i=0; i<b->n*v; i+=v) {
-        for(j=0; j<b->n*v; j+=v) {
-            value = quad1d3generic(p, guess, elem, &Residual, i/v, j/v);
-            setval(m, value, i, j);
-        }
-    }
-
-    return m;
-}
-
-/* Create the coefficient matrix for the time derivatives */
-matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
-    basis *b;
-    b = p->b;
-    
-    int v = p->nvars;
-    
-    int i, j;
-    double value = 0;
-    matrix *m;
-    
-    m = CreateMatrix(b->n*v, b->n*v);
-    
-    for(i=0; i<b->n*v; i+=v) {
-        for(j=0; j<b->n*v; j+=v) {
-            value = quad1d3generic(p, guess, elem, &ResDt, i/v, j/v);
-            setval(m, value, i, j);
-        }
-    }
-
-    return m;
-}
-
-/* Create the load vector... thing */
-matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
-    basis *b;
-    b = p->b;
-    
-    int v = p->nvars;
-    
-    matrix *m;
-    
-    m = CreateMatrix(b->n*v, 1);
-
-    return m;
-}
-
-/* Returns true if the specified row (node) is on the right-most boundary of the
- * domain. */
-int IsOnRightBoundary(struct fe1d *p, int row)
-{
-    if(row == len(p->mesh->nodes)-1)
-        return 1;
-    else
-        return 0;
-}
-
-/* Same as above, only for the left boundary */
-int IsOnLeftBoundary(struct fe1d *p, int row)
-{
-    if(row == 0)
-        return 1;
-    else
-        return 0;
-}
-
+/**
+ * Determine the external temperature used when heating.
+ * @param p Finite element problem structure
+ * @param row Node number to look at (Not used)
+ * @returns Dimensionless external temperature
+ */
 double ExternalConc(struct fe1d *p, int row)
 {
-    return scaleTemp(p->chardiff, p->charvals.Tc);
+    return scaleTemp(p->chardiff, p->chardiff.Te);
+    return 0;
 }
 
-/* The way this function is implemented is probably not mathematically accurate.
- * Strictly speaking, for the implicit solver, the temperature fetched should be
- * the temperature at the next time step, not the one that we already have the
- * solution for. The way it is now should be good enough (tm).*/
-double ConvBC(struct fe1d *p, int row)
+/**
+ * Calculate the value of \f$\underline{n}\cdot\nabla T\f$ on the boundary
+ * @param p Finite element problem structure
+ * @param row Row to calculate stuff at. This is guaranteed to be on the
+ *      boundary by the solver.
+ * @returns Temperature gradient at the surface
+ */
+double ConvBCMass(struct fe1d *p, int row)
 {
     double Cinf = ExternalConc(p, row);
     double C;
     double Bi = BiotNumber(p->chardiff);
 
-    /* Fetch the value of T from the previous solution. If this is being
-     * applied at the initial condition, then simply return 0.*/
-    //solution *s;
-    //s = FetchSolution(p, p->t-1);
-    //if(s) {
-        //T = val(s->val, row, 0);
+    /* Calculate the convective boundary condition based on the current estimate
+     * for the temperature at the boundary. */
     if(p->guess) {
-        C = val(p->guess, row, 0);
-        //if(T==0)
-        //    return 0;
-        //else
-            return -Bi*(C-Cinf);
+        T = val(p->guess, row, 0);
+        return Bi*(C-Cinf);
     } else {
         return 0;
     }
-}
-
-void ApplyAllBCs(struct fe1d *p)
-{
-    double Bi = BiotNumber(p->charvals); 
-    
-    /* BC at x=L
-     * This approximates any Biot number larger than 100 as Bi->infty. This is a
-     * good approximation for this problem since it results in the outside of
-     * the can reaching the external temperature incredibly quickly (<1sec). */
-    if(Bi<100.00)
-        ApplyNaturalBC1D(p, 0, &IsOnRightBoundary, &ConvBC);
-    else
-        ApplyEssentialBC1D(p, 0, &IsOnRightBoundary, &ExternalTemp);
-
-    return;
-}
-
-/* Calculate the deformation gradient of the sample at (x,t) based on density
- */
-double DeformationGrad(struct fe1d *p, double x, double t)
-{
-    return 0;
-    double T0, Tn, rho0, rhon;
-    solution *s0, *sn;
-    
-    s0 = FetchSolution(p, 0);
-    sn = FetchSolution(p, t);
-    Tn = uscaleTemp(p->charvals, EvalSoln1DG(p, 0, sn, x, 0));
-    T0 = uscaleTemp(p->charvals, EvalSoln1DG(p, 0, s0, x, 0));
-    rho0 = rho(comp_global, T0);
-    rhon = rho(comp_global, Tn);
-
-    return rho0/rhon;
 }
 

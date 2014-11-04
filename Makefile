@@ -29,11 +29,12 @@ heat-explicit: heat-explicit.o $(OBJECTFILES)
 heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
 	$(CC) -o heat-cyl heat-cyl.o heat-gui.o $(OBJECTFILES) $(CFLAGS)
 
-heat-transfer: heat-transfer.o ht-main.o $(OBJECTFILES)
-	$(CC) -o heat-transfer heat-transfer.o ht-main.o $(OBJECTFILES) $(CFLAGS)
+heat-transfer: heat-transfer.o main.o common.o $(OBJECTFILES)
+	$(CC) -o heat-transfer heat-transfer.o main.o common.o $(OBJECTFILES) $(CFLAGS)
 
 clean:
-	rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
+#rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
+	rm -rf heat-transfer
 	rm -rf *.o *.a
 	$(MAKE) -C matrix clean
 	$(MAKE) -C material-data clean
@@ -56,7 +57,10 @@ heat-cyl.o: problems/heat-cyl.c gui/heating/heat-gui.h
 heat-explicit.o: heat-explicit.c
 spheroid.o: spheroid.c
 heat-transfer.o: heat-transfer.h
-ht-main.o: heat-transfer.h
+main.o: heat-transfer.h common.h
+common.o: common.h
+
+
 
 # Mesh-related files
 mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h

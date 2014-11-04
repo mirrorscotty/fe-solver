@@ -1,30 +1,15 @@
-#ifndef HEAT_GUI_H
-#define HEAT_GUI_H
+#ifndef HEAT_TRANSFER_H
+#define HEAT_TRANSFER_H
 
 #include "matrix.h"
 #include "mesh1d.h"
 
 struct fe1d;
 
-double Residual(struct fe1d *, matrix *, Elem1D *, double, int, int);
-double ResDt(struct fe1d *, matrix *, Elem1D *, double, int, int);
-matrix* CreateElementMatrix(struct fe1d *, Elem1D *, matrix *);
-matrix* CreateDTimeMatrix(struct fe1d *, Elem1D *, matrix *);
-matrix* CreateElementLoad(struct fe1d *, Elem1D *, matrix *);
-int IsOnRightBoundary(struct fe1d *, int);
-int IsOnLeftBoundary(struct fe1d *, int);
-double Left(struct fe1d *, int);
-double Right(struct fe1d *, int);
-double Zero(struct fe1d *, int);
-double ConvBC(struct fe1d *, int);
-void ApplyAllBCs(struct fe1d *);
-double InitTemp(double);
-double InitC(double);
-double DeformationGrad(struct fe1d *, double, double);
-
-
-void seth(double);
-double printh(void);
+double ResHeat(struct fe1d *, matrix *, Elem1D *, double, int, int);
+double ResDtHeat(struct fe1d *, matrix *, Elem1D *, double, int, int);
+double ConvBCHeat(struct fe1d *, int);
+double ExternalTemp(struct fe1d *, int);
 
 #endif
 

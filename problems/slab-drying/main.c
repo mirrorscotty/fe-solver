@@ -19,12 +19,7 @@
 #include "output.h"
 #include "material-data/choi-okos/choi-okos.h"
 
-#include "heat-transfer.h"
-
-#define TAMB 500 // K
-#define TINIT 273 //K
-#define THICKNESS .05 
-#define HCONV 500
+#include "common.h"
 
 choi_okos *comp_global;
 
@@ -32,19 +27,20 @@ int main(int argc, char *argv[])
 {
     Mesh1D *mesh;
     basis *b;
-    matrix *IC;
+    matrix *IC, *IC_heat, *IC_mass;
     struct fe1d* problem;
-    scaling_ht scale;
+    scaling_ht scale_heat;
+    scaling_ht scale_mass;
 
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
-    scale = SetupScaling(alpha(comp_global, TINIT), TINIT, TAMB, THICKNESS, k(comp_global, TINIT), HCONV);
-
+    scale_heat = SetupScaling(alpha(comp_global, TINIT), TINIT, TAMB, THICKNESS, k(comp_global, TINIT), HCONV);
+    //scale_mass = SetupScaling(DIFF(comp_global, TINIT), CINIT, CAMB, THICKNESS, DIFF(comp_global, TINIT), KC_CONV);
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale, THICKNESS), 10);
+    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_heat, THICKNESS), 10);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
@@ -54,14 +50,18 @@ int main(int argc, char *argv[])
                          100);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
     problem->dt = 0.01; /* Dimensionless time step size */
-    problem->charvals = scale;
+    problem->charvals = scale_heat;
+    //problem->chardiff = scale_mass;
 
     /* Set the initial temperature */
-    IC = GenerateInitCondConst(problem, 0, scaleTemp(problem->charvals, 273.0));
+    IC_heat = GenerateInitCondConst(problem, TVAR, scaleTemp(problem->charvals, TINIT));
+    //IC_mass = GenerateInitCondConst(problem, CVAR, scaleTemp(problem->chardiff, CINIT));
+    //IC = mtxadd(IC_heat, IC_mass);
+    //DestroyMatrix(IC_heat, IC_mass);
 
     /* Apply the initial condition to the problem and set up the transient
      * solver. */
-    FE1DTransInit(problem, IC);
+    FE1DTransInit(problem, IC_heat);
 
     while(problem->t<problem->maxsteps) {
         NLinSolve1DTransImp(problem, NULL);
