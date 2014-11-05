@@ -33,11 +33,12 @@
 #include "finite-element1d.h"
 
 #include "material-data/choi-okos/choi-okos.h"
+#include "material-data/pasta/pasta.h"
+#include "material-data/pasta/diffusivity.h"
 
 #include "heat-transfer.h"
-#include "common.c"
+#include "common.h"
 
-#define DIFF(X, T) DiffCh10((X), (T))
 extern choi_okos *comp_global;
 
 /**
@@ -68,7 +69,7 @@ double ResMass(struct fe1d *p, matrix *guess, Elem1D *elem,
             * once they've been calculated */
            DDDx = 0, D = 0,
            /* D and grad(D) on the nodes */
-           DDDxi, Di, Ci, Ti,
+           Di, Ci, Ti,
            /* Final value of the function */
            value = 0;
     int i;
@@ -83,9 +84,11 @@ double ResMass(struct fe1d *p, matrix *guess, Elem1D *elem,
     /* Calculate thermal conductivity, density, heat capacity, and thermal
      * conductivity gradient at x */
     for(i=0; i<b->n; i++) {
-        Ti = EvalSoln1D(p, TVAR, elem, s, valV(elem->points, i));
+        //Ti = EvalSoln1D(p, TVAR, elem, s, valV(elem->points, i));
         Ci = EvalSoln1D(p, CVAR, elem, s, valV(elem->points, i));
-        Di = DIFF(uscaleTemp(p->chardiff, Ci), uscaleTemp(p->charvals, Ti));
+        //Di = DIFF(uscaleTemp(p->chardiff, Ci), uscaleTemp(p->charvals, Ti));
+        Di = DIFF(uscaleTemp(p->chardiff, Ci), TINIT);
+        printf("Di = %g\n", Di);
         D += Di * b->phi[i](x);
         DDDx += Di * b->dphi[i](x);
     }
@@ -173,7 +176,7 @@ double ConvBCMass(struct fe1d *p, int row)
     /* Calculate the convective boundary condition based on the current estimate
      * for the temperature at the boundary. */
     if(p->guess) {
-        T = val(p->guess, row, 0);
+        C = val(p->guess, row, 0);
         return Bi*(C-Cinf);
     } else {
         return 0;

@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-lm -I. -Imatrix -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Iscaling -Igui/heating -Wall -g3 -O0 
+CFLAGS=-lm -I. -Imatrix -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Imaterial-data/choi-okos -Imaterial-data/pasta/isotherms -Iscaling -Igui/heating -Wall -g3 -O0 
 VPATH=problems problems/slab-drying gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o material-data.a matrix.a
 
-all: heat-transfer
+all: diffusion
 
 doc:
 	doxygen DoxyFile
@@ -31,6 +31,9 @@ heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
 
 heat-transfer: heat-transfer.o main.o common.o $(OBJECTFILES)
 	$(CC) -o heat-transfer heat-transfer.o main.o common.o $(OBJECTFILES) $(CFLAGS)
+
+diffusion: diffusion.o main.o common.o $(OBJECTFILES)
+	$(CC) -o diffusion diffusion.o main.o common.o $(OBJECTFILES) $(CFLAGS)
 
 clean:
 #rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
@@ -59,8 +62,7 @@ spheroid.o: spheroid.c
 heat-transfer.o: heat-transfer.h
 main.o: heat-transfer.h common.h
 common.o: common.h
-
-
+diffusion.o: diffusion.h
 
 # Mesh-related files
 mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h

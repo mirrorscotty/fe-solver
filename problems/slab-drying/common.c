@@ -10,8 +10,10 @@
 #include "finite-element1d.h"
 
 #include "material-data/choi-okos/choi-okos.h"
+#include "material-data/pasta/diffusivity.h"
 
 #include "heat-transfer.h"
+#include "diffusion.h"
 #include "common.h"
 
 extern choi_okos *comp_global;
@@ -45,10 +47,14 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
     
     for(i=0; i<b->n*v; i+=v) {
         for(j=0; j<b->n*v; j+=v) {
+            #ifdef HT_MODEL
             value = quad1d3generic(p, guess, elem, &ResHeat, i/v, j/v);
             setval(m, value, i+TVAR, j+TVAR);
-            //value = quad1d3generic(p, guess, elem, &ResMass, i/v, j/v);
-            //setval(m, value, i+CVAR, j+CVAR);
+            #endif
+            #ifdef MASS_MODEL
+            value = quad1d3generic(p, guess, elem, &ResMass, i/v, j/v);
+            setval(m, value, i+CVAR, j+CVAR);
+            #endif
         }
     }
 
@@ -85,10 +91,14 @@ matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
     
     for(i=0; i<b->n*v; i+=v) {
         for(j=0; j<b->n*v; j+=v) {
+            #ifdef HEAT_MODEL
             value = quad1d3generic(p, guess, elem, &ResDtHeat, i/v, j/v);
             setval(m, value, i+TVAR, j+TVAR);
-            //value = quad1d3generic(p, guess, elem, &ResDtMass, i/v, j/v);
-            //setval(m, value, i+CVAR, j+CVAR);
+            #endif
+            #ifdef MASS_MODEL
+            value = quad1d3generic(p, guess, elem, &ResDtMass, i/v, j/v);
+            setval(m, value, i+CVAR, j+CVAR);
+            #endif
         }
     }
 
@@ -162,16 +172,20 @@ void ApplyAllBCs(struct fe1d *p)
      * This approximates any Biot number larger than 100 as Bi->infty. This is a
      * good approximation for this problem since it results in the outside of
      * the can reaching the external temperature incredibly quickly (<1sec). */
+#ifdef HEAT_MODEL
     if(Bi<100.00)
         ApplyNaturalBC1D(p, TVAR, &IsOnRightBoundary, &ConvBCHeat);
     else
         ApplyEssentialBC1D(p, TVAR, &IsOnRightBoundary, &ExternalTemp);
+#endif
 
     /* Do the same for the mass transfer boundary condition. */
-    //if(Bim<100.00)
-    //    ApplyNaturalBC1D(p, CVAR, &IsOnRightBoundary, &ConvBCMass);
-    //else
-        //ApplyEssentialBC1D(p, CVAR, &IsOnRightBoundary, &ExternalConc);
+#ifdef MASS_MODEL
+    if(Bim<100.00)
+        ApplyNaturalBC1D(p, CVAR, &IsOnRightBoundary, &ConvBCMass);
+    else
+        ApplyEssentialBC1D(p, CVAR, &IsOnRightBoundary, &ExternalConc);
+#endif
 
     return;
 }
@@ -189,28 +203,38 @@ void ApplyAllBCs(struct fe1d *p)
  */
 double DeformationGrad(struct fe1d *p, double X, double t)
 {
-    double T0, Tn, C0, Cn, rho0, rhon;
     solution *s0, *sn;
+    double rho0, rhon;
+    double T0 = TINIT, Tn = TINIT;
+    
+#ifdef MASS_MODEL
+    double C0, Cn;
     choi_okos *cowet0, *cowetn;
+#endif
     
     s0 = FetchSolution(p, 0);
     sn = FetchSolution(p, t);
 
+#ifdef HEAT_MODEL
     Tn = uscaleTemp(p->charvals, EvalSoln1DG(p, TVAR, sn, X, 0));
     T0 = uscaleTemp(p->charvals, EvalSoln1DG(p, TVAR, s0, X, 0));
-//    Cn = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, sn, X, 0));
-//    C0 = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s0, X, 0));
+#endif
+#ifdef MASS_MODEL
+    Cn = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, sn, X, 0));
+    C0 = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s0, X, 0));
 
-//    cowet0 = AddDryBasis(comp_global, C0);
-//    cowetn = AddDryBasis(comp_global, Cn);
+    cowet0 = AddDryBasis(comp_global, C0);
+    cowetn = AddDryBasis(comp_global, Cn);
 
-//    rho0 = rho(cowet0, T0);
-//    rhon = rho(cowetn, Tn);
-    rho0 = rho(comp_global, T0);
+    rho0 = rho(cowet0, T0);
+    rhon = rho(cowetn, Tn);
+
+    DestroyChoiOkos(cowet0);
+    DestroyChoiOkos(cowetn);
+#else
     rhon = rho(comp_global, Tn);
-
-//    DestroyChoiOkos(cowet0);
-//    DestroyChoiOkos(cowetn);
+    rho0 = rho(comp_global, T0);
+#endif
 
     return rho0/rhon;
 }
