@@ -184,7 +184,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         AssembledJ1D(problem, guess);
         AssembleF1D(problem, guess);
 
-        problem->guess = NULL;
+        //problem->guess = NULL;
 
         /* Calculate the Jacobian matrix */
         tmp1 = mtxmulconst(problem->dJ, a/problem->dt);

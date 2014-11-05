@@ -18,7 +18,7 @@
 #include "auxsoln.h"
 #include "scaling_ht.h"
 
-#include "material-data/choi-okos/choi-okos.h"
+#include "material-data.h"
 
 extern choi_okos *comp_global;
 

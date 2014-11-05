@@ -32,9 +32,7 @@
 #include "isoparam.h"
 #include "finite-element1d.h"
 
-#include "material-data/choi-okos/choi-okos.h"
-#include "material-data/pasta/pasta.h"
-#include "material-data/pasta/diffusivity.h"
+#include "material-data.h"
 
 #include "heat-transfer.h"
 #include "common.h"

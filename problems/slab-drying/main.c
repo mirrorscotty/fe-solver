@@ -17,8 +17,7 @@
 #include "solve.h"
 
 #include "output.h"
-#include "material-data/choi-okos/choi-okos.h"
-#include "material-data/pasta/diffusivity.h"
+#include "material-data.h"
 
 #include "common.h"
 
@@ -41,6 +40,7 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
+    //mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_heat, THICKNESS), 10);
     mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
     
     problem = CreateFE1D(b, mesh,
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
                          &ApplyAllBCs,
                          1000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = 0.1; /* Dimensionless time step size */
+    problem->dt = 0.001; /* Dimensionless time step size */
     //problem->charvals = scale_heat;
     problem->chardiff = scale_mass;
 
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 
     /* Apply the initial condition to the problem and set up the transient
      * solver. */
+    //FE1DTransInit(problem, IC_heat);
     FE1DTransInit(problem, IC_mass);
 
     while(problem->t<problem->maxsteps) {

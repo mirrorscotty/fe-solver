@@ -17,7 +17,7 @@
 #include "solve.h"
 
 #include "output.h"
-#include "material-data/choi-okos/choi-okos.h"
+#include "material-data.h"
 
 #include "heat-gui.h"
 

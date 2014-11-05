@@ -9,8 +9,7 @@
 #include "isoparam.h"
 #include "finite-element1d.h"
 
-#include "material-data/choi-okos/choi-okos.h"
-#include "material-data/pasta/diffusivity.h"
+#include "material-data.h"
 
 #include "heat-transfer.h"
 #include "diffusion.h"
@@ -47,7 +46,7 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
     
     for(i=0; i<b->n*v; i+=v) {
         for(j=0; j<b->n*v; j+=v) {
-            #ifdef HT_MODEL
+            #ifdef HEAT_MODEL
             value = quad1d3generic(p, guess, elem, &ResHeat, i/v, j/v);
             setval(m, value, i+TVAR, j+TVAR);
             #endif
@@ -236,6 +235,7 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     rho0 = rho(comp_global, T0);
 #endif
 
+    //return 1;
     return rho0/rhon;
 }
 

@@ -43,7 +43,7 @@
 #include "isoparam.h"
 #include "finite-element1d.h"
 
-#include "material-data/choi-okos/choi-okos.h"
+#include "material-data.h"
 
 #include "heat-transfer.h"
 #include "common.h"
@@ -99,7 +99,8 @@ double ResHeat(struct fe1d *p, matrix *guess, Elem1D *elem,
     for(i=0; i<b->n; i++) {
         Ti = EvalSoln1D(p, TVAR, elem, s, valV(elem->points, i));
         //Ci = EvalSoln1D(p, CVAR, elem, s, valV(elem->points, i));
-        coweti = AddDryBasis(comp_global, Ci);
+        //coweti = AddDryBasis(comp_global, Ci);
+        coweti = comp_global;
         
         ki = k(coweti, uscaleTemp(p->charvals, Ti));
         kval += ki * b->phi[i](x);
@@ -109,7 +110,7 @@ double ResHeat(struct fe1d *p, matrix *guess, Elem1D *elem,
         Cpi = Cp(coweti, uscaleTemp(p->charvals, Ti));
         Cpval += Cpi * b->phi[i](x);
 
-        DestroyChoiOkos(coweti);
+        //DestroyChoiOkos(coweti);
     }
     /* Then delete the temporary solution we made earlier. */
     free(s);
@@ -124,8 +125,6 @@ double ResHeat(struct fe1d *p, matrix *guess, Elem1D *elem,
      * the value of the term containing it. */
     term2 = DkDx * b->dphi[f1](x) * b->phi[f2](x);
     term2 *= 1/IMap1D(p, elem, x);
-    /* Hopefully the above term is correct. It appears to yield accurate
-     * results, at least. */
 
     /* This determines the value of the term that arises due to the moving
      * mesh. */
@@ -195,7 +194,7 @@ double ConvBCHeat(struct fe1d *p, int row)
      * for the temperature at the boundary. */
     if(p->guess) {
         T = val(p->guess, row, 0);
-        return Bi*(T-Tinf);
+        return -Bi*(T-Tinf);
     } else {
         return 0;
     }
