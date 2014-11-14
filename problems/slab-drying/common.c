@@ -54,6 +54,10 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
             value = quad1d3generic(p, guess, elem, &ResMass, i/v, j/v);
             setval(m, value, i+CVAR, j+CVAR);
             #endif
+            #ifdef VAP_MODEL
+            value = quad1d3generic(p, guess, elem, &ResVap, i/v, j/v);
+            setval(m, value, i+CVAR, j+CVAR);
+            #endif
         }
     }
 
@@ -96,6 +100,10 @@ matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
             #endif
             #ifdef MASS_MODEL
             value = quad1d3generic(p, guess, elem, &ResDtMass, i/v, j/v);
+            setval(m, value, i+CVAR, j+CVAR);
+            #endif
+            #ifdef VAP_MODEL
+            value = quad1d3generic(p, guess, elem, &ResDtVap, i/v, j/v);
             setval(m, value, i+CVAR, j+CVAR);
             #endif
         }
@@ -186,6 +194,12 @@ void ApplyAllBCs(struct fe1d *p)
         ApplyEssentialBC1D(p, CVAR, &IsOnRightBoundary, &ExternalConc);
 #endif
 
+#ifdef VAP_MODEL
+    if(Bim<100.00)
+        ApplyNaturalBC1D(p, PVAR, &IsOnRightBoundary, &ConvBCVap);
+    else
+        ApplyEssentialBC1D(p, PVAR, &IsOnRightBoundary, &ExternalConc);
+#endif
     return;
 }
 
@@ -202,6 +216,7 @@ void ApplyAllBCs(struct fe1d *p)
  */
 double DeformationGrad(struct fe1d *p, double X, double t)
 {
+    return 1;
     solution *s0, *sn;
     double rho0, rhon;
     double T0 = TINIT, Tn = TINIT;

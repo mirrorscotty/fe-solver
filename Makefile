@@ -32,8 +32,8 @@ heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
 heat-transfer: heat-transfer.o main.o common.o $(OBJECTFILES)
 	$(CC) -o heat-transfer heat-transfer.o main.o common.o $(OBJECTFILES) $(CFLAGS)
 
-diffusion: diffusion.o main.o common.o $(OBJECTFILES)
-	$(CC) -o diffusion diffusion.o main.o common.o $(OBJECTFILES) $(CFLAGS)
+diffusion: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
+	$(CC) -o $@ $? $(CFLAGS)
 
 clean:
 #rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
