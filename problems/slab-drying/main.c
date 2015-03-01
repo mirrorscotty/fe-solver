@@ -34,14 +34,16 @@ int main(int argc, char *argv[])
 
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
     scale_heat = SetupScaling(alpha(comp_global, TINIT), TINIT, TAMB, THICKNESS, k(comp_global, TINIT), HCONV);
-    scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV);
+    //scale_heat = SetupScaling(1, TINIT, TAMB, 1, 1, HCONV);
+    scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV/10);
+    //scale_mass = SetupScaling(1, CINIT, CAMB, 1, 1, HCONV);
 
     /* Make a linear 1D basis */
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_heat, THICKNESS), 10);
-    //mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
+    //mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_heat, THICKNESS), 2);
+    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
                          &ApplyAllBCs,
                          1000);
     problem->nvars = 2; /* Number of simultaneous PDEs to solve */
-    problem->dt = 0.001; /* Dimensionless time step size */
+    problem->dt = .001; /* Dimensionless time step size */
     problem->charvals = scale_heat;
     problem->chardiff = scale_mass;
 
@@ -69,6 +71,10 @@ int main(int argc, char *argv[])
 
     while(problem->t<problem->maxsteps) {
         NLinSolve1DTransImp(problem, NULL);
+        //mtxprnt(problem->J);
+        //mtxprnt(problem->F);
+        //mtxprnt(problem->dJ);
+        //exit(0);
         if(problem->t-1 > 0)
             problem->mesh = 
                 MoveMeshF(problem, problem->mesh->orig,
@@ -79,8 +85,8 @@ int main(int argc, char *argv[])
     PrintScalingValues(problem->chardiff);
 
     printf("Solution at t = %g:\n", uscaleTime(problem->charvals, problem->t*problem->dt));
-    printf("Solution at t = %g:\n", uscaleTime(problem->chardiff, problem->t*problem->dt));
     PrintSolution(problem, 1);
+    printf("Solution at t = %g:\n", uscaleTime(problem->chardiff, problem->t*problem->dt));
     PrintSolution(problem, problem->t-1);
 
     CSVOutFixedNode2(problem, 0, "output00.csv");

@@ -27,6 +27,11 @@ int CheckConverg1D(struct fe1d *problem, matrix *dx)
     for(i=0; i<rows; i++) {
         if(fabs(val(dx, i, 0)) > problem->tol)
             return 0;
+        if(isnan(val(dx, i, 0))) {
+            printf("Nonlinear solver failed to converge. Solver returned value of \"NaN\".\nFailed to calculate solution at time step %d of %d\nExiting.\n",
+                problem->t, problem->maxsteps);
+            exit(0);
+        }
     }
     return 1;
 }
@@ -159,9 +164,10 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
 
     /* Predict the next solution if an initial guess isn't supplied. */
     if(!guess)
-        guess = PredictSolnO2(problem);
+        guess = PredictSolnO1(problem);
 
     dx = NULL;
+    //exit(0);
 
     do {
         iter++;

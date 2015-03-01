@@ -86,7 +86,7 @@ double ResMass(struct fe1d *p, matrix *guess, Elem1D *elem,
         Ci = EvalSoln1D(p, CVAR, elem, s, valV(elem->points, i));
         //Di = DIFF(uscaleTemp(p->chardiff, Ci), uscaleTemp(p->charvals, Ti));
         Di = DIFF(uscaleTemp(p->chardiff, Ci), TINIT);
-        printf("Di = %g\n", Di);
+        //printf("Di = %g\n", Di);
         D += Di * b->phi[i](x);
         DDDx += Di * b->dphi[i](x);
     }
@@ -170,12 +170,14 @@ double ConvBCMass(struct fe1d *p, int row)
     double Cinf = ExternalConc(p, row);
     double C;
     double Bi = BiotNumber(p->chardiff);
+    //Bi = 10;
 
     /* Calculate the convective boundary condition based on the current estimate
      * for the temperature at the boundary. */
     if(p->guess) {
-        C = val(p->guess, row, 0);
-        return Bi*(C-Cinf);
+        C = FetchGuessValue(p, row, CVAR);
+        printf("C = %g; Cinf = %g\n", C, Cinf);
+        return -1*Bi*(C-Cinf);
     } else {
         return 0;
     }

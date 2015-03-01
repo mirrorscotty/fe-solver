@@ -200,6 +200,9 @@ void ApplyAllBCs(struct fe1d *p)
     else
         ApplyEssentialBC1D(p, PVAR, &IsOnRightBoundary, &ExternalConc);
 #endif
+    //mtxprnt(p->F);
+    //mtxprnt(p->J);
+    //exit(0);
     return;
 }
 

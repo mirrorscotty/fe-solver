@@ -125,25 +125,29 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
     b = problem->b;
 
     matrix *J, *j;
-    int i, x, y;
-    int c, d;
+    int i,
+        x, y,
+        c, d,
+        vx, vy;
 
-    double rows = problem->nrows*problem->nvars;
+    int rows = problem->nrows,
+        vars = problem->nvars;
 
     if(!guess)
-        guess = CreateMatrix(rows, 1);
+        guess = CreateMatrix(rows*vars, 1);
 
-    J = CreateMatrix(rows, rows);
+    J = CreateMatrix(rows*vars, rows*vars);
 
     for(i=0; i<mesh->nelem; i++) {
-        j = problem->makej(problem, mesh->elem[i], guess);
+        j = problem->makedj(problem, mesh->elem[i], guess);
 
         for(x=0; x<b->n; x++) {
             for(y=0; y<b->n; y++) {
                 c = valV(mesh->elem[i]->map, x);
                 d = valV(mesh->elem[i]->map, y);
-
-                addval(J, val(j, x, y), c, d);
+                for(vx=0; vx<vars; vx++)
+                    for(vy=0; vy<vars; vy++)
+                        addval(J, val(j, x*vars+vx, y*vars+vy), c*vars+vx, d*vars+vy);
             }
         }
         DestroyMatrix(j);
@@ -172,15 +176,18 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
     b = problem->b;
 
     matrix *dJ, *dj;
-    int i, x, y;
-    int c, d;
+    int i,
+        x, y,
+        c, d,
+        vx, vy;
 
-    double rows = problem->nrows*problem->nvars;
+    int rows = problem->nrows,
+        vars = problem->nvars;
 
     if(!guess)
-        guess = CreateMatrix(rows, 1);
+        guess = CreateMatrix(rows*vars, 1);
 
-    dJ = CreateMatrix(rows, rows);
+    dJ = CreateMatrix(rows*vars, rows*vars);
 
     for(i=0; i<mesh->nelem; i++) {
         dj = problem->makedj(problem, mesh->elem[i], guess);
@@ -189,8 +196,9 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
             for(y=0; y<b->n; y++) {
                 c = valV(mesh->elem[i]->map, x);
                 d = valV(mesh->elem[i]->map, y);
-
-                addval(dJ, val(dj, x, y), c, d);
+                for(vx=0; vx<vars; vx++)
+                    for(vy=0; vy<vars; vy++)
+                        addval(dJ, val(dj, x*vars+vx, y*vars+vy), c*vars+vx, d*vars+vy);
             }
         }
         DestroyMatrix(dj);
@@ -209,6 +217,7 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
  * @param problem Finite element problem structure
  * @param guess Estimated values of the dependent variables at the current
  *      time step.
+ * TODO: Broken with multiple variables. Fix it!
  */
 matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
 {
@@ -216,23 +225,25 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     basis *b = problem->b;
 
     matrix *F, *f;// *lguess;
-    int i, j, rows;
-    int r = b->n - b->overlap;
+    int i, x, c, rows, vars, vx;
 
     rows = problem->nrows;
+    vars = problem->nvars;
 
-    F = CreateMatrix(rows, 1);
-
-    for(i=0; i<rows-r; i=i+r) {
-
+    F = CreateMatrix(rows*vars, 1);
+/*
+    for(i=0; i<mesh->nelem; i++) {
         f = problem->makef(problem, mesh->elem[i], guess);
 
-        for(j=0; j<b->n; j++) {
-            addval(F, val(f, j, 0), i+j, 0);
+        for(x=0; x<b->n*vars; x++) {
+            c = valV(mesh->elem[i]->map, x);
+            for(vx=0; vx<vars; vx++)
+                addval(F, val(f, x+vx, 0), c+vx, 0);
         }
-
         DestroyMatrix(f);
     }
+
+    */
     problem->F = F;
 
     return F;
@@ -281,6 +292,7 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     /* Generate the appropriate load vector */
     AssembleF1D(problem, InitSoln);
 
+    puts("");
     /* Apply the boundary conditions again to make sure the load vector is
      * properly initialized */
     problem->applybcs(problem);
@@ -314,20 +326,34 @@ void ApplyEssentialBC1D(struct fe1d* p,
         int (*cond)(struct fe1d*, int),
         double (*BC)(struct fe1d*, int))
 {
-    int i, j;
+    int i, j, k;
+    double value;
+    solution *s;
     /* Loop through the rows */
-    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
+    for(i=0; i<p->nrows; i++) {
         /* Check to see if the BC should be applied */
         if(cond(p, i)) {
             //printf("Applying Dirchlet boundary condition at node %d for variable %d\n", i/p->nvars, var);
+            k = i*p->nvars+var;// printf("k = %d\n", k);
             /* Zero out the row */
             for(j=0; j<p->nrows*p->nvars; j++) {
-                setval(p->J, (i==j)?1:0, i, j); /* Use the Chroniker delta */
-                setval(p->dJ, (i==j)?1:0, i, j); /* Use the Chroniker delta */
-                //setval(p->dJ, 0, i, j);
+                setval(p->J, (k==j)?1:0, k, j); /* Use the Chroniker delta */
+                setval(p->dJ, (k==j)?1:0, k, j); /* Use the Chroniker delta */
             }
             /* Set the appropriate value in the load vector */
-            setval(p->F, BC(p, i), i, 0);
+            if(p->t == 1) {
+                /* If this is the first time step, set the boundary value to
+                 * halfway between the initial value and what it should be. This
+                 * should increase numerical stability. */
+                s = FetchSolution(p, 0);
+                value = (BC(p, k) + val(s->val, k, 0))/2;
+            } else {
+                /* For the other time steps, just set it to the correct
+                 * value. */
+                value = BC(p, k);
+            }
+
+            setval(p->F, value, k, 0);
         }
     }
     return;
@@ -346,10 +372,10 @@ void ApplyNaturalBC1D(struct fe1d *p,
         double (*BC)(struct fe1d*, int))
 {
     int i;
-    for(i=var; i<p->nrows*p->nvars; i+=p->nvars) {
+    for(i=0; i<p->nrows; i++) {
         if(cond(p, i))
             //printf("Applying Neumann boundary condition at node %d for variable %d\n", i/p->nvars, var);
-            addval(p->F, BC(p, i), i, 0);
+            addval(p->F, BC(p, i), i*p->nvars+var, 0);
     }
 }
 
@@ -483,6 +509,11 @@ solution* FetchSolution(struct fe1d *p, int t)
         return NULL;
 }
 
+double FetchGuessValue(struct fe1d *p, int node, int var)
+{
+    return val(p->guess, node*p->nvars+var, 0);
+}
+
 /**
  * Evaluate a one-dimensional solution at a particular local coordinate within
  * a specific element. This interpolates the already calculated solution using
@@ -592,9 +623,21 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
  */
 void PrintSolution(struct fe1d *p, int t)
 {
+    int i, j;
     solution *s;
+    matrix *output;
+
     s = FetchSolution(p, t);
-    mtxprnt(s->val);
+    output = CreateMatrix(nRows(s->val)/p->nvars, p->nvars);
+
+    for(i=0; i<nRows(output); i++)
+        for(j=0; j<nCols(output); j++)
+            setval(output, val(s->val, p->nvars*i+j, 0), i, j);
+
+    mtxprnt(output);
+    DestroyMatrix(output);
+
+    return;
 }
 
 /**

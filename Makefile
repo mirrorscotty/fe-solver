@@ -4,7 +4,7 @@ VPATH=problems problems/slab-drying gui solver/mesh solver/ode solver/integratio
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o material-data.a matrix.a
 
-all: heat-transfer
+all: diffusion
 
 doc:
 	doxygen DoxyFile
@@ -12,28 +12,28 @@ doc:
 	cp doc/latex/refman.pdf doc/Reference.pdf
 
 2dlaplace: 2dlaplace.o $(OBJECTFILES)
-	gcc -o 2dlaplace 2dlaplace.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 ce675p1: ce675p1.o $(OBJECTFILES)
-	$(CC) -o ce675p1 ce675p1.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 spheroid: spheroid.o $(OBJECTFILES)
-	$(CC) -o spheroid spheroid.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 ce675p2: ce675p2.o $(OBJECTFILES)
-	$(CC) -o ce675p2 ce675p2.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 heat-explicit: heat-explicit.o $(OBJECTFILES)
-	$(CC) -o heat-explicit heat-explicit.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
-	$(CC) -o heat-cyl heat-cyl.o heat-gui.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 heat-transfer: heat-transfer.o main.o common.o $(OBJECTFILES)
-	$(CC) -o heat-transfer heat-transfer.o main.o common.o $(OBJECTFILES) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 diffusion: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
-	$(CC) -o $@ $? $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
 #rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
