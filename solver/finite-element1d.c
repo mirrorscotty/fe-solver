@@ -292,7 +292,6 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     /* Generate the appropriate load vector */
     AssembleF1D(problem, InitSoln);
 
-    puts("");
     /* Apply the boundary conditions again to make sure the load vector is
      * properly initialized */
     problem->applybcs(problem);
@@ -304,7 +303,7 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     dsoln = SolveMatrixEquation(problem->dJ, tmp);
     DestroyMatrix(f);
     DestroyMatrix(tmp);
-
+    
     /* Store the initial solution */
     StoreSolution(problem, InitSoln, dsoln);
 }
@@ -453,6 +452,7 @@ Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
     vector *new;
 
     new = CreateVector(len(orig->nodes));
+    //printf("%d\n", len(orig->nodes));
 
     setvalV(new, 0, valV(orig->nodes, 0)); /* The first node doesn't change */
 

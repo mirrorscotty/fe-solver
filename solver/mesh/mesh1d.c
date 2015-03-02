@@ -147,7 +147,7 @@ Mesh1D* Remesh1D(Mesh1D* orig, vector* nodes)
     }
 
     new->x1 = valV(nodes, 0);
-    new->x2 = valV(nodes, new->nnodes-1);
+    new->x2 = valV(nodes, len(nodes)-1);
 
     return new;
 }

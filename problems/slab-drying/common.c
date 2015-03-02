@@ -172,8 +172,12 @@ int IsOnLeftBoundary(struct fe1d *p, int row)
  */
 void ApplyAllBCs(struct fe1d *p)
 {
-    double Bi = BiotNumber(p->charvals),
-           Bim = BiotNumber(p->chardiff);
+#ifdef HEAT_MODEL
+    double Bi = BiotNumber(p->charvals);
+#endif
+#ifdef MASS_MODEL
+    double Bim = BiotNumber(p->chardiff);
+#endif
     
     /* BC at x=L:
      * This approximates any Biot number larger than 100 as Bi->infty. This is a
@@ -200,9 +204,6 @@ void ApplyAllBCs(struct fe1d *p)
     else
         ApplyEssentialBC1D(p, PVAR, &IsOnRightBoundary, &ExternalConc);
 #endif
-    //mtxprnt(p->F);
-    //mtxprnt(p->J);
-    //exit(0);
     return;
 }
 

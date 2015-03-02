@@ -43,14 +43,14 @@ int main(int argc, char *argv[])
 
     /* Create a uniform mesh */
     //mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_heat, THICKNESS), 2);
-    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
+    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 2);
     
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         1000);
+                         2);
     problem->nvars = 2; /* Number of simultaneous PDEs to solve */
     problem->dt = .001; /* Dimensionless time step size */
     problem->charvals = scale_heat;
@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
 
     while(problem->t<problem->maxsteps) {
         NLinSolve1DTransImp(problem, NULL);
-        //mtxprnt(problem->J);
-        //mtxprnt(problem->F);
-        //mtxprnt(problem->dJ);
+        mtxprnt(problem->J);
+        mtxprnt(problem->F);
+        mtxprnt(problem->dJ);
         //exit(0);
         if(problem->t-1 > 0)
             problem->mesh = 

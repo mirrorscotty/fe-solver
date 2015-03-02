@@ -29,10 +29,13 @@ heat-explicit: heat-explicit.o $(OBJECTFILES)
 heat-cyl: heat-cyl.o heat-gui.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-heat-transfer: heat-transfer.o main.o common.o $(OBJECTFILES)
+heat-transfer: heat-transfer.o ht-main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-diffusion: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
+ht-mt: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
+	$(CC) -o $@ $^ $(CFLAGS)
+
+diffusion: diffusion.o mt-main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
@@ -60,7 +63,9 @@ heat-cyl.o: problems/heat-cyl.c gui/heating/heat-gui.h
 heat-explicit.o: heat-explicit.c
 spheroid.o: spheroid.c
 heat-transfer.o: heat-transfer.h
-main.o: heat-transfer.h common.h
+main.o: heat-transfer.h diffusion.h common.h
+mt-main.o: diffusion.h common.h
+ht-main.o: heat-transfer.h common.h
 common.o: common.h
 diffusion.o: diffusion.h
 
