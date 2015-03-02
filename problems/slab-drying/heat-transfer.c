@@ -193,7 +193,7 @@ double ConvBCHeat(struct fe1d *p, int row)
     /* Calculate the convective boundary condition based on the current estimate
      * for the temperature at the boundary. */
     if(p->guess) {
-        T = FetchGuessValue(p, row, TVAL);
+        T = FetchGuessValue(p, row, TVAR);
         return -Bi*(T-Tinf);
     } else {
         return 0;
