@@ -139,7 +139,7 @@ matrix* AssembleJ1D(struct fe1d *problem, matrix *guess)
     J = CreateMatrix(rows*vars, rows*vars);
 
     for(i=0; i<mesh->nelem; i++) {
-        j = problem->makedj(problem, mesh->elem[i], guess);
+        j = problem->makej(problem, mesh->elem[i], guess);
 
         for(x=0; x<b->n; x++) {
             for(y=0; y<b->n; y++) {
@@ -353,6 +353,7 @@ void ApplyEssentialBC1D(struct fe1d* p,
             }
 
             setval(p->F, value, k, 0);
+            //setval(p->F, BC(p, k), k, 0);
         }
     }
     return;

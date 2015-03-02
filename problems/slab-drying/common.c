@@ -220,7 +220,6 @@ void ApplyAllBCs(struct fe1d *p)
  */
 double DeformationGrad(struct fe1d *p, double X, double t)
 {
-    return 1;
     solution *s0, *sn;
     double rho0, rhon;
     double T0 = TINIT, Tn = TINIT;
@@ -254,7 +253,6 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     rho0 = rho(comp_global, T0);
 #endif
 
-    //return 1;
     return rho0/rhon;
 }
 
