@@ -196,6 +196,8 @@ void DestroyMesh1D(Mesh1D *mesh)
         DestroyElem1D(mesh->elem[i]);
     DestroyVector(mesh->nodes);
     free(mesh->elem);
+    if(mesh->prev)
+        DestroyMesh1D(mesh->prev);
     free(mesh);
 }
 

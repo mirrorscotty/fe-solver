@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         2);
+                         10000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = .001; /* Dimensionless time step size */
+    problem->dt = 0.0001; /* Dimensionless time step size */
     problem->chardiff = scale_mass;
 
     /* Set the initial temperature */
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     PrintSolution(problem, 1);
     printf("Solution at t = %g:\n", uscaleTime(problem->chardiff, problem->t*problem->dt));
     PrintSolution(problem, problem->t-1);
-
+/*
     CSVOutFixedNode2(problem, 0, "output00.csv");
     CSVOutFixedNode2(problem, 1, "output01.csv");
     CSVOutFixedNode2(problem, 2, "output02.csv");
@@ -81,12 +81,14 @@ int main(int argc, char *argv[])
     CSVOutFixedNode2(problem, 8, "output08.csv");
     CSVOutFixedNode2(problem, 9, "output09.csv");
     CSVOutFixedNode2(problem, 10, "output10.csv");
+*/
 
     PrintVector(problem->mesh->orig->nodes);
     PrintVector(problem->mesh->nodes);
 
     /* Clean up */
     DestroyFE1D(problem);
+    DestroyChoiOkos(comp_global);
 
     return 0;
 }

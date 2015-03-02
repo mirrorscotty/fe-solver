@@ -165,7 +165,6 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     /* Predict the next solution if an initial guess isn't supplied. */
     if(!guess)
         guess = PredictSolnO2(problem);
-    mtxprnt(guess);
 
     dx = NULL;
     //exit(0);

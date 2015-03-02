@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
                          &ApplyAllBCs,
                          100);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = 0.01; /* Dimensionless time step size */
+    problem->dt = 0.001; /* Dimensionless time step size */
     problem->charvals = scale_heat;
 
     /* Set the initial temperature */

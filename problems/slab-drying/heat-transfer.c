@@ -194,6 +194,7 @@ double ConvBCHeat(struct fe1d *p, int row)
      * for the temperature at the boundary. */
     if(p->guess) {
         T = FetchGuessValue(p, row, TVAR);
+        printf("T = %g, Tinf = %g\n", T, Tinf);
         return -Bi*(T-Tinf);
     } else {
         return 0;

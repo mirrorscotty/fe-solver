@@ -114,7 +114,6 @@ double ResMass(struct fe1d *p, matrix *guess, Elem1D *elem,
     
     /* Combine all the terms and return the result */
     value = (term1 - term2)/p->chardiff.alpha + term3;
-    return term1;
     return value;
 }
 
@@ -156,7 +155,6 @@ double ResDtMass(struct fe1d *p, matrix *guess, Elem1D *elem,
 double ExternalConc(struct fe1d *p, int row)
 {
     return scaleTemp(p->chardiff, p->chardiff.Te);
-    return 0;
 }
 
 /**
@@ -176,10 +174,10 @@ double ConvBCMass(struct fe1d *p, int row)
      * for the temperature at the boundary. */
     if(p->guess) {
         C = FetchGuessValue(p, row, CVAR);
-        if(isnan(C))
-            C = 1;
+        //if(isnan(C))
+            //C = 1;
 
-        printf("C = %g; Cinf = %g\n", C, Cinf);
+        //printf("C = %g; Cinf = %g\n", C, Cinf);
         return -1*Bi*(C-Cinf);
     } else {
         return 0;
