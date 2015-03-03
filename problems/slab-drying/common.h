@@ -18,8 +18,6 @@
 
 #define DIFF(X, T) DiffCh10((X), (T))
 
-//#define HEAT_MODEL
-#define MASS_MODEL
 
 matrix* CreateElementMatrix(struct fe1d *, Elem1D *, matrix *);
 matrix* CreateDTimeMatrix(struct fe1d *, Elem1D *, matrix *);
