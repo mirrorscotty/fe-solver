@@ -35,7 +35,7 @@ heat-transfer: heat-transfer.o ht-main.o common.o $(OBJECTFILES)
 ht-mt: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-diffusion: diffusion.o mt-main.o common.o $(OBJECTFILES)
+diffusion: diffusion.o deformation.o mt-main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
@@ -68,6 +68,7 @@ mt-main.o: diffusion.h common.h
 ht-main.o: heat-transfer.h common.h
 common.o: common.h
 diffusion.o: diffusion.h
+deformation.o: deformation.h
 
 # Mesh-related files
 mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h

@@ -18,6 +18,7 @@
 #include "material-data.h"
 
 #include "common.h"
+#include "deformation.h"
 
 choi_okos *comp_global;
 
@@ -61,7 +62,8 @@ int main(int argc, char *argv[])
         if(problem->t-1 > 0)
             problem->mesh = 
                 MoveMeshF(problem, problem->mesh->orig,
-                          problem->t-1, &DeformationGrad);
+                          //problem->t-1, &DeformationGrad);
+                          problem->t-1, &DeformGradPc);
     }
 
     PrintScalingValues(problem->chardiff);

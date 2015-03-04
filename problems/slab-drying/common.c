@@ -14,12 +14,13 @@
 #include "heat-transfer.h"
 #include "diffusion.h"
 #include "common.h"
+#include "deformation.h"
 
 extern choi_okos *comp_global;
 
 /**
  * Calculate an average diffusivity for the entire drying process. The
- * temperature is taken to be the ambient temperature, and the average between
+ * temperature is taken to be the initial temperature, and the average between
  * the initial and final moisture content is used.
  * @param Xdb Moisture content (Not used)
  * @param T Temperature (Not used)
@@ -27,7 +28,7 @@ extern choi_okos *comp_global;
  */
 double DiffAvg(double Xdb, double T)
 {
-    return DiffCh10((CINIT+CAMB)/2, TAMB);
+    return DiffCh10((CINIT+CAMB)/2, TINIT);
 }
 
 /**
@@ -218,54 +219,5 @@ void ApplyAllBCs(struct fe1d *p)
         ApplyEssentialBC1D(p, PVAR, &IsOnRightBoundary, &ExternalConc);
 #endif
     return;
-}
-
-/* Calculate the value of the deformation gradient at the specified time and
- * spatial coordinates.
- * \f[ \underline{\underline{F}}(\underline{X}, T)\f]
- * This value is calculated from the density Choi-Okos equations, and supplied
- * to the moving mesh function to recalculate the nodal values at each time
- * step.
- * @param p Finite element problem structure
- * @param X Spatial coordinate (global)
- * @param t Time step number
- * @returns Calculated value for the deformation gradient
- */
-double DeformationGrad(struct fe1d *p, double X, double t)
-{
-    solution *s0, *sn;
-    double rho0, rhon;
-    double T0 = TINIT, Tn = TINIT;
-    
-#ifdef CVAR
-    double C0, Cn;
-    choi_okos *cowet0, *cowetn;
-#endif
-    
-    s0 = FetchSolution(p, 0);
-    sn = FetchSolution(p, t);
-
-#ifdef TVAR
-    Tn = uscaleTemp(p->charvals, EvalSoln1DG(p, TVAR, sn, X, 0));
-    T0 = uscaleTemp(p->charvals, EvalSoln1DG(p, TVAR, s0, X, 0));
-#endif
-#ifdef CVAR
-    Cn = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, sn, X, 0));
-    C0 = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s0, X, 0));
-
-    cowet0 = AddDryBasis(comp_global, C0);
-    cowetn = AddDryBasis(comp_global, Cn);
-
-    rho0 = rho(cowet0, T0);
-    rhon = rho(cowetn, Tn);
-
-    DestroyChoiOkos(cowet0);
-    DestroyChoiOkos(cowetn);
-#else
-    rhon = rho(comp_global, Tn);
-    rho0 = rho(comp_global, T0);
-#endif
-
-    return rho0/rhon;
 }
 

@@ -5,9 +5,10 @@
 #define CVAR 0 
 //#define PVAR 1
 
-#define TAMB 353 // K
+//#define TAMB 310 // K
 //#define TAMB 500 // K
-#define TINIT 273 //K
+//#define TINIT 273 //K
+#define TINIT 353.15 //K
 #define HCONV 50
 
 #define CAMB 0.0861867 // kg/kg db
@@ -27,7 +28,7 @@ matrix* CreateElementLoad(struct fe1d *, Elem1D *, matrix *);
 int IsOnRightBoundary(struct fe1d *, int);
 int IsOnLeftBoundary(struct fe1d *, int);
 void ApplyAllBCs(struct fe1d *);
-double DeformationGrad(struct fe1d *, double, double);
+//double DeformationGrad(struct fe1d *, double, double);
 
 #endif
 
