@@ -515,6 +515,37 @@ double FetchGuessValue(struct fe1d *p, int node, int var)
     return val(p->guess, node*p->nvars+var, 0);
 }
 
+double AvgSoln1D(struct fe1d *p, int t, int var)
+{
+    double value=0;
+    int i;
+    solution *s;
+    s = FetchSolution(p, t);
+
+    for(i=var; i<p->nvars*p->nrows; i+=p->nvars)
+        value += val(s->val, i, 0);
+    value = value/p->nrows;
+
+    return value;
+}
+
+double AvgSoln1DG(struct fe1d *p, int t, int var)
+{
+    double value = 0,
+           x0 = 0,
+           x1 = valV(p->mesh->nodes, len(p->mesh->nodes)-1),
+           dx = (x1-x0)/p->nrows;
+    int i;
+    solution *s;
+    s = FetchSolution(p, t);
+
+    for(i=var; i<p->nvars*p->nrows; i+=p->nvars)
+        value += EvalSoln1DG(p, var, s, x0+i*dx, 0);
+    value = value/p->nrows;
+
+    return value;
+}
+
 /**
  * Evaluate a one-dimensional solution at a particular local coordinate within
  * a specific element. This interpolates the already calculated solution using

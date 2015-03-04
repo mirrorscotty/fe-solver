@@ -5,19 +5,21 @@
 #define CVAR 0 
 //#define PVAR 1
 
-#define TAMB 310 // K
+#define TAMB 353 // K
 //#define TAMB 500 // K
 #define TINIT 273 //K
 #define HCONV 50
 
-#define CAMB .05 // kg/kg db
-#define CINIT .2 // kg/kg db
+#define CAMB 0.0861867 // kg/kg db
+#define CINIT .5 // kg/kg db
 #define KC_CONV 2e-11
 
-#define THICKNESS .05 
+#define THICKNESS 1e-3
 
 #define DIFF(X, T) DiffCh10((X), (T))
+//#define DIFF(X, T) DiffAvg((X), (T))
 
+double DiffAvg(double, double);
 
 matrix* CreateElementMatrix(struct fe1d *, Elem1D *, matrix *);
 matrix* CreateDTimeMatrix(struct fe1d *, Elem1D *, matrix *);

@@ -18,6 +18,19 @@
 extern choi_okos *comp_global;
 
 /**
+ * Calculate an average diffusivity for the entire drying process. The
+ * temperature is taken to be the ambient temperature, and the average between
+ * the initial and final moisture content is used.
+ * @param Xdb Moisture content (Not used)
+ * @param T Temperature (Not used)
+ * @returns Diffusivity [m^2/s]
+ */
+double DiffAvg(double Xdb, double T)
+{
+    return DiffCh10((CINIT+CAMB)/2, TAMB);
+}
+
+/**
  * This takes the function that calculates the residual and integrates it
  * to form the element-level matrix used in solving the problem. This whole
  * function is given to the finite element solver and run repeatedly to generate

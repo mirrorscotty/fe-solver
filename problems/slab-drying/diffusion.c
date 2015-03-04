@@ -39,6 +39,7 @@
 
 extern choi_okos *comp_global;
 
+
 /**
  * Function used to recalculate the Jacobian matrix at each time step. This
  * function is supplied to the FEM solver and integrated to give the J matrix.

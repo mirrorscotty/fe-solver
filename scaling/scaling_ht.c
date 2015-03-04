@@ -103,7 +103,9 @@ double scaleTime(scaling_ht stuff, double t)
  */
 double uscaleTime(scaling_ht stuff, double XFo)
 {
-    return XFo*stuff.Lc*stuff.Lc/stuff.alpha;
+    double Lc = stuff.Lc/2,
+           alpha = stuff.alpha;
+    return XFo*Lc*Lc/alpha;
 }
 
 /**

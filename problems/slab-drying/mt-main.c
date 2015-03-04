@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     scaling_ht scale_mass;
 
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
-    scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV);
+    scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV*1e10);
     //scale_mass = SetupScaling(1, CINIT, CAMB, 1, 1, HCONV);
 
     /* Make a linear 1D basis */
@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         10000);
+                         1000);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = 0.0001; /* Dimensionless time step size */
+    problem->dt = .001; /* Dimensionless time step size */
     problem->chardiff = scale_mass;
 
     /* Set the initial temperature */
@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
     CSVOutFixedNode2(problem, 9, "output09.csv");
     CSVOutFixedNode2(problem, 10, "output10.csv");
 */
+    CSVOutAvg(problem, 0, "OutAvg.csv");
 
     PrintVector(problem->mesh->orig->nodes);
     PrintVector(problem->mesh->nodes);
