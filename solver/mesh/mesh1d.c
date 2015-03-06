@@ -18,6 +18,7 @@ void meshprnt1d(Mesh1D* mesh)
 {
     int i;
     printf("Elements: %d\n", mesh->nelem);
+    PrintVector(mesh->nodes);
     printf("---------------------\n");
     for(i=0; i<mesh->nelem; i++) {
         printf("Element #%d\n---------------------\n", i);
@@ -44,6 +45,8 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 
     Mesh1D *mesh;
     mesh = (Mesh1D*) calloc(1, sizeof(Mesh1D));
+
+    mesh->b = b;
 
     mesh->x1 = x1;
     mesh->x2 = x2;
@@ -84,6 +87,8 @@ Mesh1D* CopyMesh1D(Mesh1D* orig)
 
     Mesh1D *copy;
     copy = (Mesh1D*) calloc(1, sizeof(Mesh1D));
+
+    copy->b = orig->b;
     copy->elem = (Elem1D**) calloc(orig->nelem, sizeof(Elem1D));
     copy->nodes = CopyVector(orig->nodes);
 

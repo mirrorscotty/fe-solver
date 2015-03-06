@@ -29,8 +29,10 @@ solution* CreateSolution(int tindex, double deltat, matrix *values)
     /* Store the values */
     s->t = tindex;
     s->dt = deltat;
+    s->mesh = NULL;
     s->val = values;
     s->dval = NULL;
+    //s->vars = 0;
 
     return s;
 }

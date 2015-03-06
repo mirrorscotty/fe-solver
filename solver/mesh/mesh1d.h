@@ -29,6 +29,8 @@ typedef struct elem1dstruct {
 typedef struct mesh1dstruct {
     int nelem; /**< Number of elements in the mesh */
 
+    basis *b; /** FEM basis used to create the mesh. */
+
     int nnodes; /**< Number of nodes */
 
     double x1; /**< Left-most node coordinate */
@@ -41,8 +43,6 @@ typedef struct mesh1dstruct {
     Elem1D **elem; /**< Set of all of the elements in the mesh */
     vector *nodes; /**< Vector of node coordinates */
 } Mesh1D;
-
-#include "finite-element1d.h"
 
 Mesh1D* GenerateUniformMesh1D(basis*, double, double, int);
 void DestroyMesh1D(Mesh1D*);

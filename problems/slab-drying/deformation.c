@@ -73,7 +73,8 @@ double CreepZhu(double t, double T, double X, double P, int deriv)
 double CreepCummings(double t, double T, double X, double P, int deriv)
 {
     double J;
-    if(t==0) t = 1e-2;
+    if(t==0)
+        t = 1e-2;
     if(deriv)
         J = DLCummingsCreep(t, T, X, P);
     else
@@ -140,6 +141,26 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     return rho0/rhon;
 }
 
+double EffPorePress(double X, double T)
+{
+    double P = pore_press(X, T),
+           P0 = pore_press(CINIT, T);
+    return P;
+}
+
+double PrevStrain(struct fe1d *p, double X, int t)
+{
+    solution *s;
+    double e = 0;
+    if(t==0)
+        return 0;
+    s = FetchSolution(p, t);
+    
+    e = EvalSoln1DG(p, -1, s, X, 1);
+
+    return e;
+}
+
 double DeformGradPc(struct fe1d *p, double X, double t)
 {
 #ifndef CVAR
@@ -153,26 +174,29 @@ double DeformGradPc(struct fe1d *p, double X, double t)
            tf = uscaleTime(p->chardiff, t*dt),
            ti,
            e = 0,
-           P;
+           P,
+           phi;
     int i;
  
-    for(i=0; i<p->t; i++) {
+    for(i=1; i<p->t; i++) {
         s = FetchSolution(p, i);
         ti = uscaleTime(p->chardiff, i*dt);
         Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
-        P = pore_press(Xdb, T);
+        P = EffPorePress(Xdb, T);
         e += CREEP(tf-ti, T, Xdb, -1*P, 1) * P * s->dt;
     }
 
     s = FetchSolution(p, t);
     Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
-    P = pore_press(Xdb, T);
+    P = EffPorePress(Xdb, T);
     e += -1*CREEP(tf, T, Xdb, -1*P, 0) * P;
     s = FetchSolution(p, 0);
     Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
-    P = pore_press(Xdb, T);
+    P = EffPorePress(Xdb, T);
     e += CREEP(0.01, T, Xdb, -1*P, 0) * P;
 
-    return 1-e*6*(.5-.45);
+    //printf("X = %g, e = %g, ep = %g\n", X, e, PrevStrain(p, X, t));
+
+    return 1-e*6*(.5-POISSON);
 }
 

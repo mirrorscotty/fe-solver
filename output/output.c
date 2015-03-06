@@ -130,7 +130,8 @@ void CSVOutAvg(struct fe1d *p, int var, char *filename)
 {
     int i;
     FILE *fp;
-    double C;
+    double C, u;
+    solution *s;
 
     fp = fopen(filename, "w+");
 
@@ -140,16 +141,19 @@ void CSVOutAvg(struct fe1d *p, int var, char *filename)
     }
 
     /* Print out the column headers */
-    fprintf(fp, "Time,Concentration\n");
+    fprintf(fp, "Time,Concentration,Displacement\n");
 
     /* Print out the values */
     for(i=0; i<p->maxsteps; i++) {
+        s = FetchSolution(p, i);
+        u = valV(s->mesh->nodes, len(s->mesh->nodes)-1);
 
         C = AvgSoln1DG(p, i, var);
 
-        fprintf(fp, "%g,%g\n",
+        fprintf(fp, "%g,%g,%g\n",
                 uscaleTime(p->chardiff, i*p->dt),
-                uscaleTemp(p->chardiff, C));
+                uscaleTemp(p->chardiff, C),
+                u);
     }
     fprintf(fp, "\n");
 

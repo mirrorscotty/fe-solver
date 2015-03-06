@@ -8,14 +8,17 @@
 //#define TAMB 310 // K
 //#define TAMB 500 // K
 //#define TINIT 273 //K
-#define TINIT 353.15 //K
+#define TINIT 313.15 //K
 #define HCONV 50
 
-#define CAMB 0.0861867 // kg/kg db
+//#define CAMB 0.0861867 // kg/kg db
+#define CAMB 0.138 // kg/kg db
 #define CINIT .5 // kg/kg db
 #define KC_CONV 2e-11
 
 #define THICKNESS 1e-3
+
+#define POISSON .35
 
 #define DIFF(X, T) DiffCh10((X), (T))
 //#define DIFF(X, T) DiffAvg((X), (T))

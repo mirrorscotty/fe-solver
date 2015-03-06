@@ -451,6 +451,7 @@ Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
     int i;
     double x, dx, Fval;
     vector *new;
+    Mesh1D *mesh;
 
     new = CreateVector(len(orig->nodes));
     //printf("%d\n", len(orig->nodes));
@@ -469,7 +470,10 @@ Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
      * needed for calculating the new node positions, but the current mesh
      * needs to be set as the previous mesh, not the mesh at time t=0. */
     //return Remesh1D(orig, new);
-    return Remesh1D(p->mesh, new);
+    mesh = Remesh1D(p->mesh, new);
+    mesh->t = t;
+
+    return mesh;
 }
 
 /**
@@ -484,6 +488,7 @@ int StoreSolution(struct fe1d* p, matrix* values, matrix* dvalues)
     if(p->t == p->maxsteps)
         return 0;
     p->soln[p->t] = CreateSolution(p->t, p->dt, values);
+    p->soln[p->t]->mesh = p->mesh;
 
     /* Store the time derivative if it is supplied. */
     if(dvalues)
@@ -599,20 +604,25 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
  */
 double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
 {
+    if(!s)
+        puts("Null solution supplied");
     int i;
     double x1, x2, xi, F, Fp, dx, h;
     Elem1D *e;
     Mesh1D *mesh;
 
+    //printf("t = %d\n", p->mesh->t);
+
     /* Determine whether we should use material or spatial coordinate */
-    if(coord) 
-        mesh = p->mesh;
-    else
+    if(coord) {
+        mesh = s->mesh;
+    } else {
         mesh = p->mesh->orig;
+    }
 
     e = NULL;
     /* Try finding the element corresponding to the supplied x coordinate */
-    for(i=0; i<p->mesh->nelem; i++) {
+    for(i=0; i<mesh->nelem; i++) {
         x1 = valV(mesh->elem[i]->points, 0);
         x2 = valV(mesh->elem[i]->points,
                         len(mesh->elem[i]->points)-1);

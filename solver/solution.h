@@ -6,6 +6,7 @@
 #define SOLUTION_H
 
 #include "matrix.h"
+#include "mesh1d.h"
 
 /**
  * Structure to store the values solved for using finite element method.
@@ -16,6 +17,7 @@ typedef struct {
                 *   solution to solution if you want to avoid problems) */
     matrix *val; /**< The values of the variable(s) at the indicated time. */
     matrix *dval; /**< The values of the first time derivative. */
+    Mesh1D *mesh;
 } solution;
 
 solution* CreateSolution(int, double, matrix*);
