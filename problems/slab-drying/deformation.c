@@ -92,7 +92,8 @@ double CreepLauraL(double t, double T, double X, double P, int deriv)
     return J;
 }
 
-/* Calculate the value of the deformation gradient at the specified time and
+/**
+ * Calculate the value of the deformation gradient at the specified time and
  * spatial coordinates.
  * \f[ \underline{\underline{F}}(\underline{X}, T)\f]
  * This value is calculated from the density Choi-Okos equations, and supplied
@@ -141,13 +142,47 @@ double DeformationGrad(struct fe1d *p, double X, double t)
     return rho0/rhon;
 }
 
-double EffPorePress(double X, double T)
+/**
+ * Calculate the effective pore pressure based on the initial conditions,
+ * temperature, and moisture content.
+ */
+double EffPorePressDefault(double X, double T)
 {
     double P = pore_press(X, T),
            P0 = pore_press(CINIT, T);
     return P;
 }
 
+/**
+ * Calculate the effective pore pressure based on the initial conditions,
+ * temperature, and moisture content.
+ */
+double EffPorePress(double X, double T)
+{
+    double P = pore_press(X, T),
+           P0 = pore_press(CINIT, T),
+           Pnet = 0,
+           rhow, rhos, vs, vf;
+    choi_okos *co;
+
+    co = CreateChoiOkos(WATERCOMP);
+    rhow = rho(co, T);
+    DestroyChoiOkos(co);
+
+    co = CreateChoiOkos(PASTACOMP);
+    rhos = rho(co, T);
+    DestroyChoiOkos(co);
+
+    vs = 1/(1+(rhos*X/rhow));
+    vf = .3 * (CINIT - X);
+    Pnet = P-P0;
+    //if(Pnet < 0)
+        //Pnet = 0;
+
+    return Pnet * (1-vf-vs)/(1-vf);
+}
+
+/* Unused */
 double PrevStrain(struct fe1d *p, double X, int t)
 {
     solution *s;
@@ -161,31 +196,50 @@ double PrevStrain(struct fe1d *p, double X, int t)
     return e;
 }
 
-double DeformGradPc(struct fe1d *p, double X, double t)
+/**
+ * Calculate the value of the strain at the specified time and spatial
+ * coordinates.
+ * The value here is based on the pore pressure and viscoelastic strain from
+ * the specified models.
+ * @param p Finite element problem structure
+ * @param X Spatial coordinate (global)
+ * @param t Time step number
+ * @returns Calculated value for the deformation gradient
+ */
+double StrainPc(struct fe1d *p, double X, double t)
 {
 #ifndef CVAR
     return 1;
 #endif
 
     solution *s;
-    double T = TINIT,
-           Xdb,
-           dt = p->dt,
-           tf = uscaleTime(p->chardiff, t*dt),
-           ti,
-           e = 0,
-           P,
-           phi;
-    int i;
+    double T = TINIT, /* Initial temperature */
+           Xdb, /* Moisture Content */
+           dt = p->dt, /* Time step size (from problem definition) [-]*/
+           tf = uscaleTime(p->chardiff, t*dt), /* Final time [s] */
+           ti, /* Time at current loop iteration [s] */
+           e = 0, /* Strain [-] */
+           P, /* Pore pressure [Pa] */
+           phi; /* Porosity [-] */
+    int i; /* Loop Index */
  
+    /* Integrate the creep function from t=0 to t=tf. */
     for(i=1; i<p->t; i++) {
         s = FetchSolution(p, i);
+        /* Time */
         ti = uscaleTime(p->chardiff, i*dt);
+        /* Moisture content */
         Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
+        /* Calculate pore pressure */
         P = EffPorePress(Xdb, T);
+        /* Evaluate the creep function and add the current strain to the total
+         */
         e += CREEP(tf-ti, T, Xdb, -1*P, 1) * P * s->dt;
     }
 
+    /* Because we used integration by parts, add in the rest of the integration
+     * formula. Because we're using inverse Laplace transforms, use a value
+     * that's slightly above zero to prevent numerical errors. */
     s = FetchSolution(p, t);
     Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
     P = EffPorePress(Xdb, T);
@@ -195,8 +249,56 @@ double DeformGradPc(struct fe1d *p, double X, double t)
     P = EffPorePress(Xdb, T);
     e += CREEP(0.01, T, Xdb, -1*P, 0) * P;
 
-    //printf("X = %g, e = %g, ep = %g\n", X, e, PrevStrain(p, X, t));
+    if(e<0)
+        return 0;
+    else
+        return e;
+}
+/**
+ * The creep function is converted to bulk compliance using the formula in
+ * Bazang 1975 (assuming constant poisson ratio).
+ */
+double DeformGradPc(struct fe1d *p, double X, double t)
+{
+    return 1 - StrainPc(p, X, t)*6*(.5-POISSON);
+}
 
-    return 1-e*6*(.5-POISSON);
+/**
+ * Deformation gradient based on the hygroscopic expansion coefficient given in Cummings et al. 1993.
+ * \f[
+ * \frac{\Delta L}{L_0} = \beta\Delta X_{db}
+ * \f]
+ * where \f$\beta\f$ is the hygroscopic expansion coefficient.
+ */
+double DeformGradBeta(struct fe1d *p, double X, double t)
+{
+#ifndef CVAR
+    return 1;
+#endif
+
+    solution *s;
+    double e = 0,
+           beta = 0.3,
+           C = 0;
+
+    s = FetchSolution(p, t-1);
+    C = EvalSoln1DG(p, CVAR, s, X, 0);
+
+    e = beta * (C-CINIT);
+
+    return 1+e;
+}
+
+double FindPoisson(struct fe1d *p, double X, double t)
+{
+    double e = StrainPc(p, X, t),
+           F = DeformGradBeta(p, X, t),
+           nu;
+    
+    nu = (3*e + F-1)/(6*e);
+    if(nu<0)
+        printf("e = %g, F = %g\n", e, F);
+
+    return nu;
 }
 

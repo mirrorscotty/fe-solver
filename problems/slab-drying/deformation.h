@@ -5,6 +5,8 @@
 
 double DeformationGrad(struct fe1d*, double, double);
 double DeformGradPc(struct fe1d*, double, double);
+double DeformGradBeta(struct fe1d*, double, double);
+double FindPoisson(struct fe1d*, double, double);
 
 #endif
 

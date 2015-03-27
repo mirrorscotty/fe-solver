@@ -30,6 +30,11 @@ int main(int argc, char *argv[])
     struct fe1d* problem;
     scaling_ht scale_mass;
 
+    solution *s;
+    FILE *FPnu;
+    double C, x;
+    int i;
+
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
     scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV*1e10);
     //scale_mass = SetupScaling(1, CINIT, CAMB, 1, 1, HCONV);
@@ -57,14 +62,29 @@ int main(int argc, char *argv[])
      * solver. */
     FE1DTransInit(problem, IC_mass);
 
+    FPnu = fopen("poisson.csv", "w");
+    fprintf(FPnu, "t,x,Xdb,nu\n");
     while(problem->t<problem->maxsteps) {
         NLinSolve1DTransImp(problem, NULL);
-        if(problem->t-1 > 0)
+        if(problem->t-1 > 0) {
             problem->mesh = 
                 MoveMeshF(problem, problem->mesh->orig,
-                          //problem->t-1, &DeformationGrad);
                           problem->t-1, &DeformGradPc);
+
+            for(i=5; i<6; i++) {
+            //for(i=0; i<len(mesh->nodes); i++) {
+                x = valV(mesh->nodes, i);
+                s = FetchSolution(problem, problem->t-1);
+                C = EvalSoln1DG(problem, CVAR, s, x, 0);
+                fprintf(FPnu, "%g,%g,%g,%g\n",
+                        uscaleTime(problem->chardiff, problem->t-1),
+                        uscaleLength(problem->chardiff, x),
+                        uscaleTemp(problem->chardiff, C),
+                        FindPoisson(problem, x, problem->t-1));
+            }
+        }
     }
+    fclose(FPnu);
 
     PrintScalingValues(problem->chardiff);
 

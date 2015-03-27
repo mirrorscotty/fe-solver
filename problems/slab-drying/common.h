@@ -18,7 +18,7 @@
 
 #define THICKNESS 1e-3
 
-#define POISSON .35
+#define POISSON .45
 
 #define DIFF(X, T) DiffCh10((X), (T))
 //#define DIFF(X, T) DiffAvg((X), (T))
