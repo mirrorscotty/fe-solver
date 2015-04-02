@@ -3,7 +3,8 @@
 #include "deformation.h"
 #include "material-data.h"
 
-#define CREEP CreepGina
+#define CREEP CreepLaura2
+#define BETA .6
 
 extern choi_okos *comp_global;
 
@@ -49,11 +50,13 @@ double CreepLaura(double t, double T, double X, double P, int deriv)
 
 double CreepLaura2(double t, double T, double X, double P, int deriv)
 {
+    if(t<0.01)
+        t=0.01;
     double J;
     if(deriv)
-        J = DMaxwellCreepLaura(t, T, X);
+        J = DLLauraCreep(t, T, X, P);
     else
-        J = MaxwellCreepLaura(t, T, X);
+        J = LLauraCreep(t, T, X, P);
     return J;
 }
 
@@ -73,7 +76,7 @@ double CreepZhu(double t, double T, double X, double P, int deriv)
 double CreepCummings(double t, double T, double X, double P, int deriv)
 {
     double J;
-    if(t==0)
+    if(t<1e-2)
         t = 1e-2;
     if(deriv)
         J = DLCummingsCreep(t, T, X, P);
@@ -148,9 +151,7 @@ double DeformationGrad(struct fe1d *p, double X, double t)
  */
 double EffPorePressDefault(double X, double T)
 {
-    double P = pore_press(X, T),
-           P0 = pore_press(CINIT, T);
-    return P;
+    return pore_press(X, T);
 }
 
 /**
@@ -161,25 +162,12 @@ double EffPorePress(double X, double T)
 {
     double P = pore_press(X, T),
            P0 = pore_press(CINIT, T),
-           Pnet = 0,
-           rhow, rhos, vs, vf;
-    choi_okos *co;
-
-    co = CreateChoiOkos(WATERCOMP);
-    rhow = rho(co, T);
-    DestroyChoiOkos(co);
-
-    co = CreateChoiOkos(PASTACOMP);
-    rhos = rho(co, T);
-    DestroyChoiOkos(co);
-
-    vs = 1/(1+(rhos*X/rhow));
-    vf = .3 * (CINIT - X);
+           Pnet = 0;
     Pnet = P-P0;
     //if(Pnet < 0)
         //Pnet = 0;
 
-    return Pnet * (1-vf-vs)/(1-vf);
+    return Pnet;
 }
 
 /* Unused */
@@ -194,6 +182,37 @@ double PrevStrain(struct fe1d *p, double X, int t)
     e = EvalSoln1DG(p, -1, s, X, 1);
 
     return e;
+}
+
+double Porosity(struct fe1d *p, double X, int t)
+{
+    solution *s;
+    double vf, vs, e, rhos, rhow, T=TINIT, phi;
+    choi_okos *co;
+
+    s = FetchSolution(p, t);
+    if(t<1)
+        e = 0;
+    else
+        e = (EvalSoln1DG(p, -1, s, X, 0)-EvalSoln1DG(p, -1, s, X, 1))
+            /EvalSoln1DG(p, -1, s, X, 0);
+
+
+    co = CreateChoiOkos(WATERCOMP);
+    rhow = rho(co, T);
+    DestroyChoiOkos(co);
+
+    co = CreateChoiOkos(PASTACOMP);
+    rhos = rho(co, T);
+    DestroyChoiOkos(co);
+
+    vs = 1/(1+(rhos*CINIT/rhow));
+    vf = 1-e;
+    //if(vf<vs) vf=vs;
+    phi = (vf-vs)/(vf);
+    //printf("vs = %g, vf = %g, phi = %g\n", vs, vf, phi);
+
+    return phi;
 }
 
 /**
@@ -219,8 +238,7 @@ double StrainPc(struct fe1d *p, double X, double t)
            tf = uscaleTime(p->chardiff, t*dt), /* Final time [s] */
            ti, /* Time at current loop iteration [s] */
            e = 0, /* Strain [-] */
-           P, /* Pore pressure [Pa] */
-           phi; /* Porosity [-] */
+           P; /* Pore pressure [Pa] */
     int i; /* Loop Index */
  
     /* Integrate the creep function from t=0 to t=tf. */
@@ -231,7 +249,7 @@ double StrainPc(struct fe1d *p, double X, double t)
         /* Moisture content */
         Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
         /* Calculate pore pressure */
-        P = EffPorePress(Xdb, T);
+        P = EffPorePress(Xdb, T) * Porosity(p, X, i*dt);
         /* Evaluate the creep function and add the current strain to the total
          */
         e += CREEP(tf-ti, T, Xdb, -1*P, 1) * P * s->dt;
@@ -242,11 +260,11 @@ double StrainPc(struct fe1d *p, double X, double t)
      * that's slightly above zero to prevent numerical errors. */
     s = FetchSolution(p, t);
     Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
-    P = EffPorePress(Xdb, T);
+    P = EffPorePress(Xdb, T) * Porosity(p, X, t);
     e += -1*CREEP(tf, T, Xdb, -1*P, 0) * P;
     s = FetchSolution(p, 0);
     Xdb = uscaleTemp(p->chardiff, EvalSoln1DG(p, CVAR, s, X, 0));
-    P = EffPorePress(Xdb, T);
+    P = EffPorePress(Xdb, T) * Porosity(p, X, 0);
     e += CREEP(0.01, T, Xdb, -1*P, 0) * P;
 
     if(e<0)
@@ -254,6 +272,7 @@ double StrainPc(struct fe1d *p, double X, double t)
     else
         return e;
 }
+
 /**
  * The creep function is converted to bulk compliance using the formula in
  * Bazang 1975 (assuming constant poisson ratio).
@@ -278,7 +297,7 @@ double DeformGradBeta(struct fe1d *p, double X, double t)
 
     solution *s;
     double e = 0,
-           beta = 0.3,
+           beta = BETA, 
            C = 0;
 
     s = FetchSolution(p, t-1);
@@ -296,8 +315,8 @@ double FindPoisson(struct fe1d *p, double X, double t)
            nu;
     
     nu = (3*e + F-1)/(6*e);
-    if(nu<0)
-        printf("e = %g, F = %g\n", e, F);
+    //if(nu<0)
+        //printf("e = %g, F = %g\n", e, F);
 
     return nu;
 }

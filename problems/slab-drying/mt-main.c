@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     solution *s;
     FILE *FPnu;
     double C, x;
-    int i;
+    int i, tfinal;
 
     comp_global = CreateChoiOkos(0, 0, 0, 1, 0, 0, 0);
     scale_mass = SetupScaling(DIFF(CINIT, TINIT), CINIT, CAMB, THICKNESS, DIFF(CINIT, TINIT), KC_CONV*1e10);
@@ -45,14 +45,17 @@ int main(int argc, char *argv[])
     /* Create a uniform mesh */
     mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
     
+    //tfinal = floor(scaleTime(scale_mass, 72000)/.01);
+    tfinal = floor(scaleTime(scale_mass, 72000)/.01);
+    printf("tf = %d\n", tfinal);
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
                          &CreateElementMatrix,
                          &CreateElementLoad,
                          &ApplyAllBCs,
-                         1000);
+                         tfinal);
     problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = .001; /* Dimensionless time step size */
+    problem->dt = .01; /* Dimensionless time step size */
     problem->chardiff = scale_mass;
 
     /* Set the initial temperature */
@@ -65,12 +68,15 @@ int main(int argc, char *argv[])
     FPnu = fopen("poisson.csv", "w");
     fprintf(FPnu, "t,x,Xdb,nu\n");
     while(problem->t<problem->maxsteps) {
+        printf("Step %d of %d\r", problem->t, problem->maxsteps);
+        fflush(stdout);
         NLinSolve1DTransImp(problem, NULL);
         if(problem->t-1 > 0) {
             problem->mesh = 
                 MoveMeshF(problem, problem->mesh->orig,
-                          problem->t-1, &DeformGradPc);
+                          problem->t-1, &DeformGradPc); 
 
+            //PrintVector(problem->mesh->nodes);
             for(i=5; i<6; i++) {
             //for(i=0; i<len(mesh->nodes); i++) {
                 x = valV(mesh->nodes, i);
@@ -80,7 +86,8 @@ int main(int argc, char *argv[])
                         uscaleTime(problem->chardiff, problem->t-1),
                         uscaleLength(problem->chardiff, x),
                         uscaleTemp(problem->chardiff, C),
-                        FindPoisson(problem, x, problem->t-1));
+                        //FindPoisson(problem, x, problem->t-1));
+                        Porosity(problem, x, problem->t-1));
             }
         }
     }
