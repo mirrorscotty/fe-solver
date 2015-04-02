@@ -593,7 +593,9 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 
 /**
  * Evaluate a one-dimensional solution at a given value of the global
- * independent variable, x.
+ * independent variable, x. If "coord" is equal to 1, and var is equal to -1,
+ * then the material coordinate corresponding to "x" is returned instead of the
+ * spatial coordinate.
  * @param p Finite element problem structure
  * @param var Number of the variable to interpolate
  * @param s Solution values
@@ -614,11 +616,12 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
     //printf("t = %d\n", p->mesh->t);
 
     /* Determine whether we should use material or spatial coordinate */
-    if(coord) {
-        mesh = s->mesh;
-    } else {
+    //if(coord) {
+        //mesh = s->mesh;
+        //PrintVector(mesh->nodes);
+    //} else {
         mesh = p->mesh->orig;
-    }
+    //}
 
     e = NULL;
     /* Try finding the element corresponding to the supplied x coordinate */
@@ -629,6 +632,7 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
 
         if((x >= x1) && (x <= x2)) {
             e = mesh->elem[i];
+            break;
         }
     }
     /* If we haven't found the element, quit the program. Something is likely
@@ -653,7 +657,10 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
         dx = -F/Fp;
         xi = xi + dx;
     } while(fabs(dx) > h);
-
+    
+    if(coord) {
+        e = s->mesh->elem[i];
+    }
     /* Return the desired value. */
     return EvalSoln1D(p, var, e, s, xi);
 }
