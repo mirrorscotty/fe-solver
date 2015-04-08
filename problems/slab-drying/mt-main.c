@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
     mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
     
     //tfinal = floor(scaleTime(scale_mass, 72000)/.01);
-    tfinal = floor(scaleTime(scale_mass, 72000)/.01);
+    //tfinal = floor(scaleTime(scale_mass, 72000)/.01);
+    tfinal = floor(scaleTime(scale_mass, 1080000/3)/.01);
     printf("tf = %d\n", tfinal);
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,

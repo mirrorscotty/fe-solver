@@ -184,12 +184,23 @@ double PrevStrain(struct fe1d *p, double X, int t)
     return e;
 }
 
+/**
+ * Calculate the porosity of the sample at point X (material coordinates) using
+ * the assumption that the pores were initially filled with water. Here, the
+ * porosity is taken to be the porosity of the solid matrix itself, without
+ * considering the volume of either water or air that may be filling the pores.
+ * @param p Finite element problem definition
+ * @param X Material coordinate [-]
+ * @param t Time [-]
+ * @returns Porosity [-]
+ */
 double Porosity(struct fe1d *p, double X, int t)
 {
     solution *s;
     double vf, vs, e, rhos, rhow, T=TINIT, phi;
     choi_okos *co;
 
+    /* Calculate the strain at the desired point */
     s = FetchSolution(p, t);
     if(t<1)
         e = 0;
@@ -198,19 +209,17 @@ double Porosity(struct fe1d *p, double X, int t)
             /EvalSoln1DG(p, -1, s, X, 0);
 
 
+    /* Find the water and pasta densities based on the Choi-Okos equations. */
     co = CreateChoiOkos(WATERCOMP);
     rhow = rho(co, T);
     DestroyChoiOkos(co);
-
     co = CreateChoiOkos(PASTACOMP);
     rhos = rho(co, T);
     DestroyChoiOkos(co);
 
-    vs = 1/(1+(rhos*CINIT/rhow));
-    vf = 1-e;
-    //if(vf<vs) vf=vs;
-    phi = (vf-vs)/(vf);
-    //printf("vs = %g, vf = %g, phi = %g\n", vs, vf, phi);
+    vs = 1/(1+(rhos*CINIT/rhow)); /* Solid volume */
+    vf = 1-e; /* Total volume */
+    phi = (vf-vs)/(vf); /* Porosity */
 
     return phi;
 }

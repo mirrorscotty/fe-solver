@@ -40,7 +40,7 @@ void SolveODE(struct fe1d *p, int var, int extravar,
 {
     int t, i;
     int tmax = p->maxsteps;
-    solution *s, *sprev, *tmp, *tmpprev;
+    solution *s, *tmp, *tmpprev;
 
     double dt, T, cprev;
     int rows;
@@ -55,7 +55,6 @@ void SolveODE(struct fe1d *p, int var, int extravar,
     p->auxsolns[extravar][0] = tmp;
 
     for(t=1; t<tmax; t++) {
-        sprev = s;
         s = FetchSolution(p, t);
         dt = uscaleTime(p->charvals, s->dt);
 
