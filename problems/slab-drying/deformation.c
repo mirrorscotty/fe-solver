@@ -3,8 +3,6 @@
 #include "deformation.h"
 #include "material-data.h"
 
-#define CREEP CreepLaura2
-#define BETA .6
 
 extern choi_okos *comp_global;
 

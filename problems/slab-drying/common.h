@@ -26,6 +26,10 @@
 #define DIFF(X, T) DiffCh10((X), (T))
 //#define DIFF(X, T) DiffAvg((X), (T))
 
+#define CREEP(TIME, T, X, P, DERIV)  CreepLaura2((TIME), (T), (X), (P), (DERIV))
+
+#define BETA .6
+
 double DiffAvg(double, double);
 
 matrix* CreateElementMatrix(struct fe1d *, Elem1D *, matrix *);
