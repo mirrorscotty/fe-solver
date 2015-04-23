@@ -23,6 +23,8 @@
 
 #define POISSON .37
 
+#define SHRINKAGE
+
 #define DIFF(X, T) DiffCh10((X), (T))
 //#define DIFF(X, T) DiffAvg((X), (T))
 

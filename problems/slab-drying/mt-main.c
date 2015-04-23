@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
         printf("Step %d of %d\r", problem->t, problem->maxsteps);
         fflush(stdout);
         NLinSolve1DTransImp(problem, NULL);
+#ifdef SHRINKAGE
         if(problem->t-1 > 0) {
             problem->mesh = 
                 MoveMeshF(problem, problem->mesh->orig,
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
                         Porosity(problem, x, problem->t-1));
             }
         }
+#endif
     }
     fclose(FPnu);
 
