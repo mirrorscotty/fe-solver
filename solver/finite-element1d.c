@@ -217,7 +217,6 @@ matrix* AssembledJ1D(struct fe1d *problem, matrix *guess)
  * @param problem Finite element problem structure
  * @param guess Estimated values of the dependent variables at the current
  *      time step.
- * TODO: Broken with multiple variables. Fix it!
  */
 matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
 {
@@ -231,19 +230,17 @@ matrix *AssembleF1D(struct fe1d *problem, matrix *guess)
     vars = problem->nvars;
 
     F = CreateMatrix(rows*vars, 1);
-/*
     for(i=0; i<mesh->nelem; i++) {
         f = problem->makef(problem, mesh->elem[i], guess);
 
-        for(x=0; x<b->n*vars; x++) {
+        for(x=0; x<b->n; x++) {
             c = valV(mesh->elem[i]->map, x);
             for(vx=0; vx<vars; vx++)
-                addval(F, val(f, x+vx, 0), c+vx, 0);
+                addval(F, val(f, x*vars+vx, 0), c*vars+vx, 0);
         }
         DestroyMatrix(f);
     }
 
-    */
     problem->F = F;
 
     return F;
@@ -539,12 +536,12 @@ double AvgSoln1DG(struct fe1d *p, int t, int var)
     double value = 0,
            x0 = 0,
            x1 = valV(p->mesh->nodes, len(p->mesh->nodes)-1),
-           dx = (x1-x0)/p->nrows;
+           dx = (x1-x0)/(len(p->mesh->nodes)-1);
     int i;
     solution *s;
     s = FetchSolution(p, t);
 
-    for(i=var; i<p->nvars*p->nrows; i+=p->nvars)
+    for(i=0; i<p->nrows; i++)
         value += EvalSoln1DG(p, var, s, x0+i*dx, 0);
     value = value/p->nrows;
 

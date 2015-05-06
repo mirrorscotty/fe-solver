@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-lm -I. -Imatrix -Imaterial-data -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Iscaling -Igui/heating -Wall -g3 -O0 
-VPATH=problems problems/slab-drying gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
+VPATH=problems problems/slab-drying problems/viscoelasticity gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o material-data.a matrix.a
 
@@ -35,7 +35,7 @@ heat-transfer: heat-transfer.o ht-main.o common.o $(OBJECTFILES)
 ht-mt: diffusion.o heat-transfer.o main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-diffusion: diffusion.o deformation.o mt-main.o common.o $(OBJECTFILES)
+diffusion: diffusion.o deformation.o lin-maxwell.o mt-main.o common.o $(OBJECTFILES)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
@@ -69,6 +69,10 @@ ht-main.o: heat-transfer.h common.h
 common.o: common.h
 diffusion.o: diffusion.h
 deformation.o: deformation.h
+
+lin-maxwell.o: lin-maxwell.h
+s-common.o: s-common.h
+s-main.o:
 
 # Mesh-related files
 mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h

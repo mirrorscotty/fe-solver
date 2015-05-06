@@ -14,6 +14,7 @@
 #include "heat-transfer.h"
 #include "diffusion.h"
 #include "common.h"
+#include "lin-maxwell.h"
 #include "deformation.h"
 
 extern choi_okos *comp_global;
@@ -68,9 +69,9 @@ matrix* CreateElementMatrix(struct fe1d *p, Elem1D *elem, matrix *guess)
             value = quad1d3generic(p, guess, elem, &ResMass, i/v, j/v);
             setval(m, value, i+CVAR, j+CVAR);
             #endif
-            #ifdef VAP_MODEL
-            value = quad1d3generic(p, guess, elem, &ResVap, i/v, j/v);
-            setval(m, value, i+CVAR, j+CVAR);
+            #ifdef SVAR
+            value = quad1d3generic(p, guess, elem, &ResSolid, i/v, j/v);
+            setval(m, value, i+SVAR, j+SVAR);
             #endif
         }
     }
@@ -116,9 +117,9 @@ matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
             value = quad1d3generic(p, guess, elem, &ResDtMass, i/v, j/v);
             setval(m, value, i+CVAR, j+CVAR);
             #endif
-            #ifdef VAP_MODEL
-            value = quad1d3generic(p, guess, elem, &ResDtVap, i/v, j/v);
-            setval(m, value, i+CVAR, j+CVAR);
+            #ifdef SVAR
+            value = quad1d3generic(p, guess, elem, &ResDtSolid, i/v, j/v);
+            setval(m, value, i+SVAR, j+SVAR);
             #endif
         }
     }
@@ -134,13 +135,18 @@ matrix* CreateDTimeMatrix(struct fe1d *p, Elem1D *elem, matrix *guess) {
  */
 matrix* CreateElementLoad(struct fe1d *p, Elem1D *elem, matrix *guess) {
     basis *b;
-    b = p->b;
-    
-    int v = p->nvars;
-    
+    double value;
+    int v = p->nvars, i;
     matrix *m;
-    
+
+    b = p->b;
+
     m = CreateMatrix(b->n*v, 1);
+
+    for(i=0; i<b->n*v; i+=v) {
+        value = quad1d3generic(p, guess, elem, &ResFSolid, i/v, 0);
+        setval(m, value, i+SVAR, 0);
+    }
 
     return m;
 }

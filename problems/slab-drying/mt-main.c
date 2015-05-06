@@ -43,11 +43,11 @@ int main(int argc, char *argv[])
     b = MakeLinBasis(1);
 
     /* Create a uniform mesh */
-    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 10);
+    mesh = GenerateUniformMesh1D(b, 0.0, scaleLength(scale_mass, THICKNESS), 5);
     
     //tfinal = floor(scaleTime(scale_mass, 72000)/.01);
-    //tfinal = floor(scaleTime(scale_mass, 72000)/.01);
-    tfinal = floor(scaleTime(scale_mass, 1080000/3)/.01);
+    tfinal = floor(scaleTime(scale_mass, 7200)/.0001);
+    //tfinal = floor(scaleTime(scale_mass, 1080000/3)/.01);
     printf("tf = %d\n", tfinal);
     problem = CreateFE1D(b, mesh,
                          &CreateDTimeMatrix,
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
                          &CreateElementLoad,
                          &ApplyAllBCs,
                          tfinal);
-    problem->nvars = 1; /* Number of simultaneous PDEs to solve */
-    problem->dt = .01; /* Dimensionless time step size */
+    problem->nvars = 2; /* Number of simultaneous PDEs to solve */
+    problem->dt = .0001; /* Dimensionless time step size */
     problem->chardiff = scale_mass;
 
     /* Set the initial temperature */
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     CSVOutFixedNode2(problem, 9, "output09.csv");
     CSVOutFixedNode2(problem, 10, "output10.csv");
 */
-    CSVOutAvg(problem, 0, "OutAvg.csv");
+    CSVOutAvg(problem, CVAR, "OutAvg.csv");
 
     PrintVector(problem->mesh->orig->nodes);
     PrintVector(problem->mesh->nodes);
