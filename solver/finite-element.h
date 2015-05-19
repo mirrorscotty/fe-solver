@@ -2,8 +2,8 @@
 #define FINITE_ELEMENT_H
 
 #include "matrix.h"
-#include "basis.h"
-#include "mesh2d.h"
+#include "solver/integration/basis.h"
+#include "solver/mesh/mesh2d.h"
 
 struct fe;
 

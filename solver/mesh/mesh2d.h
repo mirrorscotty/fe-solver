@@ -2,7 +2,7 @@
 #define MESH_H
 
 #include "matrix.h"
-#include "basis.h"
+#include "solver/integration/basis.h"
 
 typedef struct {
     //double dx; /* TODO: Remove. Should no longer be used anywhere */

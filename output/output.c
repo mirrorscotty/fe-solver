@@ -5,18 +5,19 @@
 
 #include <stdio.h>
 
-#include "output.h"
 
-#include "finite-element.h"
+#include "solver/finite-element.h"
+#include "solver/finite-element1d.h"
 
+#include "output/output.h"
 #ifdef CALC_ICE_FORMATION
 //#include "freezing-gui.h"
 #else
 //#include "heat-gui.h"
 #endif
-#include "solution.h"
-#include "auxsoln.h"
-#include "scaling_ht.h"
+#include "solver/solution.h"
+#include "solver/ode/auxsoln.h"
+#include "scaling/scaling_ht.h"
 
 #include "material-data.h"
 

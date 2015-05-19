@@ -1,10 +1,10 @@
 #ifndef INTEGRATE_H
 #define INTEGRATE_H
 
-#include "basis.h"
-#include "mesh2d.h"
-#include "finite-element.h"
-#include "finite-element1d.h"
+#include "solver/integration/basis.h"
+#include "solver/mesh/mesh2d.h"
+#include "solver/finite-element.h"
+#include "solver/finite-element1d.h"
 
 
 double quad2d3generic(struct fe*, matrix*, Elem2D*,

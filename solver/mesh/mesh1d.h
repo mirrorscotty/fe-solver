@@ -8,7 +8,7 @@
 #define MESH1D_H
 
 #include "matrix.h"
-#include "basis.h"
+#include "solver/integration/basis.h"
 
 /**
  * Defines a single element in the mesh

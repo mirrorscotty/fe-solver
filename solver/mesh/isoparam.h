@@ -1,9 +1,9 @@
 #ifndef ISOPARAM_H
 #define ISOPARAM_H
 
-#include "mesh2d.h"
-#include "finite-element.h"
-#include "finite-element1d.h"
+#include "solver/mesh/mesh2d.h"
+#include "solver/finite-element.h"
+#include "solver/finite-element1d.h"
 
 double IMapXXi(struct fe*, Elem2D*, double, double);
 double IMapYXi(struct fe*, Elem2D*, double, double);

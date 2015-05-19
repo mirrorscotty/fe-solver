@@ -1,7 +1,7 @@
 #ifndef AUXSOLN_H
 #define AUXSOLN_H
 
-#include "solution.h"
+#include "solver/solution.h"
 
 struct fe1d;
 

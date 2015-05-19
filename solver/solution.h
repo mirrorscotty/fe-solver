@@ -6,7 +6,7 @@
 #define SOLUTION_H
 
 #include "matrix.h"
-#include "mesh1d.h"
+#include "solver/mesh/mesh1d.h"
 
 /**
  * Structure to store the values solved for using finite element method.

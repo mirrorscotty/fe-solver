@@ -1,7 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "finite-element1d.h"
+struct fe1d;
 
 void CSVOutFixedNode(struct fe1d*, int, char*);
 void CSVOutFixedNode2(struct fe1d*, int, char*);

@@ -6,11 +6,11 @@
 #define FINITE_ELEMENT1D_H
 
 #include "matrix.h"
-#include "basis.h"
-#include "mesh1d.h"
-#include "solution.h"
+#include "solver/integration/basis.h"
+#include "solver/mesh/mesh1d.h"
+#include "solver/solution.h"
 
-#include "scaling_ht.h"
+#include "scaling/scaling_ht.h"
 
 struct fe1d;
 
