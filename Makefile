@@ -4,7 +4,7 @@ VPATH=solver/mesh solver/ode solver/integration matrix scaling solver output
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o 
 
-all: diffusion
+all: fe-solver.a
 
 doc:
 	doxygen DoxyFile
@@ -12,8 +12,6 @@ doc:
 	cp doc/latex/refman.pdf doc/Reference.pdf
 
 clean:
-#rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
-	rm -rf heat-transfer
 	rm -rf *.o *.a
 	$(MAKE) -C matrix clean
 	$(MAKE) -C material-data clean
