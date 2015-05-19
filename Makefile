@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-lm -I. -Imatrix -Imaterial-data -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Iscaling -Igui/heating -Wall -g3 -O0 
-VPATH=problems problems/slab-drying problems/viscoelasticity gui solver/mesh solver/ode solver/integration matrix material-data scaling solver output
+VPATH=solver/mesh solver/ode solver/integration matrix scaling solver output
 
 OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o 
 
@@ -11,33 +11,6 @@ doc:
 	make -C doc/latex
 	cp doc/latex/refman.pdf doc/Reference.pdf
 
-2dlaplace: 2dlaplace.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-ce675p1: ce675p1.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-spheroid: spheroid.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-ce675p2: ce675p2.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-heat-explicit: heat-explicit.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-heat-cyl: heat-cyl.o heat-gui.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-heat-transfer: heat-transfer.o ht-main.o common.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-ht-mt: diffusion.o heat-transfer.o main.o common.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
-diffusion: diffusion.o deformation.o lin-maxwell.o mt-main.o common.o fe-solver.a material-data.a matrix.a
-	$(CC) -o $@ $^ $(CFLAGS)
-
 clean:
 #rm -rf spheroid 2dlaplace ce675p1 ce675p2 heat-explicit heat-cyl meshtest
 	rm -rf heat-transfer
@@ -45,34 +18,6 @@ clean:
 	$(MAKE) -C matrix clean
 	$(MAKE) -C material-data clean
 	rm -rf doc
-
-
-freezing.o: material-data/freezing/freezing.c material-data/freezing/freezing.h
-	$(CC) -c material-data/freezing/freezing.c $(CFLAGS)
-
-heat-implicit.o: problems/heat-implicit.c
-	$(CC) -c problems/heat-implicit.c $(CFLAGS)
-
-heat-gui.o: heating/heat-gui.c heating/heat-gui.h
-	$(CC) -c gui/heating/heat-gui.c $(CFLAGS)
-
-2dlaplace.o: 2dlaplace.c
-ce675p1.o: ce675p1.c
-ce675p2.o: ce675p2.c
-heat-cyl.o: problems/heat-cyl.c gui/heating/heat-gui.h
-heat-explicit.o: heat-explicit.c
-spheroid.o: spheroid.c
-heat-transfer.o: heat-transfer.h
-main.o: heat-transfer.h diffusion.h common.h
-mt-main.o: diffusion.h common.h
-ht-main.o: heat-transfer.h common.h
-common.o: common.h
-diffusion.o: diffusion.h
-deformation.o: deformation.h
-
-lin-maxwell.o: lin-maxwell.h
-s-common.o: s-common.h
-s-main.o:
 
 # Mesh-related files
 mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h
@@ -108,8 +53,4 @@ fe-solver.a: $(OBJECTFILES)
 matrix.a:
 	$(MAKE) -C matrix
 	cp matrix/matrix.a .
-
-material-data.a:
-	$(MAKE) -C material-data
-	cp material-data/material-data.a .
 

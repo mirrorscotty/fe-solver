@@ -10,9 +10,9 @@
 #include "finite-element.h"
 
 #ifdef CALC_ICE_FORMATION
-#include "freezing-gui.h"
+//#include "freezing-gui.h"
 #else
-#include "heat-gui.h"
+//#include "heat-gui.h"
 #endif
 #include "solution.h"
 #include "auxsoln.h"
