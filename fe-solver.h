@@ -9,6 +9,7 @@
 #include "solver/finite-element1d.h"
 #include "solver/ode/auxsoln.h"
 #include "solver/solve.h"
+#include "solver/stepsize.h"
 #include "solver/mesh/isoparam.h"
 #include "solver/mesh/mesh1d.h"
 #include "solver/mesh/mesh2d.h"

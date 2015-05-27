@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-lm -I. -Imatrix -Imaterial-data -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Iscaling -Igui/heating -Wall -g3 -O0 
 VPATH=solver/mesh solver/ode solver/integration matrix scaling solver output
 
-OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o 
+OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o stepsize.o
 
 all: fe-solver.a
 
@@ -33,6 +33,7 @@ linsolve2d.o: solve.h
 nlinsolve1d.o: solve.h
 nlinsolve2d.o: solve.h
 predict1d.o: solve.h
+stepsize.o: solve.h
 
 # Scaling stuff
 scaling_ht.o: scaling_ht.h
