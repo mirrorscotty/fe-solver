@@ -707,3 +707,16 @@ matrix* CalcTimeDerivative(struct fe1d *problem, matrix *x)
     return dxdt;
 }
 
+double ElapsedTime(struct fe1d *problem, int step)
+{
+    int i;
+    solution *s;
+    double t = 0;
+    for(i=0; i<step; i++) {
+        s = FetchSolution(problem, i);
+        t += s->dt;
+    }
+
+    return t;
+}
+
