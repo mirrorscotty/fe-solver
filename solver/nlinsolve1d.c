@@ -25,14 +25,26 @@ int CheckConverg1D(struct fe1d *problem, matrix *dx)
     int i;
 
     for(i=0; i<rows; i++) {
+        /* Chech to ensure that each element of the dx matrix is less than the
+         * tolerance. If not, then return 0, indicating more iterations are
+         * required. */
         if(fabs(val(dx, i, 0)) > problem->tol)
             return 0;
+        
+        /* If one of the values in the dx matrix is NaN, then clearly something
+         * is wrong. The best thing to do is to quit and spit out an error. */
         if(isnan(val(dx, i, 0))) {
-            printf("Nonlinear solver failed to converge. Solver returned value of \"NaN\".\nFailed to calculate solution at time step %d of %d\nExiting.\n",
-                problem->t, problem->maxsteps);
+            printf("Nonlinear solver failed to converge."
+                       "Solver returned value of \"NaN\".\n"
+                       "Failed to calculate solution at time step %d of %d\n"
+                       "Exiting.\n",
+                   problem->t, problem->maxsteps);
             exit(0);
         }
     }
+    
+    /* All the values are less than the specified tolerance, so we're good to
+     * go. */
     return 1;
 }
 
@@ -91,7 +103,8 @@ matrix* NLinSolve1D(struct fe1d *problem, matrix *guess)
         if(iter == maxiter)
             break;
 
-        printf("\rIteration %d", iter); // Print the current iteration number to the console.
+        /* Print the current iteration number to the console. */
+        printf("\rIteration %d", iter); 
         fflush(stdout); // Flush the output buffer.
 
     } while(!CheckConverg1D(problem, dx));
@@ -104,7 +117,8 @@ matrix* NLinSolve1D(struct fe1d *problem, matrix *guess)
     else if(iter == maxiter)
         /* If the solver didn't find a solution in the specified number of
          * iterations, then say so. */
-        printf("\rNonlinear solver failed to converge. Maximum number of iterations reached.\n");
+        printf("\rNonlinear solver failed to converge."
+               "Maximum number of iterations reached.\n");
     else
         /* Print out the number of iterations it took to converge
          * successfully. */
@@ -139,7 +153,7 @@ matrix* NLinSolve1D(struct fe1d *problem, matrix *guess)
 matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
 {
     int iter = 0; /* Current iteration number */
-    int maxiter = 50; /* Maximum allowed iterations before terminating */
+    int maxiter = 5000; /* Maximum allowed iterations before terminating */
 
     /* Constants that determine the integration algorithm. If a=1 and b=0, then
      * the backward difference method is being used. For the trapazoid rule,
@@ -164,7 +178,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
 
     /* Predict the next solution if an initial guess isn't supplied. */
     if(!guess)
-        guess = PredictSolnO2(problem);
+        guess = PredictSolnO0(problem);
 
     dx = NULL;
     //exit(0);
@@ -217,6 +231,12 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         R = mtxadd(problem->F, tmp1);
         DestroyMatrix(tmp1);
 
+        //mtxprnt(problem->J);
+        //puts("");
+        //mtxprnt(problem->dJ);
+        //puts("");
+        //mtxprnt(problem->F);
+
         /* Solve for dx */
         dx = SolveMatrixEquation(J, R);
 
@@ -230,7 +250,8 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         guess = tmp1;
 
 #ifdef VERBOSE_OUTPUT
-        printf("\rIteration %d", iter); // Print the current iteration number to the console.
+        /* Print the current iteration number to the console. */
+        printf("\rIteration %d", iter);
         fflush(stdout); // Flush the output buffer.
 #endif
     } while(!CheckConverg1D(problem, dx));
@@ -251,7 +272,8 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     else if(iter == maxiter)
         /* If the solver didn't find a solution in the specified number of
          * iterations, then say so. */
-        printf("\rNonlinear solver failed to converge. Maximum number of iterations reached.\n");
+        printf("\rNonlinear solver failed to converge."
+               "Maximum number of iterations reached.\n");
     else
         /* Print out the number of iterations it took to converge
          * successfully. */
