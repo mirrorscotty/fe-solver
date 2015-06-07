@@ -443,7 +443,7 @@ matrix* GenerateInitCondConst(struct fe1d *p, int var, double value)
  * @returns New mesh with updated node coordinates.
  */
 Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
-                  double (*F)(struct fe1d *, double, double))
+                  double (*F)(struct fe1d *, int, double, double))
 {
     int i;
     double x, dx, Fval;
@@ -458,7 +458,7 @@ Mesh1D* MoveMeshF(struct fe1d *p, Mesh1D *orig, double t,
     for(i=1; i<len(orig->nodes); i++) {
         dx = valV(orig->nodes, i) - valV(orig->nodes, i-1);
         x = valV(orig->nodes, i);
-        Fval = F(p, x, t);
+        Fval = F(p, i, x, t);
         setvalV(new, i, Fval*dx+valV(new, i-1));
     }
 

@@ -87,7 +87,7 @@ matrix* GenerateInitialCondition(struct fe1d*, int, double (*)(double));
 matrix* GenerateInitCondConst(struct fe1d*, int, double);
 
 Mesh1D* MoveMeshF(struct fe1d *, Mesh1D *, double,
-        double (*F)(struct fe1d *, double, double));
+        double (*F)(struct fe1d *, int, double, double));
 
 int StoreSolution(struct fe1d*, matrix*, matrix*);
 solution* FetchSolution(struct fe1d*, int);

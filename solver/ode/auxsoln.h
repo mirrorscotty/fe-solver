@@ -10,5 +10,6 @@ void SolveODE(struct fe1d*, int, int, double (*)(double, double, double), double
 
 void PrintAuxSoln(struct fe1d*, int, int);
 solution* FetchAuxSoln(struct fe1d*, int, int);
+void InitAuxStep(struct fe1d *, int, int);
 
 #endif

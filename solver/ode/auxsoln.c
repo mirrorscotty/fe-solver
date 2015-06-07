@@ -96,3 +96,15 @@ solution* FetchAuxSoln(struct fe1d *p, int var, int t)
     return p->auxsolns[var][t];
 }
 
+void InitAuxStep(struct fe1d *p, int var, int t)
+{
+    int nnodes = len(p->mesh->nodes);
+    matrix *m;
+    solution *s;
+
+    m = CreateMatrix(nnodes, 1);
+    s = CreateSolution(t, -1, m);
+
+    p->auxsolns[var][t] = s;
+}
+
