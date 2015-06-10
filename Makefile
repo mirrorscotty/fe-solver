@@ -47,7 +47,7 @@ integrate.o: integrate.c integrate.h
 output.o: output.h
 
 fe-solver.a: $(OBJECTFILES)
-	ar -cvr $@ $^
+	ar -cvr $@ $?
 
 matrix.a:
 	$(MAKE) -C matrix

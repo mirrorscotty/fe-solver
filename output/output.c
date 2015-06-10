@@ -127,12 +127,13 @@ void CSVOutFixedNode2(struct fe1d *p, int row, char *filename)
  * @param row The number of the row (node) to output data for
  * @param filename The name of the file to spit stuff out into
  */
-void CSVOutAvg(struct fe1d *p, int var, char *filename)
+void CSVOutFixedNodeDx(struct fe1d *p, int row, char *filename)
 {
-    int i;
+    int i, n;
     FILE *fp;
-    double C, u;
     solution *s;
+    double dT, X;
+    Mesh1D *mesh;
 
     fp = fopen(filename, "w+");
 
@@ -142,19 +143,22 @@ void CSVOutAvg(struct fe1d *p, int var, char *filename)
     }
 
     /* Print out the column headers */
-    fprintf(fp, "Time,Concentration,Displacement\n");
+    //fprintf(fp, "Time,Position,Temperature,Density,HeatCapacity,ThermalConductivity\n");
+    fprintf(fp, "Time,Position,Temperature\n");
 
     /* Print out the values */
     for(i=0; i<p->maxsteps; i++) {
         s = FetchSolution(p, i);
-        u = valV(s->mesh->nodes, len(s->mesh->nodes)-1);
 
-        C = AvgSoln1DG(p, i, var);
 
-        fprintf(fp, "%g,%g,%g\n",
-                uscaleTime(p->chardiff, i*p->dt),
-                uscaleTemp(p->chardiff, C),
-                u);
+        mesh = p->mesh;
+        for(n=0; n<p->maxsteps-i-1; n++)
+            mesh = mesh->prev;
+        X = valV(mesh->nodes, row);
+        dT = EvalDSoln1DG(p, 0, s, valV(p->mesh->orig->nodes, row), 0);
+        
+        fprintf(fp, "%g,%g,%g\n", i*p->dt, X, dT);
+        //fprintf(fp, "%g,%g,%g\n", rho(comp_global, T), Cp(comp_global, T), k(comp_global, T));
     }
     fprintf(fp, "\n");
 
@@ -195,7 +199,7 @@ void CSVOutFixedTime(struct fe1d *p, int tstep, char *filename)
 
     fprintf(fp, "Radius,Temperature,ProdConc,IceMassFrac,Density,HeatCapacity,ThermalConductivity\n");
     for(i=0; i<p->nrows; i++)
-        fprintf(fp, "%g,%g,%g,%g,%g,%g,%g\n",
+        fprintf(fp, "%g,%g,%g,%g,%g,%g\n",
                 uscaleLength(p->charvals, valV(defmesh, i)),
                 uscaleTemp(p->charvals, val(T->val, i, 0)),
                 val(c1->val, i, 0),
