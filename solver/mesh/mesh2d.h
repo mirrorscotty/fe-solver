@@ -15,10 +15,10 @@ typedef struct {
 typedef struct {
     int nelemx;
     int nelemy;
-    
+
     int nnodes; /* Total number of nodes in the mesh */
     /* Todo: Use this variable ^^ */
-    
+
     double x1;
     double x2;
     double y1;

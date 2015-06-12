@@ -145,7 +145,7 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
     /* Only works for linear elements */
     double x1 = valV(elem->points, 0);
     double x2 = valV(elem->points, 1);
-    
+
     double result = 0;
     basis *b;
     b = p->b;

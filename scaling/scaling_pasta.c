@@ -47,7 +47,7 @@ double uscaleTemp(scaling_pasta s, double theta)
 }
 
 /**
- * @brief Convert length to dimensionless length 
+ * @brief Convert length to dimensionless length
  * @param stuff The data structure containing the characteristic values
  * @param x Length in the same units as Lc
  * @returns Dimensionless length
@@ -80,7 +80,7 @@ double scaleTime(scaling_pasta s, double t)
     return alpha*t/(s.Lc*s.Lc);
 }
 
-/** 
+/**
  * @brief Convert dimensionless time back to normal
  *
  * @param stuff The data structure containing the characteristic values

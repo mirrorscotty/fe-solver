@@ -126,7 +126,7 @@ int MeshIsOrig(Mesh1D* mesh)
 }
 
 /**
- * Make a new mesh where the nodes have moved from their locations in the 
+ * Make a new mesh where the nodes have moved from their locations in the
  * original mesh to the locations supplied.
  * @param orig Mesh to get the element information, etc. from
  * @param nodes Vector of new node locations

@@ -21,7 +21,7 @@ matrix* LinSolve1D(struct fe1d *problem)
     AssembleJ1D(problem, guess);
     problem->F = CreateMatrix(rows*problem->nvars, 1);
     problem->applybcs(problem);
-    
+
     /* Calculate the determinate of the jacobian matrix to see if we're going to
      * good results. Currently this takes forever, and is commented for that
      * reason. */
@@ -33,7 +33,7 @@ matrix* LinSolve1D(struct fe1d *problem)
 
 /**
  * @brief Explicit time integration algorithm (Forward Euler)
- * 
+ *
  * This solver fails horribly if a Neumann boundary condition is imposed. Also,
  * it may not be entirely stable anyway.
  *
@@ -87,7 +87,7 @@ matrix* LinSolve1DTrans(struct fe1d *problem)
     DestroyMatrix(tmp2);
 
     StoreSolution(problem, result, dresult);
-    
+
     return result;
 }
 
@@ -144,7 +144,7 @@ matrix* LinSolve1DTransImp(struct fe1d *problem)
     tmp2 = mtxadd(tmp1, problem->J);
 
     DestroyMatrix(tmp1);
-    
+
     /* Determine the right hand side of the equation. The if statement is there
      * so that this function can be used for both TR and BD, but not waste an
      * extra step multiplying by 0 for BD. */

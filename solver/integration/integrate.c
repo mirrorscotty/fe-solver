@@ -15,7 +15,7 @@
  * slightly more accurate answers when integrating weird, nonlinear functions.
  * You'll also need to change x3 and w3 to x5 and w5, respectively.
  */
-#define NPTS 3 
+#define NPTS 3
 
 /**
  * Coordinates of the Guass points when using 3 point Gaussian quadtrature
@@ -112,20 +112,20 @@ double quad2d3(struct fe *p, Elem2D *elem, int func, int dx, int dy)
 
 
             } else if(dy == 1) {
-                result += w[i]/2 * w[j]/2 
+                result += w[i]/2 * w[j]/2
                     * ( b->Eval2Dy(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dx(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                
+
             } else {
-                result += w[i]/2 * w[j]/2 
+                result += w[i]/2 * w[j]/2
                     * b->Eval2D(b, func, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                
+
             }
             printf("i = %d, j = %d, result = %g, XXi = %g, XEta = %g, J = %g\n",
                     i, j, result,
@@ -173,20 +173,20 @@ double quad2d32d3(struct fe *p, Elem2D *elem, int func1, int func2, int dx, int 
                     - b->Eval2Dx(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                
+
                 tmp2 += 1
                     * ( b->Eval2Dy(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXXi(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     - b->Eval2Dx(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapXEta(p, elem, (x[i]+1)/2, (x[j]+1)/2) )
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                
+
             } else {
                 tmp1 += 1
                     * b->Eval2D(b, func1, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)
                     * IMapCyl(p, elem, (x[i]+1)/2, (x[j]+1)/2);
-                
+
                 tmp2 += 1
                     * b->Eval2D(b, func2, (x[i]+1)/2, (x[j]+1)/2)
                     * 1/IMapJ(p, elem, (x[i]+1)/2, (x[j]+1)/2)

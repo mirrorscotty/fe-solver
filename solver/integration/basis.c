@@ -224,7 +224,7 @@ basis* Make2DTriBasis()
     b->phi = b->dphi = NULL;
     b->n = 3;
     b->overlap = 42;
-    
+
     b->phi2d = (double (**)(double, double)) calloc(b->n, sizeof(double(*)(double, double)));
 
     b->phi2d[1] = &lintri2d1;
@@ -241,7 +241,7 @@ basis* Make2DTriBasis()
     return b;
 }
 
-    
+
 /**
  * @brief Delete a basis!
  * @param b The basis to dispose of.i
@@ -437,8 +437,8 @@ double dquad1d3(double x) { return 4*x-1; }
 
 /* 1d Hermite Cubic Functions */
 double cubic1d1(double x) { return 1-3*pow(x,2)+2*pow(x,3); }
-double cubic1d2(double x) { return x-2*pow(x,2)+pow(x,3); } 
-double cubic1d3(double x) { return 3*pow(x,2)-2*pow(x,3); } 
+double cubic1d2(double x) { return x-2*pow(x,2)+pow(x,3); }
+double cubic1d3(double x) { return 3*pow(x,2)-2*pow(x,3); }
 double cubic1d4(double x) { return pow(x,3)-pow(x,2); }
 /* First derivatives */
 double dcubic1d1(double x) { return 6*x*x-6*x; }

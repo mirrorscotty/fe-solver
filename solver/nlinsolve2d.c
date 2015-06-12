@@ -20,7 +20,7 @@ int CheckConverg(struct fe *problem, matrix *dx)
 {
     int rows = nRows(dx);
     int i;
-    
+
     for(i=0; i<rows; i++) {
         if(fabs(val(dx, i, 0)) > problem->tol)
             return 0;
@@ -49,19 +49,19 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
     int rows = problem->nrows;
     int iter = 0;
     int maxiter = 500;
-    
+
     if(!guess) {
         guess = CreateMatrix(rows*problem->nvars, 1);
     }
 
     do {
         iter++;
-        
+
         if(problem->J)
             DestroyMatrix(problem->J);
         if(problem->F)
             DestroyMatrix(problem->F);
-        
+
         AssembleJ(problem, guess);
         problem->F = CreateMatrix(rows*problem->nvars, 1);
         //AssembleF(problem, guess);
@@ -71,7 +71,7 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
         //    iter = -1;
         //   break;
         //}
-        
+
         CalcResidual(problem, guess);
         dx = SolveMatrixEquation(problem->J, problem->R);
         newguess = mtxadd(guess, dx);
@@ -81,13 +81,13 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
         /* Quit if we've reached the maximum number of iterations */
         if(iter == maxiter)
             break;
-        
+
         printf("\rIteration %d", iter); // Print the current iteration number to the console.
         fflush(stdout); // Flush the output buffer.
-        
+
     } while(!CheckConverg(problem, dx));
     /* ^^ Also quit if the dx variable is small enough. */
-    
+
     if(iter == -1)
         /* If we've determined the matrix to be singular by calculating the
          * determinant, then output the appropriate error message. */
@@ -100,7 +100,7 @@ matrix* NLinSolve(struct fe *problem, matrix *guess)
         /* Print out the number of iterations it took to converge
          * successfully. */
         printf("\rNonlinear solver converged after %d iterations.\n", iter);
-    
+
     return guess;
 }
 

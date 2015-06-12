@@ -30,7 +30,7 @@ int CheckConverg1D(struct fe1d *problem, matrix *dx)
          * required. */
         if(fabs(val(dx, i, 0)) > problem->tol)
             return 0;
-        
+
         /* If one of the values in the dx matrix is NaN, then clearly something
          * is wrong. The best thing to do is to quit and spit out an error. */
         if(isnan(val(dx, i, 0))) {
@@ -42,7 +42,7 @@ int CheckConverg1D(struct fe1d *problem, matrix *dx)
             exit(0);
         }
     }
-    
+
     /* All the values are less than the specified tolerance, so we're good to
      * go. */
     return 1;
@@ -104,7 +104,7 @@ matrix* NLinSolve1D(struct fe1d *problem, matrix *guess)
             break;
 
         /* Print the current iteration number to the console. */
-        printf("\rIteration %d", iter); 
+        printf("\rIteration %d", iter);
         fflush(stdout); // Flush the output buffer.
 
     } while(!CheckConverg1D(problem, dx));
@@ -198,7 +198,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
         DestroyMatrix(problem->F);
         /* Delete the dx matrix from the previous iteration. */
         if(dx)
-            DestroyMatrix(dx); 
+            DestroyMatrix(dx);
         /* Initialize the matricies */
         AssembleJ1D(problem, guess);
         AssembledJ1D(problem, guess);

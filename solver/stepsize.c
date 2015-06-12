@@ -13,7 +13,7 @@ double CorrectorError(struct fe1d *p, matrix *guess, matrix *soln)
            denom;
     solution *s;
 
-    
+
     s = FetchSolution(p, p->t-1);
     dt = s->dt;
     s = FetchSolution(p, p->t-2);
@@ -50,7 +50,7 @@ double StepSize(struct fe1d *p, matrix *guess, matrix *soln)
 {
     solution *s;
     double dt_max = .1,
-           dt_cur, 
+           dt_cur,
            dt_new = StepSizeBase(p, guess, soln);
 
     s = FetchSolution(p, p->t-1);

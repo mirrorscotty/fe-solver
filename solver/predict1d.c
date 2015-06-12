@@ -55,7 +55,7 @@ matrix* PredictSolnO1(struct fe1d *p)
      * solution is missing, use a less accurate one. */
     if(!du)
         return PredictSolnO0(p);
-    
+
     /* u + du*dt */
     tmp1 = mtxmulconst(du, dt);
     tmp2 = mtxadd(u, tmp1);

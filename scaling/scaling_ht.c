@@ -25,7 +25,7 @@ scaling_ht SetupScaling(double alpha, double T0, double Te, double Lc, double k,
     scaling_ht stuff;
 
     stuff.alpha = alpha;
-    stuff.Tc = T0; 
+    stuff.Tc = T0;
     stuff.Te = Te;
     stuff.Lc = Lc;
     stuff.k = k;
@@ -62,7 +62,7 @@ double uscaleTemp(scaling_ht stuff, double theta)
 }
 
 /**
- * @brief Convert length to dimensionless length 
+ * @brief Convert length to dimensionless length
  * @param stuff The data structure containing the characteristic values
  * @param x Length in the same units as Lc
  * @returns Dimensionless length
@@ -94,7 +94,7 @@ double scaleTime(scaling_ht stuff, double t)
     return stuff.alpha*t/(stuff.Lc*stuff.Lc);
 }
 
-/** 
+/**
  * @brief Convert dimensionless time back to normal
  *
  * @param stuff The data structure containing the characteristic values

@@ -24,7 +24,7 @@ matrix* LinSolve(struct fe *problem)
     AssembleJ(problem, guess);
     problem->F = CreateMatrix(rows*problem->nvars, 1);
     problem->applybcs(problem);
-    
+
     /* Calculate the determinate of the jacobian matrix to see if we're going to
      * good results. Currently this takes forever, and is commented for that
      * reason. */

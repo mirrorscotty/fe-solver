@@ -106,7 +106,7 @@ void CSVOutFixedNode2(struct fe1d *p, int row, char *filename)
         for(n=0; n<p->maxsteps-i-1; n++)
             mesh = mesh->prev;
         X = valV(mesh->nodes, row);
-        
+
         fprintf(fp, "%g,%g,%g\n", i*p->dt, X, T);
         //fprintf(fp, "%g,%g,%g\n", rho(comp_global, T), Cp(comp_global, T), k(comp_global, T));
     }
@@ -156,7 +156,7 @@ void CSVOutFixedNodeDx(struct fe1d *p, int row, char *filename)
             mesh = mesh->prev;
         X = valV(mesh->nodes, row);
         dT = EvalDSoln1DG(p, 0, s, valV(p->mesh->orig->nodes, row), 0);
-        
+
         fprintf(fp, "%g,%g,%g\n", i*p->dt, X, dT);
         //fprintf(fp, "%g,%g,%g\n", rho(comp_global, T), Cp(comp_global, T), k(comp_global, T));
     }

@@ -42,14 +42,14 @@ void MeshPrintNodes(Mesh2D *mesh)
  * This whole function needs to be de-jankified. The whole multiplying i and j
  * by two needs to go and the sqrt(b->n) should disappear as well.
  */
-Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax, 
+Mesh2D* GenerateRadialMesh(basis *b, vector *r0, vector *r1, double thetamax,
                            int Nr, int Ntheta)
 {
     int i, j, k, z;
     int c, d;
     //double ri, ri1, ri1j1, rij1, thetai, thetai1;
     /* Just allocate enough for a BiQuad mesh since it's easy */
-    double r[3][3], theta[3]; 
+    double r[3][3], theta[3];
     int nnodes = b->n; /* Number of nodes per element */
 
     Elem2D *e;
@@ -127,7 +127,7 @@ Mesh2D* MakeSpheroidMesh(basis *bas, double e, double r, int Nr, int Nt)
     vector *r0, *r1;
     double a, b;
     a = 1; /* Set the major axis of the spheroid to 1 */
-    b = sqrt((1-e*e)*a*a); /* Calculate the minor axis from a and the 
+    b = sqrt((1-e*e)*a*a); /* Calculate the minor axis from a and the
                             * eccentricity */
     r0 = MakeR(bas, b, a, M_PI_2, Nt);
     r1 = MakeR(bas, r, r, M_PI_2, Nt);
@@ -255,7 +255,7 @@ void DestroyElem2D(Elem2D *elem)
 
     free(elem);
 }
-        
+
 void DestroyMesh2D(Mesh2D *mesh)
 {
     int i;

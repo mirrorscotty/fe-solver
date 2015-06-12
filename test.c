@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     struct fe *p;
     int i = 5;
 
-    p = CreateFE(MakeQuadBasis(2), mesh, NULL, NULL, NULL); 
+    p = CreateFE(MakeQuadBasis(2), mesh, NULL, NULL, NULL);
 
     //mesh = GenerateUniformMesh2D(0, 10, 0, 10, 10, 10);
     mesh = MakeSpheroidMesh(p->b, 0, 5, 5, 5);

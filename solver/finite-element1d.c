@@ -300,7 +300,7 @@ void FE1DTransInit(struct fe1d *problem, matrix* InitSoln)
     dsoln = SolveMatrixEquation(problem->dJ, tmp);
     DestroyMatrix(f);
     DestroyMatrix(tmp);
-    
+
     /* Store the initial solution */
     StoreSolution(problem, InitSoln, dsoln);
 }
@@ -566,7 +566,7 @@ double AvgSoln1DG(struct fe1d *p, int t, int var)
 /* This function needs to be modified to support hermite cubic basis functions.
  */
 double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
-{   
+{
     int i;
     double result = 0;
     int n = p->b->n;
@@ -584,7 +584,7 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
                       * val(s->val, valV(elem->map, i)*nvars+var, 0);
         }
     }
-    
+
     return result;
 }
 
@@ -606,7 +606,7 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 /* This function needs to be modified to support hermite cubic basis functions.
  */
 double EvalDSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
-{   
+{
     int i;
     double result = 0;
     int n = p->b->n;
@@ -624,7 +624,7 @@ double EvalDSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi
                       * val(s->val, valV(elem->map, i)*nvars+var, 0);
         }
     }
-    
+
     return result;
 }
 
@@ -680,7 +680,7 @@ double EvalDSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
         printf("Exiting.\n");
         exit(0);
     }
-    
+
     /* Find the local coordinate, given the global coordinate using Newton's
      * method. This is necessary in case we're using nonlinear basis
      * functions. */
@@ -694,7 +694,7 @@ double EvalDSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
         dx = -F/Fp;
         xi = xi + dx;
     } while(fabs(dx) > h);
-    
+
     if(coord) {
         e = s->mesh->elem[i];
     }
@@ -756,7 +756,7 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
         printf("Exiting.\n");
         exit(0);
     }
-    
+
     /* Find the local coordinate, given the global coordinate using Newton's
      * method. This is necessary in case we're using nonlinear basis
      * functions. */
@@ -770,7 +770,7 @@ double EvalSoln1DG(struct fe1d *p, int var, solution *s, double x, int coord)
         dx = -F/Fp;
         xi = xi + dx;
     } while(fabs(dx) > h);
-    
+
     if(coord) {
         e = s->mesh->elem[i];
     }
