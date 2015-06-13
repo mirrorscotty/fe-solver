@@ -1,3 +1,5 @@
+#include "scaling_pasta.h"
+
 scaling_pasta SetupScaling()
 {
     scaling_pasta s;

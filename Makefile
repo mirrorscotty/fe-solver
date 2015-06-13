@@ -1,8 +1,12 @@
 CC=gcc
 CFLAGS=-lm -I. -Imatrix -Isolver -Ioutput -Isolver/mesh -Isolver/integration -Isolver/ode -Iscaling -Igui/heating -Wall -g3 -O0 
-VPATH=solver/mesh solver/ode solver/integration matrix scaling solver output
 
-OBJECTFILES=integrate.o basis.o mesh2d.o finite-element.o isoparam.o finite-element1d.o mesh1d.o solution.o auxsoln.o scaling_ht.o linsolve1d.o nlinsolve1d.o predict1d.o linsolve2d.o nlinsolve2d.o output.o stepsize.o
+SRC=$(wildcard solver/*.c) \
+    $(wildcard solver/mesh/*.c) \
+    $(wildcard solver/ode/*.c) \
+    $(wildcard solver/integration/*.c) \
+    scaling/scaling_ht.c \
+    $(wildcard output/*.c)
 
 all: fe-solver.a
 
@@ -12,43 +16,27 @@ doc:
 	cp doc/latex/refman.pdf doc/Reference.pdf
 
 clean:
-	rm -rf *.o *.a
-	$(MAKE) -C matrix clean
+	rm -rf *.a
 	rm -rf doc
+	rm -rf $(SRC:.c=.o)
+	rm -rf $(SRC:.c=.d)
+	$(MAKE) -C matrix clean
 
-# Mesh-related files
-mesh2d.o: mesh/mesh2d.c mesh/mesh2d.h
-mesh1d.o: mesh/mesh1d.h mesh/mesh1d.c
-
-# Finite element-specific files
-finite-element.o: finite-element.c finite-element.h
-finite-element1d.o: finite-element1d.c finite-element1d.h
-solution.o: solution.c solution.h
-auxsoln.o: auxsoln.c auxsoln.h
-
-# Solvers
-linsolve1d.o: solve.h
-linsolve2d.o: solve.h
-nlinsolve1d.o: solve.h
-nlinsolve2d.o: solve.h
-predict1d.o: solve.h
-stepsize.o: solve.h
-
-# Scaling stuff
-scaling_ht.o: scaling_ht.h
-scaling_pasta.o: scaling_pasta.h
-
-# Random files that don't have a home
-about.o: about.h
-basis.o: basis.h
-isoparam.o: isoparam.h
-integrate.o: integrate.c integrate.h
-output.o: output.h
-
-fe-solver.a: $(OBJECTFILES)
+fe-solver.a: $(SRC:.c=.o)
 	ar -cvr $@ $?
 
 matrix.a:
 	$(MAKE) -C matrix
 	cp matrix/matrix.a .
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $*.c -o $*.o
+	$(CC) -MM $(CFLAGS) $*.c > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+          sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+
+-include $(OBJ:.o=.d)
 
