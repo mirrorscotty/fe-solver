@@ -30,7 +30,6 @@ double CorrectorError(struct fe1d *p, matrix *guess, matrix *soln)
     }
 
     DestroyMatrix(diff);
-    printf("Error: %g, ", d);
 
     return d;
 }
