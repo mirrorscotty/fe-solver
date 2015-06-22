@@ -30,7 +30,6 @@ double CorrectorError(struct fe1d *p, matrix *guess, matrix *soln)
     }
 
     DestroyMatrix(diff);
-    printf("Error: %g, ", d);
 
     return d;
 }
@@ -67,3 +66,16 @@ double StepSize(struct fe1d *p, matrix *guess, matrix *soln)
     return dt_new;
 }
 
+double CurrentTime(struct fe1d *p, int step)
+{
+    int i;
+    double t = 0;
+    solution *s;
+
+    for(i=0; i<step; i++) {
+        s = FetchSolution(p, i);
+        t += s->dt;
+    }
+
+    return t;
+}

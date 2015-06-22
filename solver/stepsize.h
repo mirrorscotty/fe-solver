@@ -6,6 +6,7 @@
 double CorrectorError(struct fe1d *, matrix *, matrix *);
 double StepSizeBase(struct fe1d *, matrix *, matrix *);
 double StepSize(struct fe1d *, matrix *, matrix *);
+double CurrentTime(struct fe1d *, int);
 
 #endif
 
