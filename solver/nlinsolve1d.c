@@ -259,8 +259,15 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     DestroyMatrix(dx);
 
     if(iter==maxiter) {
-        printf("Nonlinear solver failed to converge. Maximum number of iterations reached.\nFailed to calculate solution at time step %d of %d\nExiting.\n",
+        printf("Nonlinear solver failed to converge. "
+               "Maximum number of iterations reached.\n"
+               "Failed to calculate solution at time step %d of %d\n"
+               "Exiting.\n",
                 problem->t, problem->maxsteps);
+        printf("Current step size: %g\n", problem->dt);
+        PrintSolution(problem, problem->t-1);
+        printf("Current guess:\n");
+        PrintGuess(problem, guess);
         exit(0);
     }
 

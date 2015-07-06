@@ -76,6 +76,70 @@ Mesh1D* GenerateUniformMesh1D(basis *b, double x1, double x2, int nx)
 }
 
 /**
+ * Create a one-dimensional mesh with uniformly spaced nodes.
+ * @param b Set of basis functions to use
+ * @param x1 Coordinate of the left-most node
+ * @param x2 Coordinate of the right-most node
+ * @param nx Number of nodes to put into the mesh
+ * @returns 1D mesh structure
+ */
+Mesh1D* GenerateSkewRightMesh1D(basis *b, double x1, double x2, int nx)
+{
+    int i, j, k;
+    double dx = (x2-x1)/2;
+    double xp = x1;
+    int n = b->n; /* Number of nodes per element */
+
+    Mesh1D *mesh;
+    mesh = (Mesh1D*) calloc(1, sizeof(Mesh1D));
+
+    mesh->b = b;
+
+    mesh->x1 = x1;
+    mesh->x2 = x2;
+
+    mesh->nelem = nx;
+
+    mesh->elem = (Elem1D**) calloc(nx, sizeof(Elem1D));
+    mesh->nodes = CreateVector((n-1)*nx+1);
+
+    for(i=0; i<nx-1; i++) {
+        mesh->elem[i] = CreateElem1D(b);
+        for(k=0; k<n; k++) {
+            setvalV(mesh->elem[i]->points, k, xp+dx*k);
+
+            setvalV(mesh->elem[i]->map, k, i*(n-1)+k);
+        }
+
+        for(j=0; j<n; j++) {
+            setvalV(mesh->nodes, (int) valV(mesh->elem[i]->map, j),
+                    valV(mesh->elem[i]->points, j));
+        }
+        xp += dx;
+        dx = dx/2;
+    }
+
+    i=nx-1;
+    dx = dx*2;
+    mesh->elem[i] = CreateElem1D(b);
+    for(k=0; k<n; k++) {
+        setvalV(mesh->elem[i]->points, k, xp+dx*k);
+
+        setvalV(mesh->elem[i]->map, k, i*(n-1)+k);
+    }
+
+    for(j=0; j<n; j++) {
+        setvalV(mesh->nodes, (int) valV(mesh->elem[i]->map, j),
+                valV(mesh->elem[i]->points, j));
+    }
+
+    mesh->prev = NULL;
+    mesh->orig = mesh;
+
+    return mesh;
+}
+
+/**
  * Copy a mesh and all of the elements in it. This is useful for stuff like
  * remeshing or allowing the mesh to move/shrink.
  * @param orig Pointer to the original mesh

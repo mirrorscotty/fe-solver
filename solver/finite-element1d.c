@@ -803,6 +803,23 @@ void PrintSolution(struct fe1d *p, int t)
     return;
 }
 
+void PrintGuess(struct fe1d *p, matrix *guess)
+{
+    int i, j;
+    matrix *output;
+
+    output = CreateMatrix(nRows(guess)/p->nvars, p->nvars);
+
+    for(i=0; i<nRows(output); i++)
+        for(j=0; j<nCols(output); j++)
+            setval(output, val(guess, p->nvars*i+j, 0), i, j);
+
+    mtxprnt(output);
+    DestroyMatrix(output);
+
+    return;
+}
+
 /**
  * @brief Calculate the time derivative of the solution to a problem
  * @param problem The FE problem to use

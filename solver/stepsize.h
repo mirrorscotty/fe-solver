@@ -1,7 +1,7 @@
 #ifndef STEPSIZE_H
 #define STEPSIZE_H
 
-#define ERR 1e-3 /* Desired error */
+#define ERR 1e-4 /* Desired error */
 
 double CorrectorError(struct fe1d *, matrix *, matrix *);
 double StepSizeBase(struct fe1d *, matrix *, matrix *);

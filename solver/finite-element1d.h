@@ -99,6 +99,7 @@ double EvalSoln1DG(struct fe1d *, int, solution *, double, int);
 double EvalDSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 double EvalDSoln1DG(struct fe1d *, int, solution *, double, int);
 void PrintSolution(struct fe1d*, int);
+void PrintGuess(struct fe1d*, matrix*);
 
 matrix* CalcTimeDerivative(struct fe1d*, matrix*);
 double ElapsedTime(struct fe1d*, int);

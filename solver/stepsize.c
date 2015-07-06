@@ -48,7 +48,7 @@ double StepSizeBase(struct fe1d *p, matrix *guess, matrix *soln)
 double StepSize(struct fe1d *p, matrix *guess, matrix *soln)
 {
     solution *s;
-    double dt_max = .1,
+    double dt_max = .0001,
            dt_cur,
            dt_new = StepSizeBase(p, guess, soln);
 
