@@ -1,6 +1,19 @@
 /**
  * @file isoparam.c
  * All sorts of stuff for isoparametric mapping!
+ * These represent the derivative of the derivative of the global coordinate
+ * system with respect to the local coordinates. Generally, they'll be applied
+ * to a term of the weak form of an equation in one of three ways.
+ * \f[
+ * \int \frac{\partial\phi_i}{\partial x}\frac{\partial\phi_j}{\partial x} dx = \int \left(\frac{1}{h}\right)\frac{\partial\phi_i}{\partial\xi}\left(\frac{1}{h}\right)\frac{\partial\phi_j}{\partial\xi} (h)d\xi
+ * \f]
+ * \f[
+ * \int \frac{\partial\phi_i}{\partial x}\phi_j dx = \int \left(\frac{1}{h}\right)\frac{\partial\phi_i}{\partial\xi} \phi_j (h)d\xi
+ * \f]
+ * \int \phi_i\phi_j dx = \int \phi_i (h)d\xi
+ * \f]
+ * where \f$h\f$ is the distance between nodes in a single element (for linear
+ * elements) or \f$\frac{\partial x}{\partial \xi}\f$ for nonlinear elements.
  */
 
 #include <stdio.h>
