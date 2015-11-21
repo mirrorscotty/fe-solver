@@ -34,7 +34,7 @@ int CheckConverg1D(struct fe1d *problem, matrix *dx)
         /* If one of the values in the dx matrix is NaN, then clearly something
          * is wrong. The best thing to do is to quit and spit out an error. */
         if(isnan(val(dx, i, 0))) {
-            printf("Nonlinear solver failed to converge."
+            printf("Nonlinear solver failed to converge. "
                        "Solver returned value of \"NaN\".\n"
                        "Failed to calculate solution at time step %d of %d\n"
                        "Exiting.\n",
@@ -117,7 +117,7 @@ matrix* NLinSolve1D(struct fe1d *problem, matrix *guess)
     else if(iter == maxiter)
         /* If the solver didn't find a solution in the specified number of
          * iterations, then say so. */
-        printf("\rNonlinear solver failed to converge."
+        printf("\rNonlinear solver failed to converge. "
                "Maximum number of iterations reached.\n");
     else
         /* Print out the number of iterations it took to converge
@@ -279,7 +279,7 @@ matrix* NLinSolve1DTransImp(struct fe1d *problem, matrix *guess)
     else if(iter == maxiter)
         /* If the solver didn't find a solution in the specified number of
          * iterations, then say so. */
-        printf("\rNonlinear solver failed to converge."
+        printf("\rNonlinear solver failed to converge. "
                "Maximum number of iterations reached.\n");
     else
         /* Print out the number of iterations it took to converge
