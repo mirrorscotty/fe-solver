@@ -589,6 +589,32 @@ double EvalSoln1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
 }
 
 /**
+ * Evaluate the time derivative of the solution
+ */
+double EvalSolnDt1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double xi)
+{
+    int i;
+    double result = 0;
+    int n = p->b->n;
+    int nvars = p->nvars;
+
+    /* Return the x (global) coordinate the corresponds to the xi (local)
+     * coordinate when -1 is supplied for "var". */
+    if(var == -1) {
+        for(i=0; i<n; i++)
+            result += p->b->phi[i](xi) * valV(elem->points, i);
+    } else {
+        /* Find the value of the desired variable at xi */
+        for(i=0; i<n; i++) {
+            result += p->b->phi[i](xi)
+                      * val(s->dval, valV(elem->map, i)*nvars+var, 0);
+        }
+    }
+
+    return result;
+}
+
+/**
  * Evaluate a one-dimensional solution at a particular local coordinate within
  * a specific element. This interpolates the already calculated solution using
  * the finite element basis functions. For problems with multiple dependent

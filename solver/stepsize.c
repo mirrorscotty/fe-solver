@@ -62,6 +62,9 @@ double StepSize(struct fe1d *p, matrix *guess, matrix *soln)
         dt_new = 1.3*dt_cur;
     //if(dt_new < .7*dt_cur)
     //    dt_new = 0.7*dt_cur;
+    //
+    DestroyMatrix(guess); /* Get rid of the guess matrix since we're generating
+                             it specifically for this function. */
 
     return dt_new;
 }

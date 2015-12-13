@@ -95,6 +95,7 @@ double FetchGuessValue(struct fe1d*, int, int);
 double AvgSoln1D(struct fe1d*, int, int);
 double AvgSoln1DG(struct fe1d*, int, int);
 double EvalSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
+double EvalSolnDt1D(struct fe1d*, int, Elem1D*, solution*, double);
 double EvalSoln1DG(struct fe1d *, int, solution *, double, int);
 double EvalDSoln1D(struct fe1d*, int, Elem1D*, solution*, double);
 double EvalDSoln1DG(struct fe1d *, int, solution *, double, int);
