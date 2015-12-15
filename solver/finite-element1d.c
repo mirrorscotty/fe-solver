@@ -598,6 +598,11 @@ double EvalSolnDt1D(struct fe1d *p, int var, Elem1D *elem, solution *s, double x
     int n = p->b->n;
     int nvars = p->nvars;
 
+    /* This is probably a poor decision, but assume the time derivative is zero
+     * if it isn't provided. */
+    if(!s->dval)
+        return 0;
+
     /* Return the x (global) coordinate the corresponds to the xi (local)
      * coordinate when -1 is supplied for "var". */
     if(var == -1) {
