@@ -148,7 +148,7 @@ double IEvalLin2Dy(struct fe *p, Elem2D *elem, int func, double x, double y)
  *
  * This function returns the value of the derivative of the global x-coordinate
  * with respect to the local x-coordinate.
- * \f[\frac{\partial x}{\partial \xi}\f]
+ * \f[\left(\frac{\partial x}{\partial \xi}\right)^{-1}\f]
  * @param p The problem being solved
  * @param elem The element to calculate stuff for
  * @param xi Local x-coordinate
@@ -166,14 +166,10 @@ double IMap1D(struct fe1d *p, Elem1D *elem, double xi)
     int i;
 
     for(i=0; i<n; i++) {
-        result += b->phi[i](xi) * valV(elem->points, i);
+        result += b->dphi[i](xi) * valV(elem->points, i);
     }
 
-    /* Cheat and return the right value. This only works reliably for linear
-     * interpolation functions */
-    result = 1/(x2-x1);
-
-    return result;
+    return 1/result;
 }
 
 /**
